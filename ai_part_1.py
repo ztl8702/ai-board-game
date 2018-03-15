@@ -3,30 +3,15 @@
 # "@" is black
 # "X" is corner
 # "-" is empty
+import copy
 
-
+hashedBoardStates = {}
 def invertBoard(board):
     newBoard = [[0 for x in range(0, 8)] for y in range(0, 8)]
     for i in range(0, len(board)):
         for j in range(0, len(board)):
             newBoard[i][j] = board[j][i]
     return newBoard
-
-
-
-oboard = [[0 for x in range(0, 8)] for y in range(0, 8)]
-
-
-invBoard = [[0 for x in range(0, 8)] for y in range(0, 8)]
-
-hashedBoardStates = {}
-
-moves = []
-
-for i in range(0, len(oboard)):
-    invBoard[i] = input().strip().split(" ")
-
-oboard = invertBoard(invBoard)
 
 
 # print out
@@ -80,9 +65,6 @@ def countMoves(board, colour):
     return possibleMoves
 
 
-print(countMoves(oboard, 'O'))
-print(countMoves(oboard, '@'))
-
 
 #######################################################
 
@@ -112,7 +94,7 @@ def hashBoard(board):
 
 
 def makeMove(x, y, newX, newY, currentBoard):
-    board = list()
+    board = copy.deepcopy(currentBoard)
     board[newX][newY] = board[x][y]
     board[x][y] = "-"
 
@@ -155,7 +137,7 @@ def won(board, killedPiece):
 # print all moves made
 def printMoves():
     for move in moves:
-        print(move)
+        print(move[0],'->',move[1])
 
 
 def printBoard(board):
@@ -172,8 +154,8 @@ def printBoard(board):
 def DFS(currentBoard):
 
     #DEBUG
-    printBoard(currentBoard)
-    print(hashBoard(currentBoard))
+    #printBoard(currentBoard)
+    #print(hashBoard(currentBoard))
 
     if won(currentBoard, '@'):
         printMoves()
@@ -205,29 +187,38 @@ def DFS(currentBoard):
                             moves.append(((i, j), (iDirection, jDirection)))
 
                             #DEBUG
-                            print(((i, j), (iDirection, jDirection)))
+                            #print(((i, j), (iDirection, jDirection)))
 
                             isFound = DFS(newBoardState)
                             moves.pop()
                             if (isFound):
                                 return True
-                        else:
-                            print("exists: ", ((i, j), (iDirection, jDirection)))
-    print("Backtrack")
     return False
 
 
 
 
 
+# init & input
+oboard = [[0 for x in range(0, 8)] for y in range(0, 8)]
+invBoard = [[0 for x in range(0, 8)] for y in range(0, 8)]
 
+moves = []
 
+for i in range(0, len(oboard)):
+    invBoard[i] = input().strip().split(" ")
+command = input().strip()
+oboard = invertBoard(invBoard)
 
-DFS(oboard)
+if command == "Moves":
+    print(countMoves(oboard, 'O'))
+    print(countMoves(oboard, '@'))
+else:
+    DFS(oboard)
 # print(won(board, '@'))
 
 
-print("stupid DFS")
+#print("stupid DFS")
 
 
 
