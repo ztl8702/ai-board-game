@@ -10,6 +10,8 @@ invBoard = [[0 for x in range(0, 8)] for y in range(0, 8)]
 
 hashedBoardStates = {}
 
+moves = []
+
 for i in range(0, len(board)):
     invBoard[i] = input().strip().split(" ")
 
@@ -106,39 +108,57 @@ if (isWithinBoard(newX, newY - 1) and board[newX][newY - 1] in ['@', 'X']) and (
 return board
 
 
-def isWinning(board):
+# check if all pieces needed to be killed is eliminated
+def won(board, killedPiece):
     for i in range(0, len(board)):
         for j in range(0, len(board)):
+            if board[i][j] == killedPiece:
+                return False
+    return True
+
+
+# print all moves made
+def printMoves():
+    for move in moves:
+        print(move)
 
 
 # search for winning solution
 # return True if found
-def DFS(currentBoard, moves):
-    isWinning(currentBoard):
-    # print moves
-    return True
+def DFS(currentBoard):
+    if won(currentBoard, '@'):
+        printMoves()
+        return True
 
+    for i in range(0, len(currentBoard)):
+        for j in range(0, len(currentBoard)):
+            if currentBoard[i][j] == "O":
+                for direction in range(0, 4):
+                    # not zero, meaning we can move
+                    if isValidMove(i, j, direction) != 0:
+                        # check if move is valid then make normal move
+                        if isValidMove(i, j, direction) == 1:
+                            iDirection = i + DIRECTION[direction][0]
+                            jDirection = j + DIRECTION[direction][1]
 
-for i in range(0, len(currentBoard)):
-    for j in range(0, len(currentBoard)):
-        if currentBoard[i][j] == "O":
-            for direction in range(0, 4):
-                # not zero, meaning we can move
-                if isValidMove(i, j, direction) != 0:
-                    # make normal move
-                    if isValidMove(i, j, direction) == 1:
-                        newBoardState = makeMove(i, j, i + DIRECTION[direction][0], j + DIRECTION[direction][1], board)
+                        # check if move is valid then make jump move
+                        elif isValidMove(i, j, direction) == 2:
+                            iDirection = i + DIRECTION[direction][0] * 2
+                            jDirection = j + DIRECTION[direction][1] * 2
+
+                        newBoardState = makeMove(i, j, iDirection, jDirection, board)
                         newBoardHash = hashBoard(newBoardState)
-                    # make jump move
-                    elif isValidMove(i, j, direction) == 2:
-                        newBoardState = makeMove(i, j, i + DIRECTION[direction][0] * 2, j + DIRECTION[direction][1] * 2,
-                                                 board)
-                        newBoardHash = hashBoard(newBoardState)
+
                         # @TODO Explain the second condition (in case we reset previous states to False)
-                    if (newBoardHash not in hashedBoardStates) or (hashedBoardStates[newBoardHash] == False):
-                        hashedBoardStates[newBoardHash] = True
-                        DFS(newBoardState)
-return False
+                        # check if the current state is in previous states
+                        if (newBoardHash not in hashedBoardStates) or (hashedBoardStates[newBoardHash] == False):
+                            hashedBoardStates[newBoardHash] = True
+                            moves.append(((i, j), (iDirection, jDirection)))
+
+                            DFS(newBoardState)
+
+                            moves.pop()
+    return False
 
 
 # computing hash value for entire board
