@@ -1,13 +1,13 @@
 1. For calculating the number of available moves. The time complexity is O(N) where N is the total number of white + black pieces.
-The space complexity is O(1). 
+The space complexity is O(1), as we don't store any information, only keep a counter of possible moves.
 
 2. For calculating the sequence of moves to eliminate all enemy piece, we model the problem as follows:
   - Each state / node is represented by a complete board layout (8x8 two-dimensional array, or a 64-dimensional vector)
-  - Each move of any piece, creates will change the state. We don't consider the intermediate steps between a move is made and pieces getting eliminated as the result of the move, only the stationary board layout after all the interactions after a move, is recorded.
+  - A move by any piece will change the state. We only take a snapshot of the state after elimination of pieces is handled. (don't consider the intermediate steps when a move is made and pieces getting eliminated as the result of the move, only the stationary board layout after all the interactions after a move, is recorded.)
   
 We use breadth first search. The branching factor is equal to the number of available moves for the while pieces at each state (where the maximum will be 4*N, N being the number of white piece; but in reality it is alway less than that).
 
 The maximum search depth is equal to the minimum number of steps required to eliminate all black pieces.
 
 Does your algorithm always return the shortest possible sequence of moves that will eliminate all enemy pieces?
-- Yes, if the input gaurantees there is a possible solution. Otherwise (@todo: should we limit the maximum search depth?), the algorithm will search all the possible move sequences and quite, or be terminated if it is taking too long.  
+- Yes, if the input guarantees there is a possible solution. Otherwise (@todo: should we limit the maximum search depth?), the algorithm will search all the possible move sequences and quit, or be terminated if it is taking too long.  
