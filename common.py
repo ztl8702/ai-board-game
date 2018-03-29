@@ -90,7 +90,7 @@ class Board:
 
         for line in board.cells:
             for piece in line:
-                print(piece, end=' ')
+                print(piece, end = " ")
             print()
         print()
 
