@@ -24,7 +24,7 @@ def compareResults(file1="", file2=""):
     if os.name == 'nt':
         cmd = "powershell -c \"Compare-Object -ReferenceObject (Get-Content %s) -DifferenceObject (Get-Content %s)\"" % (file1, file2)
     else:
-        raise NotImplementedError()
+        cmd = "diff %s %s" % (file1, file2)
 
     cmp_result = subprocess.check_output(cmd)
     return (len(cmp_result) == 0) # true if the files are the same
