@@ -22,15 +22,15 @@ def BFS(board, ourPiece):
 
         # iterate through all pieces on board 
         # and store board states at the back of queue
-        whitePieces = node.getAllPieces(ourPiece)
+        ourPieces = node.getAllPieces(ourPiece)
 
-        for p in whitePieces:
+        for p in ourPieces:
             (x, y) = p
             availableMoves = node.getAvailableMoves(x, y)
         
             for move in availableMoves:
-                (newI, newJ) = move[1]
-                neighbour = node.makeMove(x, y, newI, newJ, ourPiece)
+                (newX, newY) = move[1]
+                neighbour = node.makeMove(x, y, newX, newY, ourPiece)
 
                 newBoardHash = neighbour.getHashValue()
 

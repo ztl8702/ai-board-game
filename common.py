@@ -40,7 +40,7 @@ class CellsArray:
         newCellsArray = copy.deepcopy(self)
         for x in range(0, self.size):
             for y in range(0, self.size):
-                newCellsArray.set(x, y, self.get(j,i))
+                newCellsArray.set(x, y, self.get(y, x))
         return newCellsArray
 
 class Board:
@@ -189,13 +189,13 @@ class Board:
         '''
         order = 1
         total = 0
-        for i in range(0, self.boardSize):
-            for j in range(0, self.boardSize):
-                if (self.get(i,j) == self.PIECE_EMPTY):
+        for x in range(0, self.boardSize):
+            for y in range(0, self.boardSize):
+                if (self.get(x, y) == self.PIECE_EMPTY):
                     currentDigit = 0
-                elif (self.get(i,j) == self.PIECE_CORNER):
+                elif (self.get(x, y) == self.PIECE_CORNER):
                     currentDigit = 1
-                elif (self.get(i,j) == self.PIECE_WHITE):
+                elif (self.get(x, y) == self.PIECE_WHITE):
                     currentDigit = 2
                 else:
                     currentDigit = 3
@@ -209,9 +209,9 @@ class Board:
         '''
         opponentPiece = self.__getOpponentColour(ourPiece)
         
-        for i in range(0, self.boardSize):
-            for j in range(0, self.boardSize):
-                if self.get(i,j) == opponentPiece:
+        for x in range(0, self.boardSize):
+            for y in range(0, self.boardSize):
+                if self.get(x, y) == opponentPiece:
                     return False
         return True
 
@@ -314,7 +314,7 @@ class Board:
             adjPieceY = y + self.DIRECTION[direction][1]
             adjPieceX2 = adjPieceX + self.DIRECTION[direction][0]
             adjPieceY2 = adjPieceY + self.DIRECTION[direction][1]
-            
+
             # if adjacent piece is within the board and is the opponent and
             # the piece across is within board and is an ally or a corner
             # then we remove the eliminated piece
@@ -363,8 +363,8 @@ class Board:
         get all the location of pieces of a specific colour
         '''
         result = []
-        for i in range(0, self.boardSize):
-            for j in range(0, self.boardSize):
+        for x in range(0, self.boardSize):
+            for y in range(0, self.boardSize):
                 if self.get(x, y) == ourPiece:
                     result.append((x, y))
         return result
