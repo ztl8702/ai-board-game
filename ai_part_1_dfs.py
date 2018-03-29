@@ -1,6 +1,9 @@
 import copy
 from common import Board
 
+# DFS called multiple times, so need to keep track globally
+hashedBoardStates = {}
+
 # search for winning solution
 # return True if found
 def DFS(board, ourPiece, depth):
@@ -54,8 +57,8 @@ if command == "Moves":
 else:
     for i in range(1, 1000):
         # print("Trying depth ", i) # DEBUG
-        moves = []        
-        hashedBoardStates = {}
+        moves = []
+        
         if (DFS(oboard, Board.PIECE_WHITE, i)):
             break
 
