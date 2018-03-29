@@ -39,7 +39,9 @@ for i, testcase in enumerate(testcases):
     os.system("rm -f output_dfs.txt")
 
     runBFS(testcase)
+    print(" BFS√ ", end="", flush = True)
     runDFS(testcase)
+    print(" DFS√ ", end="", flush = True)
     result = compareResults("output_bfs.txt", "output_dfs.txt")
 
     print("Results are " + ("the same" if result else "NOT THE SAME"))
