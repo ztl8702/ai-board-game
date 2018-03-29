@@ -32,7 +32,7 @@ def DFS(currentBoard, depth):
         availableMoves = currentBoard.getAvailableMoves(i,j)
         for move in availableMoves:
             (newI, newJ) = move[1]
-            newBoardState = currentBoard.makeMove(i,j, newI, newJ)
+            newBoardState = currentBoard.makeMove(i,j, newI, newJ, Board.PIECE_WHITE)
             newBoardHash = newBoardState.getHashValue()
 
             # @TODO Explain the second condition (in case we reset previous states to False)
