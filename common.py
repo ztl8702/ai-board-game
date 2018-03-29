@@ -224,84 +224,6 @@ class Board:
         else:
             return self.PIECE_WHITE
 
-    # def checkSurrounded(self, board, ourPiece, pieces):
-    #     '''
-    #     check if ourPiece is surrounded by opponent pieces
-    #     '''
-        
-    #     for p in pieces:
-    #         (x, y) = p  # current piece coordinate
-    #         opponentPiece = self.__getOpponentColour(ourPiece)
-
-    #         # # alternative2: step 1
-    #         # for direction in range(0, 4):
-    #         #     adjPieceX = x + self.DIRECTION[direction][0]
-    #         #     adjPieceY = y + self.DIRECTION[direction][1]
-    #         #     adjPieceX2 = adjPieceX + self.DIRECTION[direction][0]
-    #         #     adjPieceY2 = adjPieceY + self.DIRECTION[direction][1]
-    #         #     # if adjacent piece is within the board and is the opponent and
-    #         #     # piece across adjacent is within board and is ours or a corner
-    #         #     # then we remove the eliminated adjacent piece
-    #         #     if board.isWithinBoard(adjPieceX, adjPieceY) and \
-    #         #     board.get(adjPieceX, adjPieceY) == opponentPiece and \
-    #         #     board.isWithinBoard(adjPieceX2, adjPieceY2) and \
-    #         #     board.get(adjPieceX2, adjPieceY2) in \
-    #         #     [ourPiece, self.PIECE_CORNER]:
-    #         #         board.set(adjPieceX, adjPieceY, self.PIECE_EMPTY)
-
-    #         #  alternative 2: step 2
-    #         (left, right, up, down) = self.DIRECTION
-
-    #         leftPieceX = x + left[0]
-    #         leftPieceY = y + left[1]
-    #         rightPieceX = x + right[0]
-    #         rightPieceY = y + right[1]
-
-    #         # if pieces on the left and on the right are opponent pieces
-    #         # eliminate ourself
-    #         if board.isWithinBoard(leftPieceX,leftPieceY) and \
-    #         board.get(leftPieceX,leftPieceY) in \
-    #         [opponentPiece,self.PIECE_CORNER] and \
-    #         board.isWithinBoard(rightPieceX,rightPieceY) and \
-    #         board.get(rightPieceX,rightPieceY) in \
-    #         [opponentPiece,self.PIECE_CORNER]:
-    #             board.set(x, y,self.PIECE_EMPTY)
-
-    #         upPieceX = x + up[0]
-    #         upPieceY = y + up[1]
-    #         downPieceX = x + down[0]
-    #         downPieceY = y + down[1]
-    #         # if pieces above and below are opponent pieces
-    #         # eliminate ourself
-    #         if board.isWithinBoard(upPieceX,upPieceY) and \
-    #         board.get(upPieceX,upPieceY) in \
-    #         [opponentPiece,self.PIECE_CORNER] and \
-    #         board.isWithinBoard(downPieceX,downPieceY) and \
-    #         board.get(downPieceX,downPieceY) in \
-    #         [opponentPiece,self.PIECE_CORNER]:
-    #             board.set(x, y,self.PIECE_EMPTY)
-
-    #     return board
-
-    # def checkElimination(self, board, ourPiece):
-    #     '''
-    #     eliminate pieces based on rules
-    #     and return the board
-    #     '''        
-        
-    #     # alternative 1: step 1
-    #     # check if we eliminated opponent pieces first
-    #     opponentPiece = self.__getOpponentColour(ourPiece)
-    #     opponentPieces = self.getAllPieces(opponentPiece)
-    #     board = self.checkSurrounded(board, opponentPiece, opponentPieces)
-
-    #     # alternative 1: step 2
-    #     # then check if opponents eliminated us
-    #     ourPieces = self.getAllPieces(ourPiece)
-    #     board = self.checkSurrounded(board, ourPiece, ourPieces)
-
-    #     return board
-
     def checkElimination(self, x, y, ourPiece, board):
         '''
         check for elimination
@@ -336,11 +258,11 @@ class Board:
 
         # case 2: above and below surround us
         if (board.isWithinBoard(x, y - 1) and \
-        board.get(x, y -1 ) in [opponentPiece, self.PIECE_CORNER]) and \
+        board.get(x, y - 1) in [opponentPiece, self.PIECE_CORNER]) and \
         (board.isWithinBoard(x, y + 1) and \
         board.get(x, y + 1) in [opponentPiece, self.PIECE_CORNER]):
             board.set(x, y, self.PIECE_EMPTY)
-
+            
         return board
 
     def makeMove(self, x, y, newX, newY, ourPiece):
