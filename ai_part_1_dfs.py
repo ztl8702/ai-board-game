@@ -1,48 +1,43 @@
-## RULES
-#  "O" is white
-# "@" is black
-# "X" is corner
-# "-" is empty
 import copy
 from common import Board
 
+# DFS called multiple times, so need to keep track globally
 hashedBoardStates = {}
-
 
 # search for winning solution
 # return True if found
-def DFS(currentBoard, depth):
+def DFS(board, ourPiece, depth):
         
     def printMoves():
-        '''
-        '''
+        # print all the moves made
         for move in moves:
             print(move[0], '->', move[1])
 
     if depth == 0:
         return False
-    if currentBoard.isWon(Board.PIECE_WHITE):
+    if board.isWon(ourPiece):
         printMoves()
         return True
 
-    whitePieces = currentBoard.getAllPieces(Board.PIECE_WHITE)
+    ourPieces = board.getAllPieces(ourPiece)
 
-    for p in whitePieces:
-        (i, j) = p
-        availableMoves = currentBoard.getAvailableMoves(i,j)
+    for p in ourPieces:
+        (x, y) = p
+        availableMoves = board.getAvailableMoves(x, y)
+
         for move in availableMoves:
-            (newI, newJ) = move[1]
-            newBoardState = currentBoard.makeMove(i,j, newI, newJ, Board.PIECE_WHITE)
+            (newX, newY) = move[1]
+            newBoardState = board.makeMove(x, y, newX, newY, ourPiece)
             newBoardHash = newBoardState.getHashValue()
-
-            # @TODO Explain the second condition (in case we reset previous states to False)
+            
             # check if the current state is in previous states
-            if (newBoardHash not in hashedBoardStates) or (hashedBoardStates[newBoardHash] < depth):
+            if (newBoardHash not in hashedBoardStates) or \
+            (hashedBoardStates[newBoardHash] < depth):
                 # also consider fewer steps to reach the same state
                 hashedBoardStates[newBoardHash] = depth
                 moves.append(move)
 
-                isFound = DFS(newBoardState, depth-1)
+                isFound = DFS(newBoardState, ourPiece, depth - 1)
 
                 # backtrack
                 moves.pop()
@@ -51,7 +46,6 @@ def DFS(currentBoard, depth):
     return False
 
 
-moves = []
 oboard = Board()
 
 oboard.readInput()
@@ -62,9 +56,10 @@ if command == "Moves":
     print(oboard.countMoves(Board.PIECE_BLACK))
 else:
     for i in range(1, 1000):
-        print("Trying depth ", i)
-        hashedBoardStates = {}
-        if (DFS(oboard,i)):
+        # print("Trying depth ", i) # DEBUG
+        moves = []
+        
+        if (DFS(oboard, Board.PIECE_WHITE, i)):
             break
 
 
