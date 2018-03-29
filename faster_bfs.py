@@ -1,7 +1,7 @@
 import copy
 from common import Board
 
-def narrowSearch(board, ourPiece):
+def narrowSearch(board, ourPiece, layers):
     '''
     breadth first search
     '''
@@ -9,6 +9,17 @@ def narrowSearch(board, ourPiece):
         # print all the moves made
         for move in moves:
             print(move[0], '->', move[1])
+
+    def makeAllMoves(moves):
+        # Debugging utility function to print all the moves
+        # visually with board movements
+        oboard = copy.deepcopy(board)
+        oboard.printBoard()
+
+        for move in moves:
+            ((x,y), (newX, newY)) = move
+            oboard = oboard.makeMove(x, y, newX, newY, ourPiece)
+            oboard.printBoard()
 
     # store all nodes to visit in a queue
     # start with board in queue
@@ -20,8 +31,8 @@ def narrowSearch(board, ourPiece):
     while queue:
         (node, previousMoves) = queue.pop(0)
 
-        #  get limited/interesting search space
-        searchSpace = node.getInterestingCells(ourPiece)
+        #  get smaller search space
+        searchSpace = node.getSmallerSearchSpace(ourPiece, layers)
 
         # iterate through all pieces on board 
         # and store board states at the back of queue
@@ -56,6 +67,7 @@ def narrowSearch(board, ourPiece):
                         # found best sequence of moves
                         # print moves and exit search
                         if (neighbour.isWon(ourPiece)):
+                            makeAllMoves(currentMoves) # DEBUG
                             printMoves(currentMoves)
                             return True
 
@@ -78,9 +90,9 @@ else:
 
     hashedBoardStates = {}  # keep track of states seen before
     
-    # start searching for solution
-    narrowSearch(oboard, Board.PIECE_WHITE)
+    layers = 8
 
-    # DEBUG
-    oboard.makeAllMoves(oboard, Board.PIECE_WHITE, currentMoves)
+    # start searching for solution
+    narrowSearch(oboard, Board.PIECE_WHITE, layers)
+    
 

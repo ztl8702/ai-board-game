@@ -87,22 +87,19 @@ class Board:
         Debugging utlity function to print board
         '''
         board = self.board.getInverted()
+        print(" ", end = "")
+        for i in range(self.MAX_BOARD_SIZE):
+            print(i, end = " ")
+        print()
 
+        j = 0
         for line in board.cells:
+            print(j, end = "")
+            j = j + 1
             for piece in line:
                 print(piece, end = " ")
             print()
         print()
-
-    def makeAllMoves(self, board, ourPiece, moves):
-        '''
-        Debugging utility function to print all the moves
-        visually with board movements
-        '''
-        for move in moves:
-            ((x,y), (newX, newY)) = move
-            board = self.makeMove(x, y, newX, newY, ourPiece)
-            self.printBoard()
 
     def isEmpty(self, x, y):
         '''
@@ -235,34 +232,31 @@ class Board:
         else:
             return self.PIECE_WHITE
 
-    def getInterestingCells(self, ourPiece):
+    def getSmallerSearchSpace(self, ourPiece, layers):
         '''
-        look at opponent pieces and mark cells around them as interesting 
+        mark cells around opponent pieces 
         and return the smaller search space
         '''
-        interestingCells = []
+        searchSpace = []
+
         opponentPiece = self.__getOpponentColour(ourPiece)
         opponentPieces = self.getAllPieces(opponentPiece)
         
         for p in opponentPieces:
             (x, y) = p
-            # add coordinate of opponent @TOGGLE
-            interestingCells.append((x,y))
+            # add coordinate of opponent
+            searchSpace.append((x,y))
 
             for direction in range(0, 4):
-                newX = x + self.DIRECTION[direction][0]
-                newY = y + self.DIRECTION[direction][1]
-                
-                # add cells around itself (layer 1)
-                interestingCells.append((newX, newY))
 
-                newX2 = newX + self.DIRECTION[direction][0]
-                newY2 = newY + self.DIRECTION[direction][1]
+                # add coordinate of cells around opponent
+                for i in range(1, layers + 1):
+                    newX = x + self.DIRECTION[direction][0] * i
+                    newY = y + self.DIRECTION[direction][1] * i
+                    
+                    searchSpace.append((newX, newY))
 
-                # add cells around itself (layer 2)
-                interestingCells.append((newX2, newY2))
-
-        return interestingCells
+        return searchSpace
 
     def checkElimination(self, x, y, ourPiece, board):
         '''
