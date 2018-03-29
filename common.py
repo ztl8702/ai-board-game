@@ -164,14 +164,15 @@ class Board:
             if result != MoveType.INVALID:
                 # make normal move
                 if result == MoveType.NORMAL:
-                    xNew = x + self.DIRECTION[direction][0]
-                    yNew = y + self.DIRECTION[direction][1]
+                    newX = x + self.DIRECTION[direction][0]
+                    newY = y + self.DIRECTION[direction][1]
 
                 # make jump move
                 elif result == MoveType.JUMP:
-                    xNew = x + self.DIRECTION[direction][0] * 2
-                    yNew = y + self.DIRECTION[direction][1] * 2
-                possibleMoves.append(((x, y),(xNew, yNew)))
+                    newX = x + self.DIRECTION[direction][0] * 2
+                    newY = y + self.DIRECTION[direction][1] * 2
+
+                possibleMoves.append(((x, y),(newX, newY)))
 
         return possibleMoves
 
