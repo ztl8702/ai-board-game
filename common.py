@@ -205,9 +205,11 @@ class Board:
                     currentDigit = 1
                 elif (self.get(x, y) == self.PIECE_WHITE):
                     currentDigit = 2
-                else:
+                elif (self.get(x, y) == self.PIECE_BLACK):
                     currentDigit = 3
-                total = total + currentDigit * (4 ** order)
+                else:
+                    currentDigit = 4
+                total = total + currentDigit * (5 ** order)
                 order = order + 1
         return total
 
@@ -257,6 +259,24 @@ class Board:
                     if (self.isWithinBoard(newX, newY)):
                         searchSpace.append((newX, newY))
 
+        return searchSpace
+
+    def getInterestingSpots(self, ourPiece, layers):
+        '''
+        mark cells around opponent pieces 
+        and return the smaller search space
+        '''
+        searchSpace = []
+
+        opponentPiece = self.__getOpponentColour(ourPiece)
+        opponentPieces = self.getAllPieces(opponentPiece)
+
+        for x in range(0,self.boardSize):
+            for y in range(0, self.boardSize):
+                for p in opponentPieces:
+                    if self.__distance(x, y, p[0], p[1]) <= layers:
+                        searchSpace.add((x,y))
+                        break
         return searchSpace
 
     def checkElimination(self, x, y, ourPiece, board):
@@ -334,3 +354,73 @@ class Board:
             availableMoves = self.getAvailableMoves(x, y)
             result = result + len(availableMoves)
         return result
+
+    def getSubBoard(self, x1, y1, x2, y2):
+        if (not (self.isWithinBoard(x1,y1) and self.isWithinBoard(x2,y2))):
+            raise Exception("something wrong")
+        return SubBoard(self, x1,y1,x2,y2)
+
+class SubBoard():
+    # Readonly proxy of the Board
+    def __init__(self, theBoard, x1, y1, x2, y2):
+        self.board = theBoard
+        self.xOffset = x1
+        self.yOffset = y1
+        self.width = x2 - x1 + 1
+        self.height = y2 - y1 + 2
+
+    def isWithinSubBoard(self, x, y):
+        return (x>= 0) and (x < self.width) and (y>=0) and (y < self.height)
+
+    def getHashValue(self):
+        order = 1
+        total = 0
+        for x in range(0, self.width):
+            for y in range(0, self.height):
+                if (self.get(x, y) == Board.PIECE_EMPTY):
+                    currentDigit = 0
+                elif (self.get(x, y) == Board.PIECE_CORNER):
+                    currentDigit = 1
+                elif (self.get(x, y) == Board.PIECE_WHITE):
+                    currentDigit = 2
+                elif (self.get(x, y) == Board.PIECE_BLACK):
+                    currentDigit = 3
+                else:
+                    currentDigit = 4
+                total = total + currentDigit * (5 ** order)
+                order = order + 1
+        return total
+
+    def getOffset(self):
+        return (self.xOffset, self.yOffset)
+
+    def get(self, x, y):
+        return self.board.get(x + self.xOffset, y + self.yOffset)
+
+
+    def __distance(self, x1, y1, x2, y2):
+        return math.abs(x1-x2) + math.abs(y1-y2)
+
+    def extend():
+        x1 = xOffset - 1
+        y1 = yOffset - 1
+        x2 = xOffset + width
+        y2 = yOffset + height
+
+        if (x1 < 0): 
+            x1 = 0
+        if (y1 < 0):
+            y1 = 0
+        if x2 >= self.board.boardSize:
+            x2 = x2 - 1
+        if y2 >= self.board.boardSize:
+            y2 = y2 - 1
+        return SubBoard(self.board, x1, y1, x2, y2)
+
+    def getSubBoard(self, x1, y1, x2, y2):
+        if (not (self.isWithinSubBoard(x1,y1) and self.isWithinSubBoard(x2,y2))):
+            raise Exception("something wrong")
+
+        return self.board.getSubBoard(x1 + self.xOffset, y1 + self.yOffset, x2 + self.xOffset, y2 + self.yOffset)
+          
+        

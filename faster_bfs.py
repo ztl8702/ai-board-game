@@ -1,6 +1,4 @@
-import copy
-
-# used to only keep track of valid moves
+import copy# used to only keep track of valid moves
 previousMoves = []      # keep track of previous moves
 currentMoves = []       # keep track of current moves
 
