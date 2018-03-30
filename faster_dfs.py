@@ -1,12 +1,12 @@
 import copy
-from common import Board
 
+moves = []
 # DFS called multiple times, so need to keep track globally
 hashedBoardStates = {}
 
 # search for winning solution
 # return True if found
-def DFS(board, ourPiece, depth):
+def faster_DFS(board, ourPiece, layers, depth):
         
     def printMoves():
         # print all the moves made
@@ -20,7 +20,7 @@ def DFS(board, ourPiece, depth):
         return True
 
     #  get limited/interesting search space
-    searchSpace = board.getInterestingCells(ourPiece)
+    searchSpace = board.getSmallerSearchSpace(ourPiece, layers)
 
     ourPieces = board.getAllPieces(ourPiece)
 
@@ -44,29 +44,10 @@ def DFS(board, ourPiece, depth):
                     hashedBoardStates[newBoardHash] = depth
                     moves.append(move)
 
-                    isFound = DFS(newBoardState, ourPiece, depth - 1)
+                    isFound = faster_DFS(newBoardState, ourPiece, layers, depth - 1)
 
                     # backtrack
                     moves.pop()
                     if (isFound):
                         return True
     return False
-
-
-oboard = Board()
-
-oboard.readInput()
-command = input().strip()
-
-if command == "Moves":
-    print(oboard.countMoves(Board.PIECE_WHITE))
-    print(oboard.countMoves(Board.PIECE_BLACK))
-else:
-    for i in range(1, 1000):
-        # print("Trying depth ", i) # DEBUG
-        moves = []
-        
-        if (DFS(oboard, Board.PIECE_WHITE, i)):
-            break
-
-

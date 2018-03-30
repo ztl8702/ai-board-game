@@ -3,7 +3,7 @@ import glob
 import os
 import subprocess 
 
-def runBFS(inputFile, outputFile = "output_bfs.txt"):
+def runBFS(inputFile, outputFile = "output_bfs.txt" ):
     if os.name == 'nt': # Windows
         cmd = "powershell -c \"Get-Content %s | python %s >%s\"" % (inputFile, "parta.py", outputFile)
     else:
@@ -11,29 +11,15 @@ def runBFS(inputFile, outputFile = "output_bfs.txt"):
     #print(cmd)
     os.system(cmd)
 
-def runDFS(inputFile, outputFile = "output_dfs.txt"):
+def runDFS(inputFile, outputFile = "output_f-bfs.txt"):
     if os.name == 'nt':
-        cmd = "powershell -c \"Get-Content %s | python %s >%s\"" % (inputFile, "ai_part_1_dfs.py", outputFile)
-    else:
-        cmd = "python3 %s <%s >%s" % ("parta.py", inputFile, outputFile)
-    #print(cmd)
-    os.system(cmd)
-
-def runFasterBFS(inputFile, outputFile = "output_faster_bfs.txt"):
-    if os.name == 'nt': # Windows
         cmd = "powershell -c \"Get-Content %s | python %s >%s\"" % (inputFile, "faster_bfs.py", outputFile)
     else:
         cmd = "python3 %s <%s >%s" % ("faster_bfs.py", inputFile, outputFile)
     #print(cmd)
     os.system(cmd)
 
-def runFasterDFS(inputFile, outputFile = "output_faster_dfs.txt"):
-    if os.name == 'nt': # Windows
-        cmd = "powershell -c \"Get-Content %s | python %s >%s\"" % (inputFile, "faster_dfs.py", outputFile)
-    else:
-        cmd = "python3 %s <%s >%s" % ("faster_dfs.py", inputFile, outputFile)
-    #print(cmd)
-    os.system(cmd)
+
 
 def compareResults(file1="", file2=""):
     if os.name == 'nt':
@@ -49,9 +35,9 @@ def compareResults(file1="", file2=""):
 
 testcases = glob.glob('./testcases/*.in')
 OUTPUT_BFS = "output_bfs.txt"
-OUTPUT_DFS = "output_dfs.txt"
-OUTPUT_FBFS = "output_faster_bfs"
-OUTPUT_FDFS = "output_faster_dfs"
+OUTPUT_f_BFS = "output_f-bfs.txt"
+
+numDiff = []
 
 for i, testcase in enumerate(testcases):
     print("="*30)
@@ -62,23 +48,15 @@ for i, testcase in enumerate(testcases):
 
     print("Testcase #%d: %s" % (i+1, case_name))
     os.system("rm -f "+OUTPUT_BFS)
-    os.system("rm -f "+OUTPUT_DFS)
+    os.system("rm -f "+OUTPUT_f_BFS)
 
-
-
-    # comparison1: normal BFS vs limited-DFS
-    # runBFS(testcase)
-    # print(" BFS✔ ", end="", flush = True)
-    # runDFS(testcase)
-    # print(" DFS✔ ", end="", flush = True)
-    # result = compareResults(OUTPUT_BFS, OUTPUT_DFS)
-
-    # comparison2: normal BFS vs faster BFS
     runBFS(testcase)
     print(" BFS✔ ", end="", flush = True)
-    runFasterBFS(testcase)
+    runDFS(testcase)
     print(" f-BFS✔ ", end="", flush = True)
-    result = compareResults(OUTPUT_BFS, OUTPUT_FBFS)
+    result = compareResults(OUTPUT_BFS, OUTPUT_f_BFS)
+    if (not result):
+        numDiff.append(testcase)
 
     print("Results are " + ("the same" if result else "NOT THE SAME"), end=" ", flush=True)
     if (not result):
@@ -86,6 +64,11 @@ for i, testcase in enumerate(testcases):
 
     if ans_exists:
         print("|" + ("Same" if compareResults(OUTPUT_BFS, ans_file) else "NOT SAME") + " with answer")
+
+    if (len(numDiff) > 0):
+        print("these files had conflict:")
+        for i in range (len(numDiff)):
+            print(numDiff[i])
 
     print()
     print("="*30)

@@ -1,13 +1,15 @@
 import copy
-from common import Board
+
+moves = [] # keep track of shortest moves
 
 # DFS called multiple times, so need to keep track globally
 hashedBoardStates = {}
 
-# search for winning solution
-# return True if found
+
 def DFS(board, ourPiece, depth):
-        
+    '''
+    increasing depth limiting DFS
+    '''
     def printMoves():
         # print all the moves made
         for move in moves:
@@ -44,22 +46,3 @@ def DFS(board, ourPiece, depth):
                 if (isFound):
                     return True
     return False
-
-
-oboard = Board()
-
-oboard.readInput()
-command = input().strip()
-
-if command == "Moves":
-    print(oboard.countMoves(Board.PIECE_WHITE))
-    print(oboard.countMoves(Board.PIECE_BLACK))
-else:
-    for i in range(1, 1000):
-        # print("Trying depth ", i) # DEBUG
-        moves = []
-        
-        if (DFS(oboard, Board.PIECE_WHITE, i)):
-            break
-
-

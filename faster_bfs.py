@@ -1,7 +1,13 @@
 import copy
-from common import Board
 
-def narrowSearch(board, ourPiece, layers):
+# used to only keep track of valid moves
+previousMoves = []      # keep track of previous moves
+currentMoves = []       # keep track of current moves
+
+# avoid wasting resources looking into suboptimal search space
+hashedBoardStates = {}  # keep track of states seen before
+
+def faster_BFS(board, ourPiece, layers):
     '''
     breadth first search
     '''
@@ -33,6 +39,7 @@ def narrowSearch(board, ourPiece, layers):
 
         #  get smaller search space
         searchSpace = node.getSmallerSearchSpace(ourPiece, layers)
+        # print(searchSpace)
 
         # iterate through all pieces on board 
         # and store board states at the back of queue
@@ -49,6 +56,8 @@ def narrowSearch(board, ourPiece, layers):
 
                     (newX, newY) = move[1]
                     neighbour = node.makeMove(x, y, newX, newY, ourPiece)
+
+                    # neighbour.printBoard() #DEBUG
 
                     newBoardHash = neighbour.getHashValue()
 
@@ -67,32 +76,9 @@ def narrowSearch(board, ourPiece, layers):
                         # found best sequence of moves
                         # print moves and exit search
                         if (neighbour.isWon(ourPiece)):
-                            makeAllMoves(currentMoves) # DEBUG
+                            # makeAllMoves(currentMoves) # DEBUG
                             printMoves(currentMoves)
                             return True
 
     # no solution is found, exit
     return False
-
-
-oboard = Board() # original board
-
-oboard.readInput()
-command = input().strip()
-
-if command == "Moves":
-    print(oboard.countMoves(Board.PIECE_WHITE))
-    print(oboard.countMoves(Board.PIECE_BLACK))
-else:
-    # used to only keep track of valid moves
-    previousMoves = []      # keep track of previous moves
-    currentMoves = []       # keep track of current moves
-
-    hashedBoardStates = {}  # keep track of states seen before
-    
-    layers = 8
-
-    # start searching for solution
-    narrowSearch(oboard, Board.PIECE_WHITE, layers)
-    
-

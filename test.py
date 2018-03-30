@@ -13,9 +13,9 @@ def runBFS(inputFile, outputFile = "output_bfs.txt" ):
 
 def runDFS(inputFile, outputFile = "output_dfs.txt"):
     if os.name == 'nt':
-        cmd = "powershell -c \"Get-Content %s | python %s >%s\"" % (inputFile, "ai_part_1_dfs.py", outputFile)
+        cmd = "powershell -c \"Get-Content %s | python %s >%s\"" % (inputFile, "parta_dfs.py", outputFile)
     else:
-        cmd = "python3 %s <%s >%s" % ("parta.py", inputFile, outputFile)
+        cmd = "python3 %s <%s >%s" % ("parta_dfs.py", inputFile, outputFile)
     #print(cmd)
     os.system(cmd)
 

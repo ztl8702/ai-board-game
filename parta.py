@@ -1,5 +1,11 @@
 import copy
-from common import Board
+
+# used to only keep track of valid moves
+previousMoves = []      # keep track of previous moves
+currentMoves = []       # keep track of current moves
+
+# avoid wasting resources looking into suboptimal search space
+hashedBoardStates = {}  # keep track of states seen before
 
 def BFS(board, ourPiece):
     '''
@@ -54,22 +60,3 @@ def BFS(board, ourPiece):
 
     # no solution is found, exit
     return False
-
-
-oboard = Board()    # original board
-
-oboard.readInput()
-command = input().strip()
-
-if command == "Moves":
-    print(oboard.countMoves(Board.PIECE_WHITE))
-    print(oboard.countMoves(Board.PIECE_BLACK))
-else:
-    # used to only keep track of valid moves
-    previousMoves = []      # keep track of previous moves
-    currentMoves = []       # keep track of current moves
-
-    hashedBoardStates = {}  # keep track of states seen before
-    
-    # start searching for solution
-    BFS(oboard, Board.PIECE_WHITE)

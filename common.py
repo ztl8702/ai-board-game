@@ -254,7 +254,8 @@ class Board:
                     newX = x + self.DIRECTION[direction][0] * i
                     newY = y + self.DIRECTION[direction][1] * i
                     
-                    searchSpace.append((newX, newY))
+                    if (self.isWithinBoard(newX, newY)):
+                        searchSpace.append((newX, newY))
 
         return searchSpace
 
