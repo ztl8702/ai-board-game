@@ -47,10 +47,12 @@
 3. fb messenger (twice weekly updates)
 
 ## Upcoming deadlines
-AI - COMP30024
-CS - COMP30023
-SMD - SWEN30006
-MP - PHYS30005
+Code | Subject Code
+---|---
+AI | COMP30024
+CS | COMP30023
+SMD | SWEN30006
+MP | PHYS30005
 
 Date | Assessment | Therrense Lua | Tian Lei
 ---|---|---|---

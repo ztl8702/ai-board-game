@@ -1,13 +1,11 @@
-##About this branch
+## About this branch
 
 This branch contains current workings from before break which includes some search optimisation that reduces the search space by removing spaces that are not likely to be used.
 
 A different implementation can be found in branch radium/subsearch.
 
 
-
-
-##Note from Matt Farugia
+## Note from Matt Farugia
 
 Here is the specification for Project Part B, and the current version of the Referee program.
 
