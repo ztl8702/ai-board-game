@@ -5,13 +5,13 @@
 
 ## To Do:
 ### Together
-#### Stage 0
+#### Stage 1 (Week 7)
 1. Make an online _Watch Your Back_ game UI that multiple human users can play againts each other on
 
-#### Stage 1
+#### Stage 2 (Week 8)
 2. Write a naive Player class with MiniMax Search, utilising heuristics functions created from Part 1
 
-#### Stage 2
+#### Stage 3 (Week 9)
 3. Introduce Alpha-Beta Pruning into the search algorithm
 4. Maybe Monte Carlo
 
@@ -63,3 +63,6 @@ Date | Assessment | Therrense Lua | Tianlei Zheng
 11 May | AI project part 2 | Y | Y
 ~ late May | SMD project C | Y | Y
 ~ late May | CS project 2 | Y | Y
+
+
+we'll be good don't worry
