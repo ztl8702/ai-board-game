@@ -54,7 +54,7 @@ CS | COMP30023
 SMD | SWEN30006
 MP | PHYS30005
 
-Date | Assessment | Therrense Lua | Tian Lei
+Date | Assessment | Therrense Lua | Tianlei Zheng
 ---|---|---|---
 19 April | CS project 1 | Y | Y
 29 April | SMD project B | Y | Y
