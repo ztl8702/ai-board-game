@@ -1,0 +1,19 @@
+Draft AI
+
+
+- search strategy
+- evaluation function
+- creative techniques
+	- machine learning
+	- search strategy optimisation
+	- specialised data structures
+	- other optimisation
+	- search algorithm not discussed in lectures
+
+
+Additional Stuff
+- alterntive Player class
+- modified referee
+- additional programs to test player strategy
+- programs to create training data for ML
+- programs for other purpose not directly related to Player class

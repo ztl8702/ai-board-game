@@ -16,16 +16,19 @@ if command == "Moves":
     print(oboard.countMoves(Board.PIECE_WHITE))
     print(oboard.countMoves(Board.PIECE_BLACK))
 else:
+    # print("faster BFS")
     # SEARCH 1: BFS with smaller search space
-    # if (not faster_BFS(oboard, Board.PIECE_WHITE, MAX_LAYERS)):
-    # 	print("solution not found")
+    if (not faster_BFS(oboard, Board.PIECE_WHITE, MAX_LAYERS)):
+    	print("solution not found")
     
+    # print("faster DFS")
     # SEARCH 2: depth limited DFS with smaller search space
-    for i in range(1, MAX_DEPTH):
-        # print("Trying depth ", i) # DEBUG 
-        if (faster_DFS(oboard, Board.PIECE_WHITE, MAX_LAYERS, i)):
-            break
+    # for i in range(1, MAX_DEPTH):
+    #     # print("Trying depth ", i) # DEBUG 
+    #     if (faster_DFS(oboard, Board.PIECE_WHITE, MAX_LAYERS, i)):
+    #         break
 
+    # print("normal BFS")
     # SEARCH 3: normal BFS
     # if (not BFS(oboard, Board.PIECE_WHITE)):
     # 	print("solution not found")

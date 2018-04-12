@@ -27,6 +27,16 @@ def faster_BFS(board, ourPiece, layers):
             oboard = oboard.makeMove(x, y, newX, newY, ourPiece)
             oboard.printBoard()
 
+    ############################################################
+    # check for square boxes
+    if board.checkSquareFormation(ourPiece):
+        return False
+
+    # check for only 1 white piece and black pieces not beside a corner piece
+    if board.checkCantWin(ourPiece):
+        return False
+    ############################################################
+
     # store all nodes to visit in a queue
     # start with board in queue
     queue = [(board, [])]
@@ -44,6 +54,17 @@ def faster_BFS(board, ourPiece, layers):
         # iterate through all pieces on board 
         # and store board states at the back of queue
         ourPieces = node.getAllPieces(ourPiece)
+
+        ############################################################
+        # check if we dont have enough pieces in the search space 
+        # to eliminate opponent
+        countOurs = 0
+        for s in searchSpace:
+            if (s in ourPieces):
+                countOurs = countOurs + 1    
+        if countOurs < 2:
+            searchSpace = node.getMinMaxSearchSpace(ourPiece)
+        ############################################################
 
         for p in ourPieces:
             (x, y) = p

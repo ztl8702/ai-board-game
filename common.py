@@ -55,6 +55,17 @@ class Board:
         [0, -1],  # up
         [0, +1]   # down
     ]
+    
+    ANTICLOCKWISE = [
+        (-1, -1),   # NW
+        (-1, 0),    # W
+        (-1, +1),   # SW
+        (0, +1),    # S
+        (+1, +1),   # SE
+        (+1, 0),    # E
+        (+1, -1),   # NE
+        (0, -1)     # N
+    ]
 
     PIECE_WHITE = 'O'   # while piece
     PIECE_BLACK = '@'   # black piece
@@ -232,6 +243,97 @@ class Board:
         else:
             return self.PIECE_WHITE
 
+    def checkSquareFormation(self, ourPiece):
+        # return True if square formation exist
+        opponentPiece = self.__getOpponentColour(ourPiece)
+        opponentPieces = self.getAllPieces(opponentPiece)
+        for p in opponentPieces:
+            (x, y) = p
+            # square in the top left corner [N, NW, W]
+            # N  self.ANTICLOCKWISE[7]
+            # NW self.ANTICLOCKWISE[0]
+            # W  self.ANTICLOCKWISE[1]
+            if (self.ANTICLOCKWISE[7] in opponentPieces and \
+            self.ANTICLOCKWISE[0] in opponentPieces and \
+            self.ANTICLOCKWISE[1] in opponentPieces):
+                return True
+
+            # square in the bottom left corner [W, SW, S]
+            # W  self.ANTICLOCKWISE[1]
+            # SW self.ANTICLOCKWISE[2]
+            # S  self.ANTICLOCKWISE[3]
+            if (self.ANTICLOCKWISE[1] in opponentPieces and \
+            self.ANTICLOCKWISE[2] in opponentPieces and \
+            self.ANTICLOCKWISE[3] in opponentPieces):
+                return True
+            
+            # square in the top right corner [N, NE, E]
+            # N  self.ANTICLOCKWISE[7]
+            # NE self.ANTICLOCKWISE[6]
+            # E  self.ANTICLOCKWISE[5]
+            if (self.ANTICLOCKWISE[7] in opponentPieces and \
+            self.ANTICLOCKWISE[6] in opponentPieces and \
+            self.ANTICLOCKWISE[5] in opponentPieces):
+                return True
+            
+            # square in the bottom right corner [E, SE, S]
+            # E  self.ANTICLOCKWISE[5]
+            # SE self.ANTICLOCKWISE[4]
+            # S  self.ANTICLOCKWISE[3]
+            if (self.ANTICLOCKWISE[5] in opponentPieces and \
+            self.ANTICLOCKWISE[4] in opponentPieces and \
+            self.ANTICLOCKWISE[3] in opponentPieces):
+                return True
+                
+        return False
+
+
+    def checkCantWin(self, ourPiece):
+        # check if only 1 white piece and black pieces beside a corner piece
+        # return True if cannot win
+        ourPieces = self.getAllPieces(ourPiece) 
+        if len(ourPieces) < 2:
+            opponentPiece = self.__getOpponentColour(ourPiece)
+            opponentPieces = self.getAllPieces(opponentPiece)
+            for p in opponentPieces:
+                cornerExist = False
+                (x, y) = p
+                for direction in range(0, 4):
+                    newX = x + self.DIRECTION[direction][0]
+                    newY = y + self.DIRECTION[direction][1]
+                    if (self.get(newX, newY) == self.PIECE_CORNER):
+                        cornerExist = True
+                if (cornerExist == False):
+                    return True
+        return False
+
+    def getMinMaxSearchSpace(self, ourPiece):
+
+        opponentPiece = self.__getOpponentColour(ourPiece)
+        allPieces = self.getAllPieces(ourPiece) + self.getAllPieces(opponentPiece)
+        
+        allX = []
+        allY = []
+        
+        for p in allPieces:
+            (x, y) = p
+            allX.append(x)
+            allY.append(y)
+
+        minX = min(allX)
+        maxX = max(allX)
+        minY = min(allY)
+        maxY = max(allY)
+        
+        searchSpace = []
+        # include square space with a buffer
+        for x in range(minX - 1, maxX + 2):
+            for y in range(minY - 1, maxY + 2):
+                if (self.isWithinBoard(x, y)):
+                    searchSpace.append((x, y))
+
+        return searchSpace
+
     def getSmallerSearchSpace(self, ourPiece, layers):
         '''
         mark cells around opponent pieces 
@@ -245,16 +347,22 @@ class Board:
         for p in opponentPieces:
             (x, y) = p
             # add coordinate of opponent
-            searchSpace.append((x,y))
+            if self.isWithinBoard(x, y) and ((x, y) not in searchSpace):
+                searchSpace.append((x,y))
 
-            for direction in range(0, 4):
+            # for direction in range(0, 4):
+            for direction in range(0, 8):
 
                 # add coordinate of cells around opponent
                 for i in range(1, layers + 1):
-                    newX = x + self.DIRECTION[direction][0] * i
-                    newY = y + self.DIRECTION[direction][1] * i
+                    # newX = x + self.DIRECTION[direction][0] * i
+                    # newY = y + self.DIRECTION[direction][1] * i
+                    newX = x + self.ANTICLOCKWISE[direction][0] * i
+                    newY = y + self.ANTICLOCKWISE[direction][1] * i
                     
-                    if (self.isWithinBoard(newX, newY)):
+                    if self.isWithinBoard(newX, newY) and \
+                    ((newX, newY) not in searchSpace) and \
+                    self.get(newX, newY) != self.PIECE_CORNER:
                         searchSpace.append((newX, newY))
 
         return searchSpace
