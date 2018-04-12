@@ -168,7 +168,7 @@ export class Board {
             if (this.isWithinBoard(adjPieceX,adjPieceY) &&
                 this.get(adjPieceX,adjPieceY) == opponentColor && 
                 this.isWithinBoard(adjPiece2X, adjPiece2Y) &&
-                this.get(adjPiece2X,adjPiece2Y) in [ourColor, Board.CELL_CORNER]) {
+                [ourColor, Board.CELL_CORNER].indexOf(this.get(adjPiece2X,adjPiece2Y))!=-1 ) {
                 
                 this.set(adjPieceX,adjPieceY, Board.CELL_EMPTY);
             }
@@ -176,14 +176,14 @@ export class Board {
 
         // step 2: opponent eliminating ours
 
-        if (this.isWithinBoard(newX -1, newY) && this.get(newX-1,newY) in [opponentColor, Board.CELL_CORNER]
-        && this.isWithinBoard(newX+1, newY)  && this.get(newX+1, newY) in [opponentColor, Board.CELL_CORNER]) {
+        if (this.isWithinBoard(newX -1, newY) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX-1,newY))!=-1
+        && this.isWithinBoard(newX+1, newY)  && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX+1, newY))!=-1 ) {
             this.set(newX,newY, Board.CELL_EMPTY);
         }
 
         
-        if (this.isWithinBoard(newX, newY-1) && this.get(newX,newY-1) in [opponentColor, Board.CELL_CORNER]
-        && this.isWithinBoard(newX, newY+1)  && this.get(newX, newY+1) in [opponentColor, Board.CELL_CORNER]) {
+        if (this.isWithinBoard(newX, newY-1) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX,newY-1))!=-1
+        && this.isWithinBoard(newX, newY+1)  && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX, newY+1))!=-1 ) {
             this.set(newX,newY, Board.CELL_EMPTY);
         }
     }

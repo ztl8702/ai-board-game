@@ -1,0 +1,30 @@
+<html>
+
+<body>
+    <table>
+
+    </table>
+    <!-- development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io(); 
+        function joinRoom(roomId) {
+            socket.emit('joinRoom', roomId);
+        }
+        function startGame(){
+            socket.emit('startGame');
+        }
+        function placePiece(x,y) {
+            socket.emit('makeMove',
+                {type:0, newX:x, newY:y},
+                function(d){console.log(d)});
+
+        }
+        
+
+    </script>
+    <script src="./index.js"></script>
+</body>
+
+</html>
