@@ -1,22 +1,22 @@
-#Project Plan AI
+# Project Plan AI
 
-###Therrense Lua (student number: 782578)
-###Tian Lei (stuednt number: 773109)
+### Therrense Lua (student number: 782578)
+### Tian Lei (stuednt number: 773109)
 
 
-##To Do:
-###Together
-####Stage 0
+## To Do:
+### Together
+#### Stage 0
 1. making online Watch Your Back that multiple users can play againts each other
 
-####Stage 1
+#### Stage 1
 2. write basic Player class with MiniMax Search & heuristics from Part 1
 
-####Stage 2
+#### Stage 2
 3. introduce Alpha-Beta Pruning search
 4. maybe monte carlo
 
-###Therrense Lua
+### Therrense Lua
 
 1. find and make our own evaluation function by playing againts each other
 2. responsible for:
@@ -29,7 +29,7 @@
 6. Submitting the final assignment and making sure all the files are included
 7. Keeping team mates sane and accountable
 
-###Tian Lei
+### Tian Lei
 
 1. find and make our own evaluation function by playing againts each other 
 2. responsible for:
@@ -42,17 +42,16 @@
 6. Testing Player class to ML training data
 7. Making **sure** our program beats every other program
 
-##How we will be communicating with each other?
+## How we will be communicating with each other?
 1. weekly meeting (every Thursday 2pm-5pm)
 2. video chat (whenever necessary)
 3. fb messenger (twice weekly updates)
 
-##Upcoming deadlines
+## Upcoming deadlines
 AI - COMP30024
 CS - COMP30023
 SMD - SWEN30006
 MP - PHYS30005
-
 
 Date | Assessment | Therrense Lua | Tian Lei
 19 April | CS project 1 | Y | Y
