@@ -1,20 +1,27 @@
 import { PlayerColor, Board } from "./Board";
 import { Player } from "./Player";
-import { GameSession } from "./";
+import { GameSession, GameSessionSync, PlayerAction, PlayerActionResult } from "./";
+import { ActorFactory } from "../actor/index";
 
 export class GameRoom {
     // representation of each game play
     private id: string;
-    private state: GameState;
+    private state: GameRoomState;
 
 
     private playerCount = 0;
     private whitePlayer: Player;
     private blackPlayer: Player;
+    private observers: Array<Player>;
     private currentSession: GameSession;
 
     constructor(id: string) {
+        console.log("GameRoom", id, "created.");
         this.id = id;
+        this.state = GameRoomState.WaitingForPlayers;
+        this.observers = [];
+        this.currentSession = this.currentSession = ActorFactory.getActor("GameSession", null);
+        this.currentSession.onPushSync = ()=>{this.broadcastSessionSync();};
     }
 
     public isFull(): boolean {
@@ -22,53 +29,111 @@ export class GameRoom {
     }
 
 
-    public addPlayer(newPlayer: Player) {
-        // black player first
-        if (this.playerCount == 0) {
-            this.blackPlayer = newPlayer;
-            ++this.playerCount;
-        } else if (this.playerCount == 1) {
-            this.whitePlayer = newPlayer;
-            ++this.playerCount;
-        }
+    public addPlayer(newPlayer: Player):boolean {
+        var result :boolean = false;
+
         switch (this.state) {
-            case GameState.WaitingForPlayers:
+            case GameRoomState.WaitingForPlayers:
+                // black player first
+                if (this.playerCount == 0) {
+                    this.blackPlayer = newPlayer;
+                    ++this.playerCount;
+                    result = true;
+                    console.log("Player "+newPlayer.nickName+" joined GameRoom "+ this.id+" as black player.");
+                } else if (this.playerCount == 1) {
+                    this.whitePlayer = newPlayer;
+                    ++this.playerCount;
+                    result = true;
+                    console.log("Player "+newPlayer.nickName+" joined GameRoom "+ this.id+" as white player.");                    
+                }
                 if (this.playerCount == 2) {
-                    this.changeState(GameState.Ready);
+                    this.changeState(GameRoomState.Ready);
+                    this.broadcastRoomSync();
                 }
                 break;
         }
+        return result;
 
     }
 
     public removePlayer(player: Player) {
+
+        function doRemovePlayer(player: Player) {
+            if (player == this.blackPlayer) {
+                this.blackPlayer = null;
+                this.playerCount--;
+            } else if (player == this.whitePlayer) {
+                this.whitePlayer = null;
+                this.playerCount--;
+            }
+        }
         switch (this.state) {
-            case GameState.Playing:
+            case GameRoomState.Playing:
                 // the game is ongoing
-                if (player == this.blackPlayer) {
-                    this.blackPlayer = null;
-                    this.playerCount--;
-                } else if (player == this.whitePlayer) {
-                    this.whitePlayer = null;
-                    this.playerCount--;
-                }
-                this.changeState(GameState.DisplayResult);
+                doRemovePlayer(player);
+                this.changeState(GameRoomState.DisplayResult);
 
                 break;
-            case GameState.WaitingForPlayers, GameState.DisplayResult:
-                if (player == this.blackPlayer) {
-                    this.blackPlayer = null;
-                    this.playerCount--;
-                } else if (player == this.whitePlayer) {
-                    this.whitePlayer = null;
-                    this.playerCount--;
-                }
+            case GameRoomState.WaitingForPlayers, GameRoomState.DisplayResult:
+                doRemovePlayer(player);
                 break;
+
+            case GameRoomState.Ready:
+                doRemovePlayer(player);
+                this.changeState(GameRoomState.WaitingForPlayers);
+                break;
+                
         }
+        this.broadcastRoomSync();
+    }
+
+    public addObserver(obs: Player) {
+        if ( this.observers.indexOf(obs) == -1) {
+            this.observers.push(obs);
+        }
+        this.broadcastRoomSync();
+    }
+
+    public removeObserver(obs: Player) {
+        var index = this.observers.indexOf(obs);
+        if ( index != -1) {
+            this.observers.splice(index, 1);
+        }
+        this.broadcastRoomSync();
     }
 
     public startGame() {
+        if (this.state == GameRoomState.Ready) {
+            this.currentSession.start();
+            this.changeState(GameRoomState.Playing);
+            this.broadcastRoomSync();
+            this.broadcastSessionSync();
+        }
+    }
 
+    private broadcastRoomSync() {
+        // Send room sync to all players and observers
+        var roomSync : GameRoomSync = this.getSyncObject();
+        function sendRoomSyncToPlayer(p:Player, rs: GameRoomSync) {
+            p.send('roomSync', rs);
+        }
+        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer,roomSync);
+        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer,roomSync);
+        this.observers.forEach(obs => {
+            sendRoomSyncToPlayer(obs, roomSync);
+        });
+    }
+
+    private broadcastSessionSync() {
+        var s = this.currentSession.getSyncObject();
+        function sendRoomSyncToPlayer(p:Player, rs: GameSessionSync) {
+            p.send('sessionSync', rs);
+        }
+        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer,s);
+        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer,s);
+        this.observers.forEach(obs => {
+            sendRoomSyncToPlayer(obs, s);
+        });
     }
 
     public getLatestResult() {
@@ -76,14 +141,38 @@ export class GameRoom {
     }
 
     public newSession() {
-        
+        if (this.state == GameRoomState.DisplayResult || this.state == GameRoomState.Playing) {
+            this.currentSession.onPushSync = null;
+            this.currentSession.onUpdate = null;
+            ActorFactory.archiveActor("GameSession", this.currentSession.getId());
+            
+            this.currentSession = ActorFactory.getActor("GameSession", null);
+            this.currentSession.onPushSync = ()=>{this.broadcastSessionSync();};
+            if (this.isFull()) {
+                this.changeState(GameRoomState.Ready);
+            } else {
+                this.changeState(GameRoomState.WaitingForPlayers);
+            }
+        }
     }
 
-    public getCurrentBoardState() : GameBoardState {
-
+    public getSessionSyncObject() : GameSessionSync {
+        return this.currentSession.getSyncObject();
     }
 
-    private changeState(newState: GameState) {
+    public getSyncObject(): GameRoomSync {
+        var result : GameRoomSync = {
+            blackPlayerId: this.blackPlayer ? this.blackPlayer.getId() : null,
+            blackPlayerName: this.blackPlayer ? this.blackPlayer.nickName : null,
+            whitePlayerId: this.whitePlayer ? this.whitePlayer.getId() :null,
+            whitePlayerName: this.whitePlayer ? this.whitePlayer.nickName : null,
+            state: this.state,
+            observersCount: this.observers.length
+        }
+        return result;
+    }
+
+    private changeState(newState: GameRoomState) {
         if (newState != this.state) {
             this.state = newState;
             // notify players
@@ -91,21 +180,49 @@ export class GameRoom {
         }
     }
 
+    private whichPlayer(p: Player): PlayerColor|null {
+        if (p == this.whitePlayer) return PlayerColor.White;
+        if (p == this.blackPlayer) return PlayerColor.Black;
+        return null;
+    }
+
+    public tryTakeAction(act: PlayerAction, caller: Player): PlayerActionResult {
+        if (this.state != GameRoomState.Playing) {
+            var result = new PlayerActionResult(false);
+            result.message = "Game is not started."
+            return result;
+        }
+        let side = this.whichPlayer(caller);
+        if (side == null) {
+            var result = new PlayerActionResult(false);
+            result.message = "You are not playing in this room."
+            return result;
+        }
+
+        var result = this.currentSession.tryTakeAction(act,side);
+        return result;
+    }
+
 }
 
-enum GameState {
+export enum GameRoomState {
     WaitingForPlayers,
     Ready,
     Playing,
     DisplayResult
 }
 
-interface GameBoardState {
-    board: Array<Array<string>>;
-    round: number;
-    turn: PlayerColor;
-    hasWon: boolean;
-    winner: PlayerColor;
-    timeLeftForThisTurn: TimeRanges;
-    timeSinceStart: TimeRanges;
+export interface GameRoomSync {
+    blackPlayerName: string;
+    blackPlayerId: string;
+    whitePlayerName: string;
+    whitePlayerId: string;
+    observersCount:number;
+  // board: GameSessionSync;
+    state: GameRoomState;
 }
+
+
+
+
+

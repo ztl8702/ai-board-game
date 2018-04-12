@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "module": "es6",
+        "module": "commonjs",
         "allowJs": true,
-        "moduleResolution": "Node",
+        "moduleResolution": "node",
         "lib":["es2017","dom"],
         "target": "es5",
         "types": [

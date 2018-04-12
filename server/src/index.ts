@@ -1,5 +1,6 @@
 import {ActorFactory} from "./actor";
-import { Player } from "./logic";
+import { Player, GameRoomState, GameRoom } from "./logic";
+import { setImmediate } from "timers";
 
 var cryptolib = require("crypto");
 
@@ -23,7 +24,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/www/index.html');
+    res.sendFile('index.html',{'root': './www/'});
     console.log('session', req.session);
     if (req.session.playerId == null) {
         req.session.playerId = cryptolib.randomBytes(16).toString("hex");
@@ -38,24 +39,50 @@ io.on('connection', function (socket) {
     if (playerId != null) {
         let thePlayer : Player = ActorFactory.getActor('Player', playerId);
         thePlayer.setSocket(socket);
-        
+        //@todo: update user-agent, ip, etc.
+
         // player's client events
+        socket.on('playerSyncRequest', function(callback) {
+            //thePlayer
+            //setImmediate(()=>thePlayer.pushSync());
+        });
+
+        socket.on('roomSyncRequest', function(roomId){
+            let theRoom: GameRoom = ActorFactory.getActor('GameRoom', roomId);
+            let syncObject = theRoom.getSyncObject();
+            thePlayer.send('roomSync',syncObject);
+        });
+
         socket.on('joinRoom', function (roomId) {
             thePlayer.tryJoinRoom(roomId);
         });
 
-        socket.on('leaveRoom', function () {
+        socket.on('leaveRoom', function (callback) {
             thePlayer.leaveRoom();
         });
 
-        socket.on('setNickname',function() {
-
+        socket.on('setNickname',function(newNickname) {
+            console.log('Player ' +thePlayer.nickName +' changing name to '+newNickname);
+            thePlayer.nickName = newNickname;
+            // send room update
         });
-        socket.on('makeMove', function (data) {
-            thePlayer.tryTakeAction();
+
+        socket.on('startGame', function() {
+            thePlayer.tryStartGame();
+        });
+
+        socket.on('makeMove', function (move, callback) {
+            try{
+                var result = thePlayer.tryTakeAction(move);
+                callback(result);
+            } catch (e) {
+                console.log(e);
+            }
+
         });
 
         socket.on('disconnect', function() {
+            thePlayer.removeSocket();
             //do nothing
             // player might reconnect
         })
