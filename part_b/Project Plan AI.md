@@ -19,8 +19,8 @@
 
 1. find and make our own evaluation function by playing againts each other
 2. responsible for:
-	* modifying referee to provide more useful information about game being played
-	* improving search strategy optimisation by narrowing search space
+	-   modifying referee to provide more useful information about game being played
+	-   improving search strategy optimisation by narrowing search space
 
 3. Adding additional comments in all program files for better readability
 4. Finalising and proof reading comments.txt
@@ -32,8 +32,8 @@
 
 1. find and make our own evaluation function by playing againts each other 
 2. responsible for:
-	* improving search strategy optimisation in creative ways
-	* designing specialised data structures to reduce space consumption
+	-   improving search strategy optimisation in creative ways
+	-   designing specialised data structures to reduce space consumption
 
 4. Final Code Quality Check
 5. Testing on dimefox 
@@ -59,7 +59,7 @@ Date | Assessment | Therrense Lua | Tian Lei
 19 April | CS project 1 | Y | Y
 29 April | SMD project B | Y | Y
 1 May | MP MST 2 | Y | -
-9 May, ML Assignment 2 | - | Y
+9 May | ML Assignment 2 | - | Y
 11 May | AI project part 2 | Y | Y
 ~ late May | SMD project C | Y | Y
 ~ late May | CS project 2 | Y | Y
