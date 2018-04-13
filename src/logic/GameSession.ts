@@ -78,6 +78,12 @@ export class GameSession {
             this.actions.push([this.round,color,act]);
             this.moveCount ++;
             setImmediate(()=> this.nextRound());
+            setImmediate(()=> this.sendUpdate({
+                lastMove: this.actions[this.actions.length-1],
+                timeSinceStart: this.getTime(),
+                phase: this.phase,
+                timeLeftForThisTurn: -1
+            }));
             return PlayerActionResult.success();
         } else {
             return PlayerActionResult.failed("Invalid action type.");
@@ -108,7 +114,7 @@ export class GameSession {
                 // @todo: check winning again
                 setImmediate(()=> this.pushSync());
             }
-            
+            this.turn = (this.turn == PlayerColor.Black) ? PlayerColor.White : PlayerColor.Black;
             this.round++;
             this.roundStartTime = new Date(Date.now());
         } else if (this.phase == GamePhase.Placing) {

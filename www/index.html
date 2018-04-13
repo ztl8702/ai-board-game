@@ -9,6 +9,13 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io(); 
+        socket.on('roomSync', function(d) {
+            console.log('roomSync',d);
+        })
+        socket.on('sessionSync', function(d) {
+            console.log('sessionSync',d);
+        })
+        socket.emit('roomSyncRequest');
         function joinRoom(roomId) {
             socket.emit('joinRoom', roomId);
         }
@@ -22,6 +29,12 @@
 
         }
         
+        function movePiece(x1,y1,x2,y2) {
+            socket.emit('makeMove',
+                {type:1, fromX:x1, fromY:y1, toX:x2, toY: y2},
+                function(d){console.log(d)});
+ 
+        }
 
     </script>
     <script src="./index.js"></script>

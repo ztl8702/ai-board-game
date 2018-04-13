@@ -25,7 +25,7 @@ var io = require('socket.io')(http);
 
 app.get('/', function (req, res) {
     res.sendFile('index.html',{'root': './www/'});
-    console.log('session', req.session);
+    //console.log('session', req.session);
     if (req.session.playerId == null) {
         req.session.playerId = cryptolib.randomBytes(16).toString("hex");
     }

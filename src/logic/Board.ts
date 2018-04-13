@@ -217,9 +217,9 @@ export class Board {
                 let adjPiece2Y = adjPieceY + direction[1];
     
                 if (this.isWithinBoard(adjPieceX,adjPieceY) &&
-                    this.get(adjPieceX,adjPieceY) in [Board.CELL_BLACK, Board.CELL_WHITE] && 
+                    [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(adjPieceX,adjPieceY))!=-1  && 
                     this.isWithinBoard(adjPiece2X, adjPiece2Y) &&
-                    this.get(adjPiece2X,adjPiece2Y) in [Board.CELL_BLACK, Board.CELL_WHITE]) {
+                    [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(adjPiece2X,adjPiece2Y))!=-1) {
                     
                     if (this.get(adjPieceX, adjPieceY) != this.get(adjPiece2X, adjPiece2Y)){
                         this.set(adjPieceX,adjPieceY, Board.CELL_EMPTY);
