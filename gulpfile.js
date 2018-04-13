@@ -4,7 +4,7 @@ const del = require('del');
 const webpackConfigFrontend = require('./webpack.config.frontend.js')
 
 gulp.task('frontend:build', ['frontend:build:webpack'],()=> {
-    return gulp.src('./www-src/index.html')
+    return gulp.src(['./www-src/index.html','./www-src/main.css'])
     .pipe(gulp.dest('./public'));
 });
 

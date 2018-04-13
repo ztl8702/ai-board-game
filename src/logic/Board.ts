@@ -33,7 +33,7 @@ export class Board {
         this.updateCorners();
     }
 
-    private getCorners(): Array<[number,number]> {
+    private getCorners(): Array<[number, number]> {
         return [
             [this.minX, this.minY],
             [this.minX, this.maxY],
@@ -84,7 +84,7 @@ export class Board {
         return (Number.isInteger(x) && Number.isInteger(y)) && (this.minX <= x && x <= this.maxX && this.minY <= y && y <= this.maxY);
     }
 
-    public getWinner() : PlayerColor | null {
+    public getWinner(): PlayerColor | null {
         if (this.checkWinning(PlayerColor.Black)) {
             return PlayerColor.Black;
         } else if (this.checkWinning(PlayerColor.White)) {
@@ -141,6 +141,54 @@ export class Board {
         this.doElimination(toPos[0], toPos[1]);
     }
 
+    public isEmpty(x, y): boolean {
+        return this.get(x, y) == Board.CELL_EMPTY;
+    }
+
+    private getMoveType(x: number, y: number, direction: number): MoveType {
+        let newX = x + this.DIRECTION[direction][0];
+        let newY = y + this.DIRECTION[direction][1];
+
+        if (this.isWithinBoard(newX, newY) && this.isEmpty(newX, newY)) {
+            return MoveType.Normal;
+        }
+
+        let newX2 = newX + this.DIRECTION[direction][0];
+        let newY2 = newY + this.DIRECTION[direction][1];
+
+        if (this.isWithinBoard(newX2, newY2) && this.isEmpty(newX2, newY2)
+            && (this.get(newX, newY) == Board.CELL_BLACK || this.get(newX, newY) == Board.CELL_WHITE)) {
+            return MoveType.Jump;
+        }
+        return MoveType.Invalid;
+    }
+
+    public getAvailableMoves(x: number, y: number): Array<[number, number]> {
+        if (this.get(x, y) != Board.CELL_BLACK && this.get(x, y) != Board.CELL_WHITE) {
+            return [];
+        }
+
+        var possibleMoves = [];
+        [0, 1, 2, 3].forEach(direction => {
+            let result = this.getMoveType(x, y, direction);
+
+            if (result == MoveType.Normal) {
+                possibleMoves.push([
+                    x + this.DIRECTION[direction][0],
+                    y + this.DIRECTION[direction][1]
+                ]);
+            } else if (result == MoveType.Jump) {
+                possibleMoves.push([
+                    x + this.DIRECTION[direction][0] * 2,
+                    y + this.DIRECTION[direction][1] * 2
+                ]);
+            }
+        });
+
+        return possibleMoves;
+
+    }
+
     public placeNewPiece(x, y, color) {
         if (color !== Board.CELL_BLACK && color !== Board.CELL_WHITE) {
             throw "Invalid color";
@@ -152,7 +200,7 @@ export class Board {
             throw "Cell not empty";
         }
         this.set(x, y, color);
-        this.doElimination(x,y);
+        this.doElimination(x, y);
     }
 
     private doElimination(newX: number, newY: number) {
@@ -165,26 +213,26 @@ export class Board {
             let adjPiece2X = adjPieceX + direction[0];
             let adjPiece2Y = adjPieceY + direction[1];
 
-            if (this.isWithinBoard(adjPieceX,adjPieceY) &&
-                this.get(adjPieceX,adjPieceY) == opponentColor && 
+            if (this.isWithinBoard(adjPieceX, adjPieceY) &&
+                this.get(adjPieceX, adjPieceY) == opponentColor &&
                 this.isWithinBoard(adjPiece2X, adjPiece2Y) &&
-                [ourColor, Board.CELL_CORNER].indexOf(this.get(adjPiece2X,adjPiece2Y))!=-1 ) {
-                
-                this.set(adjPieceX,adjPieceY, Board.CELL_EMPTY);
+                [ourColor, Board.CELL_CORNER].indexOf(this.get(adjPiece2X, adjPiece2Y)) != -1) {
+
+                this.set(adjPieceX, adjPieceY, Board.CELL_EMPTY);
             }
         });
 
         // step 2: opponent eliminating ours
 
-        if (this.isWithinBoard(newX -1, newY) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX-1,newY))!=-1
-        && this.isWithinBoard(newX+1, newY)  && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX+1, newY))!=-1 ) {
-            this.set(newX,newY, Board.CELL_EMPTY);
+        if (this.isWithinBoard(newX - 1, newY) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX - 1, newY)) != -1
+            && this.isWithinBoard(newX + 1, newY) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX + 1, newY)) != -1) {
+            this.set(newX, newY, Board.CELL_EMPTY);
         }
 
-        
-        if (this.isWithinBoard(newX, newY-1) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX,newY-1))!=-1
-        && this.isWithinBoard(newX, newY+1)  && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX, newY+1))!=-1 ) {
-            this.set(newX,newY, Board.CELL_EMPTY);
+
+        if (this.isWithinBoard(newX, newY - 1) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX, newY - 1)) != -1
+            && this.isWithinBoard(newX, newY + 1) && [opponentColor, Board.CELL_CORNER].indexOf(this.get(newX, newY + 1)) != -1) {
+            this.set(newX, newY, Board.CELL_EMPTY);
         }
     }
 
@@ -193,18 +241,18 @@ export class Board {
     }
 
     public shrinkBoard() {
-        if (this.currentBoardSize<=4) return;
+        if (this.currentBoardSize <= 4) return;
         // clean the circle
-        for (let i = this.minX; i<=this.maxX; ++i) {
+        for (let i = this.minX; i <= this.maxX; ++i) {
             this.set(i, this.minY, Board.CELL_DEAD);
             this.set(i, this.maxY, Board.CELL_DEAD);
         }
-        for (let i = this.minY+1; i<=this.maxY-1; ++i) {
+        for (let i = this.minY + 1; i <= this.maxY - 1; ++i) {
             this.set(this.minX, i, Board.CELL_DEAD);
             this.set(this.maxX, i, Board.CELL_DEAD);
         }
-        
-        this.currentBoardSize -=2;
+
+        this.currentBoardSize -= 2;
         this.updateCorners();
         // do the elimination
         this.getCorners().forEach(pos => {
@@ -215,50 +263,63 @@ export class Board {
                 let adjPieceY = y + direction[1];
                 let adjPiece2X = adjPieceX + direction[0];
                 let adjPiece2Y = adjPieceY + direction[1];
-    
-                if (this.isWithinBoard(adjPieceX,adjPieceY) &&
-                    [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(adjPieceX,adjPieceY))!=-1  && 
+
+                if (this.isWithinBoard(adjPieceX, adjPieceY) &&
+                    [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(adjPieceX, adjPieceY)) != -1 &&
                     this.isWithinBoard(adjPiece2X, adjPiece2Y) &&
-                    [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(adjPiece2X,adjPiece2Y))!=-1) {
-                    
-                    if (this.get(adjPieceX, adjPieceY) != this.get(adjPiece2X, adjPiece2Y)){
-                        this.set(adjPieceX,adjPieceY, Board.CELL_EMPTY);
+                    [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(adjPiece2X, adjPiece2Y)) != -1) {
+
+                    if (this.get(adjPieceX, adjPieceY) != this.get(adjPiece2X, adjPiece2Y)) {
+                        this.set(adjPieceX, adjPieceY, Board.CELL_EMPTY);
                     }
                 }
             });
-    
+
         });
 
 
     }
 
-    public isValidMove(fromPos:[number,number], toPos:[number,number]): boolean{
-        function mean(a:number,b:number):number {
-            return (a+b)/2;
+    public isValidMove(fromPos: [number, number], toPos: [number, number]): boolean {
+        function mean(a: number, b: number): number {
+            return (a + b) / 2;
         }
-        return (this.isWithinBoard(fromPos[0],fromPos[1]) && this.isWithinBoard(toPos[0], toPos[1])
+        return (this.isWithinBoard(fromPos[0], fromPos[1]) && this.isWithinBoard(toPos[0], toPos[1])
             && ([Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(fromPos[0], fromPos[1])) != -1)
-            && (this.get(toPos[0],toPos[1]) == Board.CELL_EMPTY)
-            && ( 
-                (Math.abs(toPos[0]-fromPos[0])+ Math.abs(toPos[1]-fromPos[1]) == 1) // adjacent
-                || (Math.abs(toPos[0]-fromPos[0])+ Math.abs(toPos[1]-fromPos[1]) == 2 // two steps away
-                    && Math.abs(toPos[0]-fromPos[0])*Math.abs(toPos[1]-fromPos[1])== 0 // not diagonal
-                    && this.get(fromPos[0], fromPos[1]) == this.get(mean(fromPos[0],toPos[0]),mean(fromPos[1],toPos[1]))) // adj == adj2
-                )
+            && (this.get(toPos[0], toPos[1]) == Board.CELL_EMPTY)
+            && (
+                (Math.abs(toPos[0] - fromPos[0]) + Math.abs(toPos[1] - fromPos[1]) == 1) // adjacent
+                || (Math.abs(toPos[0] - fromPos[0]) + Math.abs(toPos[1] - fromPos[1]) == 2 // two steps away
+                    && Math.abs(toPos[0] - fromPos[0]) * Math.abs(toPos[1] - fromPos[1]) == 0 // not diagonal
+                    && this.get(fromPos[0], fromPos[1]) == this.get(mean(fromPos[0], toPos[0]), mean(fromPos[1], toPos[1]))) // adj == adj2
+            )
         );
     }
 
-    public canPlace(x: number, y:number, color:string): boolean {
-        if (!(this.isWithinBoard(x,y) && this.get(x,y) == Board.CELL_EMPTY)) {
+    public canPlace(x: number, y: number, color: string): boolean {
+        if (!(this.isWithinBoard(x, y) && this.get(x, y) == Board.CELL_EMPTY)) {
             return false;
         }
-        if (color == Board.CELL_WHITE && y<=5) return true;
-        if (color == Board.CELL_BLACK && y>=2) return true;
+        if (color == Board.CELL_WHITE && y <= 5) return true;
+        if (color == Board.CELL_BLACK && y >= 2) return true;
         return false;
+    }
+
+    public static fromMatrix(m: Array<Array<string>>): Board {
+        // first get board size
+        // then copy stuff
+        // @todo
+        return new Board();
     }
 }
 
 export enum PlayerColor {
     Black,
     White
+}
+
+enum MoveType {
+    Invalid = 0,
+    Normal = 1,
+    Jump = 2
 }

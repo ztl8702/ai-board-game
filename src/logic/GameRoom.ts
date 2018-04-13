@@ -75,7 +75,8 @@ export class GameRoom {
                 this.changeState(GameRoomState.DisplayResult);
 
                 break;
-            case GameRoomState.WaitingForPlayers, GameRoomState.DisplayResult:
+            case GameRoomState.WaitingForPlayers:
+            case GameRoomState.DisplayResult:
                 doRemovePlayer(player);
                 break;
 
