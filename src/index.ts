@@ -1,6 +1,7 @@
 import {ActorFactory} from "./actor";
 import { Player, GameRoomState, GameRoom } from "./logic";
 import { setImmediate } from "timers";
+const express = require('express');
 
 var cryptolib = require("crypto");
 
@@ -31,6 +32,7 @@ app.get('/', function (req, res) {
     }
 })
 
+app.use(express.static('public'));
 io.use(sharedSession(session));
 
 io.on('connection', function (socket) {

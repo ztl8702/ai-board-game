@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "tsc && node src/index.js"
+    "run": "gulp frontend:rebuild && tsc && node src/index.js"
   },
   "author": "",
   "license": "ISC"
