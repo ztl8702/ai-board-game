@@ -65,7 +65,23 @@ table.board {
 
 .board-cell.target{
     background: lightcoral;
+    animation: colorchange 1s infinite; /* animation-name followed by duration in seconds*/
+    -webkit-animation: colorchange 1s infinite; /* Chrome and Safari */
 }
+
+  @keyframes colorchange
+  {
+    0%   {background: lightcoral;}
+    50%  {background: white;}
+    100% {background: lightcoral;}
+  }
+
+  @-webkit-keyframes colorchange /* Safari and Chrome - necessary duplicate */
+  {
+    0%   {background: lightcoral;}
+    50%  {background: white;}
+    100% {background: lightcoral;}
+  }
 
 .board-cell.pblack{
     content:'@'
