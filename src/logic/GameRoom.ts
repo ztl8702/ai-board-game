@@ -1,6 +1,6 @@
 import { PlayerColor, Board } from "./Board";
 import { Player } from "./Player";
-import { GameSession, GameSessionSync, PlayerAction, PlayerActionResult } from "./";
+import { GameSession, GameSessionSync, PlayerAction, PlayerActionResult, GameSessionUpdate } from "./";
 import { ActorFactory } from "../actor/index";
 
 export class GameRoom {
@@ -22,6 +22,7 @@ export class GameRoom {
         this.observers = [];
         this.currentSession = this.currentSession = ActorFactory.getActor("GameSession", null);
         this.currentSession.onPushSync = ()=>{this.broadcastSessionSync();};
+        this.currentSession.onUpdate = (u)=> this.broadcastSessionUpdate(u);
     }
 
     public isFull(): boolean {
@@ -48,8 +49,8 @@ export class GameRoom {
                 }
                 if (this.playerCount == 2) {
                     this.changeState(GameRoomState.Ready);
-                    this.broadcastRoomSync();
                 }
+                this.broadcastRoomSync();
                 break;
         }
         return result;
@@ -136,6 +137,18 @@ export class GameRoom {
         });
     }
 
+    private broadcastSessionUpdate(u:GameSessionUpdate) {
+        function sendRoomSyncToPlayer(p:Player, rs: GameSessionUpdate) {
+            p.send('sessionUpdate', rs);
+        }
+        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer,u);
+        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer,u);
+        this.observers.forEach(obs => {
+            sendRoomSyncToPlayer(obs, u);
+        });
+    }
+
+
     public getLatestResult() {
 
     }
@@ -148,6 +161,7 @@ export class GameRoom {
             
             this.currentSession = ActorFactory.getActor("GameSession", null);
             this.currentSession.onPushSync = ()=>{this.broadcastSessionSync();};
+            this.currentSession.onUpdate = (u)=> this.broadcastSessionUpdate(u);
             if (this.isFull()) {
                 this.changeState(GameRoomState.Ready);
             } else {

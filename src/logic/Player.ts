@@ -4,25 +4,25 @@ import * as faker from "faker";
 
 export class Player {
     // Representation of each player in the game
-    private id : string;
+    private id: string;
     private ipAddress: string;
     private userAgent: string;
     private lastSeen: Date;
     private firstSeen: Date;
     private _nickName: string;
-    public get nickName():string {
+    public get nickName(): string {
         return this._nickName;
     }
-    public set nickName(value:string){
+    public set nickName(value: string) {
         this._nickName = value;
     }
 
     private gameRoom: GameRoom;
-    private state : PlayerState;
+    private state: PlayerState;
 
     private socketIO: any;
-    
-    constructor (id:string) {
+
+    constructor(id: string) {
         this.id = id;
         this.state = PlayerState.NoRoom;
         this.nickName = faker.name.findName(); // create a random name
@@ -48,7 +48,7 @@ export class Player {
     }
 
     // actions
-    public tryJoinRoom(roomId: string):boolean {
+    public tryJoinRoom(roomId: string): boolean {
         if (this.state == PlayerState.NoRoom) {
             var room = ActorFactory.getActor('GameRoom', roomId) as GameRoom;
             var result = room.addPlayer(this);
@@ -74,8 +74,8 @@ export class Player {
         }
     }
 
-    public observeRoom(roomId: string){
-        if (this.state == PlayerState.NoRoom){
+    public observeRoom(roomId: string) {
+        if (this.state == PlayerState.NoRoom) {
             var room = ActorFactory.getActor('GameRoom', roomId) as GameRoom;
             room.addObserver(this);
             this.gameRoom = room;
@@ -83,7 +83,7 @@ export class Player {
         }
     }
 
-    public tryTakeAction(a: PlayerAction):PlayerActionResult {
+    public tryTakeAction(a: PlayerAction): PlayerActionResult {
         if (this.state == PlayerState.JoinedAsPlayer) {
             let result = this.gameRoom.tryTakeAction(a, this);
             return result;
@@ -142,7 +142,7 @@ export class PlayerActionResult {
     public isSuccess: boolean;
     public message: string;
 
-    constructor(isSuccess:boolean) {
+    constructor(isSuccess: boolean) {
         this.isSuccess = isSuccess;
     }
 
@@ -150,17 +150,17 @@ export class PlayerActionResult {
         return new PlayerActionResult(true);
     }
 
-    public static failed(reason:string): PlayerActionResult {
+    public static failed(reason: string): PlayerActionResult {
         var result = new PlayerActionResult(false);
         result.message = reason;
         return result;
     }
-    
+
 }
 
 export interface PlayerSync {
     state: PlayerState,
-    roomId: string|null,
+    roomId: string | null,
     id: string,
     nickName: string
 }

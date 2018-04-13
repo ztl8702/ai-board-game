@@ -17,7 +17,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 app.get('/', function (req, res) {
     res.sendFile('index.html', { 'root': './www/' });
-    console.log('session', req.session);
+    //console.log('session', req.session);
     if (req.session.playerId == null) {
         req.session.playerId = cryptolib.randomBytes(16).toString("hex");
     }
@@ -36,6 +36,8 @@ io.on('connection', function (socket) {
             //setImmediate(()=>thePlayer.pushSync());
         });
         socket.on('roomSyncRequest', function (roomId) {
+            if (roomId == null)
+                return;
             var theRoom = actor_1.ActorFactory.getActor('GameRoom', roomId);
             var syncObject = theRoom.getSyncObject();
             thePlayer_1.send('roomSync', syncObject);

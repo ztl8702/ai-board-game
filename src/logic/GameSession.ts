@@ -104,10 +104,11 @@ export class GameSession {
             this.turn = this.upperHand;
             this.phase = GamePhase.Placing;
             this.whiteToPlace = this.NUMBER_OF_PIECES;
-            this.blackToPlace = this.NUMBER_OF_PIECES;       
+            this.blackToPlace = this.NUMBER_OF_PIECES;
+           
         }
         // @todo: check winning first
-        if (this.phase == GamePhase.Moving) {
+        else if (this.phase == GamePhase.Moving) {
             if (this.moveCount == 128 || this.moveCount == 192) {
                 // after move #128 and #192
                 this.board.shrinkBoard();

@@ -15,6 +15,9 @@
         socket.on('sessionSync', function(d) {
             console.log('sessionSync',d);
         })
+        socket.on('sessionUpdate', function(d) {
+            console.log('sessionUpdate',d);
+        })
         socket.emit('roomSyncRequest');
         function joinRoom(roomId) {
             socket.emit('joinRoom', roomId);
@@ -37,7 +40,7 @@
         }
 
     </script>
-    <script src="./index.js"></script>
+    <script src="./client.js"></script>
 </body>
 
 </html>

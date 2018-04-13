@@ -1,2 +1,3 @@
 node_modules/
-server/src/**/*.js
+src/**/*.js
+public/

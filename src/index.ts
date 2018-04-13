@@ -24,7 +24,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 app.get('/', function (req, res) {
-    res.sendFile('index.html',{'root': './www/'});
+    res.sendFile('index.html',{'root': './public/'});
     //console.log('session', req.session);
     if (req.session.playerId == null) {
         req.session.playerId = cryptolib.randomBytes(16).toString("hex");
@@ -48,6 +48,7 @@ io.on('connection', function (socket) {
         });
 
         socket.on('roomSyncRequest', function(roomId){
+            if (roomId == null) return;
             let theRoom: GameRoom = ActorFactory.getActor('GameRoom', roomId);
             let syncObject = theRoom.getSyncObject();
             thePlayer.send('roomSync',syncObject);
