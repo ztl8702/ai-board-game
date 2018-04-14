@@ -1,5 +1,5 @@
 export class Board {
-    private readonly BOARD_MAX_SIZE: number = 8;
+    public readonly BOARD_MAX_SIZE: number = 8;
     public static readonly CELL_EMPTY: string = ' ';
     public static readonly CELL_BLACK: string = 'B';
     public static readonly CELL_WHITE: string = 'W';
@@ -189,7 +189,7 @@ export class Board {
 
     }
 
-    public placeNewPiece(x, y, color) {
+    public placeNewPiece(x, y, color:string) {
         if (color !== Board.CELL_BLACK && color !== Board.CELL_WHITE) {
             throw "Invalid color";
         }
@@ -291,7 +291,7 @@ export class Board {
                 (Math.abs(toPos[0] - fromPos[0]) + Math.abs(toPos[1] - fromPos[1]) == 1) // adjacent
                 || (Math.abs(toPos[0] - fromPos[0]) + Math.abs(toPos[1] - fromPos[1]) == 2 // two steps away
                     && Math.abs(toPos[0] - fromPos[0]) * Math.abs(toPos[1] - fromPos[1]) == 0 // not diagonal
-                    && this.get(fromPos[0], fromPos[1]) == this.get(mean(fromPos[0], toPos[0]), mean(fromPos[1], toPos[1]))) // adj == adj2
+                    && [Board.CELL_BLACK, Board.CELL_WHITE].indexOf(this.get(mean(fromPos[0], toPos[0]), mean(fromPos[1], toPos[1])))!=-1) // adj == adj2
             )
         );
     }
@@ -306,10 +306,19 @@ export class Board {
     }
 
     public static fromMatrix(m: Array<Array<string>>): Board {
+        var newBoard = new Board();
         // first get board size
+        var i = 0, size = newBoard.BOARD_MAX_SIZE;
+        while (m[i][i] == Board.CELL_DEAD && i < newBoard.BOARD_MAX_SIZE-1) {
+            ++i;
+            size -=2;
+        }
         // then copy stuff
-        // @todo
-        return new Board();
+        for (var j = 1; j<=i; ++j) newBoard.shrinkBoard();
+        for (var x = newBoard.minX; x<=newBoard.maxX; ++x) 
+            for (var y = newBoard.minY; y<=newBoard.maxY; ++y)
+                newBoard.set(x,y, m[x][y]) 
+        return newBoard
     }
 }
 

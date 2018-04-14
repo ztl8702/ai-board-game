@@ -1,15 +1,15 @@
-import { PlayerColor, Board, PlayerAction, Player, PlayerActionResult, PlayerActionType, PlayerPlaceAction, PlayerMoveAction} from "./";
+import { PlayerColor, Board, PlayerAction, Player, PlayerActionResult, PlayerActionType, PlayerPlaceAction, PlayerMoveAction } from "./";
 import { setImmediate } from "timers";
 
 export class GameSession {
 
     // @todo: double check spec
-    private readonly upperHand : PlayerColor = PlayerColor.Black;
-    private readonly NUMBER_OF_PIECES : number = 12;
+    private readonly upperHand: PlayerColor = PlayerColor.Black;
+    private readonly NUMBER_OF_PIECES: number = 2//12;
 
 
-    private id : string;
-    private turn : PlayerColor;
+    private id: string;
+    private turn: PlayerColor;
 
     private round = 0; // counts through both placing and moving phases
     private board: Board = new Board();
@@ -19,10 +19,10 @@ export class GameSession {
     private whiteToPlace: number;
     private blackToPlace: number;
     private moveCount: number; // only counts moving phase
-    private ended :boolean = false;
+    private ended: boolean = false;
     private actions: Array<[number, PlayerColor, PlayerAction]>;
 
-    constructor (id:string){
+    constructor(id: string) {
         this.id = id;
         console.log(`New GameSession ${id}`);
     }
@@ -39,28 +39,28 @@ export class GameSession {
         this.nextRound();
     }
 
-    public tryTakeAction(act:PlayerAction, color:PlayerColor):PlayerActionResult {
+    public tryTakeAction(act: PlayerAction, color: PlayerColor): PlayerActionResult {
         if (this.ended) return PlayerActionResult.failed("Game ended.");
-        console.log('color',color)
+        console.log('color', color)
         if (this.turn != color) return PlayerActionResult.failed("Not your turn.");
 
-        let colorStr = (color == PlayerColor.Black)?Board.CELL_BLACK:Board.CELL_WHITE;
+        let colorStr = (color == PlayerColor.Black) ? Board.CELL_BLACK : Board.CELL_WHITE;
         if (this.phase == GamePhase.Placing && act.type == PlayerActionType.Place) {
             // handling placing
             let a = (act as PlayerPlaceAction);
-            if (! this.board.canPlace(a.newX,a.newY,colorStr) ) {
+            if (!this.board.canPlace(a.newX, a.newY, colorStr)) {
                 return PlayerActionResult.failed("Cannot place pieces here.")
             }
-            this.board.placeNewPiece(a.newX,a.newY,colorStr);
+            this.board.placeNewPiece(a.newX, a.newY, colorStr);
             if (color == PlayerColor.Black) {
                 --this.blackToPlace;
             } else {
                 --this.whiteToPlace;
             }
             this.actions.push([this.round, color, act]);
-            setImmediate(()=> this.nextRound());
-            setImmediate(()=> this.sendUpdate({
-                lastMove: this.actions[this.actions.length-1],
+            setImmediate(() => this.nextRound());
+            setImmediate(() => this.sendUpdate({
+                lastMove: this.actions[this.actions.length - 1],
                 timeSinceStart: this.getTime(),
                 phase: this.phase,
                 timeLeftForThisTurn: -1
@@ -69,17 +69,17 @@ export class GameSession {
         } else if (this.phase == GamePhase.Moving && act.type == PlayerActionType.MakeMove) {
             // handling moving
             let a = (act as PlayerMoveAction);
-            let fromP :[number, number]=[a.fromX, a.fromY];
-            let toP :[number, number]= [a.toX, a.toY];
-            if (!( this.board.get(a.fromX,a.fromY) == colorStr && this.board.isValidMove(fromP,toP)) ) {
+            let fromP: [number, number] = [a.fromX, a.fromY];
+            let toP: [number, number] = [a.toX, a.toY];
+            if (!(this.board.get(a.fromX, a.fromY) == colorStr && this.board.isValidMove(fromP, toP))) {
                 return PlayerActionResult.failed("Invalid move. Try again.");
             }
-            this.board.makeMove(fromP,toP);
-            this.actions.push([this.round,color,act]);
-            this.moveCount ++;
-            setImmediate(()=> this.nextRound());
-            setImmediate(()=> this.sendUpdate({
-                lastMove: this.actions[this.actions.length-1],
+            this.board.makeMove(fromP, toP);
+            this.actions.push([this.round, color, act]);
+            this.moveCount++;
+            setImmediate(() => this.nextRound());
+            setImmediate(() => this.sendUpdate({
+                lastMove: this.actions[this.actions.length - 1],
                 timeSinceStart: this.getTime(),
                 phase: this.phase,
                 timeLeftForThisTurn: -1
@@ -93,7 +93,7 @@ export class GameSession {
     public nextRound() {
         if (this.ended) return;
         //DEBUG
-        console.log("Round "+this.round);
+        console.log("Round " + this.round);
         this.board.printBoard();
         console.log("")
         console.log("")
@@ -105,46 +105,54 @@ export class GameSession {
             this.phase = GamePhase.Placing;
             this.whiteToPlace = this.NUMBER_OF_PIECES;
             this.blackToPlace = this.NUMBER_OF_PIECES;
-           
+
         }
-        // @todo: check winning first
-        else if (this.phase == GamePhase.Moving) {
-            if (this.moveCount == 128 || this.moveCount == 192) {
-                // after move #128 and #192
-                this.board.shrinkBoard();
-                // @todo: check winning again
-                setImmediate(()=> this.pushSync());
-            }
-            this.turn = (this.turn == PlayerColor.Black) ? PlayerColor.White : PlayerColor.Black;
-            this.round++;
-            this.roundStartTime = new Date(Date.now());
-        } else if (this.phase == GamePhase.Placing) {
-            if (this.whiteToPlace == 0 && this.blackToPlace == 0){
-                // placing phase ended
-                this.phase = GamePhase.Moving;
-                this.turn = this.upperHand;
-                this.roundStartTime = new Date(Date.now());
-                setImmediate(()=>this.pushSync());
-            } else {
+        else {
+            if (this.phase == GamePhase.Moving) {
+                // @todo: check winning first
+                if (this.board.getWinner() != null){
+                    this.ended = true;
+                    this.pushSync();
+                    return;
+                }
+                if (this.moveCount == 128 || this.moveCount == 192) {
+                    // after move #128 and #192
+                    this.board.shrinkBoard();
+                    // @todo: check winning again
+                    setImmediate(() => this.pushSync());
+                }
                 this.turn = (this.turn == PlayerColor.Black) ? PlayerColor.White : PlayerColor.Black;
+                this.round++;
+                this.roundStartTime = new Date(Date.now());
+            } else if (this.phase == GamePhase.Placing) {
+                if (this.whiteToPlace == 0 && this.blackToPlace == 0) {
+                    // placing phase ended
+                    this.phase = GamePhase.Moving;
+                    this.turn = this.upperHand;
+                    this.roundStartTime = new Date(Date.now());
+                    setImmediate(() => this.pushSync());
+                } else {
+                    this.turn = (this.turn == PlayerColor.Black) ? PlayerColor.White : PlayerColor.Black;
+                }
+
+                this.round++;
             }
-            
-            this.round++;
         }
     }
 
-    private getTime() : number {
+    private getTime(): number {
         // seconds since the start of the game
+        if (this.startTime == null) { return 0;}
         var now = new Date(Date.now());
-        return (now.getTime() - this.startTime.getTime())/1000;
+        return (now.getTime() - this.startTime.getTime()) / 1000;
     }
 
-    public getSyncObject() : GameSessionSync {
+    public getSyncObject(): GameSessionSync {
         return {
             board: this.board.getMatrix(),
             round: this.round,
             turn: this.turn,
-            winner: this.board.getWinner(),
+            winner: this.phase == GamePhase.Moving ? this.board.getWinner() : null,
             phase: this.phase,
             listOfMoves: this.actions,
             timeSinceStart: this.getTime(),
@@ -180,7 +188,7 @@ export interface GameSessionSync {
     board: Array<Array<string>>;
     round: number;
     turn: PlayerColor;
-    winner: PlayerColor|null;
+    winner: PlayerColor | null;
     phase: GamePhase;
     timeLeftForThisTurn: number; //seconds
     timeSinceStart: number; //seconds

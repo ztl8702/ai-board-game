@@ -29,6 +29,10 @@ export class GameRoom {
         return this.playerCount >= 2;
     }
 
+    public getId(): string {
+        return this.id;
+    }
+
 
     public addPlayer(newPlayer: Player):boolean {
         var result :boolean = false;
@@ -36,12 +40,12 @@ export class GameRoom {
         switch (this.state) {
             case GameRoomState.WaitingForPlayers:
                 // black player first
-                if (this.playerCount == 0) {
+                if (this.playerCount < 2 && this.blackPlayer == null) {
                     this.blackPlayer = newPlayer;
                     ++this.playerCount;
                     result = true;
                     console.log("Player "+newPlayer.nickName+" joined GameRoom "+ this.id+" as black player.");
-                } else if (this.playerCount == 1) {
+                } else if (this.playerCount <2 && this.whitePlayer == null) {
                     this.whitePlayer = newPlayer;
                     ++this.playerCount;
                     result = true;
@@ -56,33 +60,34 @@ export class GameRoom {
         return result;
 
     }
-
+    
+    private doRemovePlayer(player: Player) {
+        if (player == this.blackPlayer) {
+            this.blackPlayer = null;
+            this.playerCount--;
+        } else if (player == this.whitePlayer) {
+            this.whitePlayer = null;
+            this.playerCount--;
+        }
+    }
     public removePlayer(player: Player) {
 
-        function doRemovePlayer(player: Player) {
-            if (player == this.blackPlayer) {
-                this.blackPlayer = null;
-                this.playerCount--;
-            } else if (player == this.whitePlayer) {
-                this.whitePlayer = null;
-                this.playerCount--;
-            }
-        }
         switch (this.state) {
             case GameRoomState.Playing:
                 // the game is ongoing
-                doRemovePlayer(player);
+                this.doRemovePlayer(player);
+
                 this.changeState(GameRoomState.DisplayResult);
 
                 break;
             case GameRoomState.WaitingForPlayers:
             case GameRoomState.DisplayResult:
-                doRemovePlayer(player);
+                this.doRemovePlayer(player);
                 break;
 
             case GameRoomState.Ready:
-                doRemovePlayer(player);
-                this.changeState(GameRoomState.WaitingForPlayers);
+                this.doRemovePlayer(player);
+                if (this.playerCount<2) this.changeState(GameRoomState.WaitingForPlayers);
                 break;
                 
         }
@@ -113,7 +118,7 @@ export class GameRoom {
         }
     }
 
-    private broadcastRoomSync() {
+    public broadcastRoomSync() {
         // Send room sync to all players and observers
         var roomSync : GameRoomSync = this.getSyncObject();
         function sendRoomSyncToPlayer(p:Player, rs: GameRoomSync) {
@@ -168,6 +173,9 @@ export class GameRoom {
             } else {
                 this.changeState(GameRoomState.WaitingForPlayers);
             }
+            this.broadcastRoomSync();
+            this.broadcastSessionSync();
+            
         }
     }
 

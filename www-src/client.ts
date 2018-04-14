@@ -1,44 +1,94 @@
-import { Board } from "../src/logic"
-import * as faker from "faker";
-import "./components/App";
-declare var io:any;
+import { Board, PlayerSync, PlayerState, GameRoomSync, GameRoomState, GameSessionSync, GameSessionUpdate, PlayerActionType, PlayerPlaceAction, PlayerMoveAction, PlayerColor } from "../src/logic"
 
-function getRandomRoomId() {
-    var str = faker.hacker.adjective() + '_' + faker.hacker.noun();
-    str.replace(/ /g, '_');
-    str.replace(/-/g, '_');
-    return str;
+import { App } from "./components/App";
+import { Socket } from "./utils";
+import { setInterval } from "timers";
+
+var myApp: any = new App({ el: '#app' });
+
+myApp.vm.board = new Board();
+console.log('App loaded');
+
+Socket.onPlayerSync = (playerInfo: PlayerSync) => {
+    console.log('playerSync callback');
+    myApp.vm.playerId = playerInfo.id;
+    myApp.vm.playerName = playerInfo.nickName;
+    switch (playerInfo.state) {
+        case PlayerState.NoRoom:
+            myApp.vm.page = 'welcome';
+            break;
+        case PlayerState.JoinedAsObserver:
+        case PlayerState.JoinedAsPlayer:
+            if (myApp.vm.page == 'welcome') myApp.vm.page = 'room';
+            break;
+    }
+    myApp.vm.roomId = playerInfo.roomId;
+    if (myApp.vm.roomId) {
+        Socket.requestRoomSync(myApp.vm.roomId);
+    }
+    myApp.$forceUpdate();
+};
+
+Socket.onRoomSync = (roomInfo: GameRoomSync) => {
+    myApp.vm.roomInfo = roomInfo;
+    if (roomInfo.state == GameRoomState.Playing || roomInfo.state == GameRoomState.DisplayResult) {
+        myApp.vm.page = 'board';
+        Socket.requestSessionSync(myApp.vm.roomId);
+    } else {
+        myApp.vm.page = 'room';
+    }
+    myApp.$forceUpdate();
+}
+
+function recursiveUpdate(vueComponent) {
+    vueComponent.$forceUpdate();
+    vueComponent.$children.forEach(child => {
+        recursiveUpdate(child)
+    });
+    
+}
+Socket.onSessionSync = (sessionInfo: GameSessionSync) => {
+    myApp.vm.sessionInfo = sessionInfo;
+    myApp.vm.board = Board.fromMatrix(sessionInfo.board);
+    recursiveUpdate(myApp);
+    myApp.vm.sessionInfo.round++;
+    recursiveUpdate(myApp);
+    myApp.vm.sessionInfo.round--;
+    recursiveUpdate(myApp);
+    
 }
 
 
-var socket = io();
-socket.on('roomSync', function (d) {
-    console.log('roomSync', d);
-})
-socket.on('sessionSync', function (d) {
-    console.log('sessionSync', d);
-})
-socket.on('sessionUpdate', function (d) {
-    console.log('sessionUpdate', d);
-})
-socket.emit('roomSyncRequest');
-function joinRoom(roomId) {
-    socket.emit('joinRoom', roomId);
-}
-function startGame() {
-    socket.emit('startGame');
-}
-function placePiece(x, y) {
-    socket.emit('makeMove',
-        { type: 0, newX: x, newY: y },
-        function (d) { console.log(d) });
+Socket.onSessionUpdate = (sessionUpdate: GameSessionUpdate) => {
+    var lastMoveId = 0;
+    if (myApp.vm.sessionInfo.listOfMoves.length > 0) {
+        lastMoveId = myApp.vm.sessionInfo.listOfMoves[myApp.vm.sessionInfo.listOfMoves.length - 1][0];
+    }
+    if (lastMoveId >= sessionUpdate.lastMove[0]) {
+        // do nothing
+    } else if (lastMoveId == sessionUpdate.lastMove[0] - 1 && sessionUpdate.phase == myApp.vm.sessionInfo.phase) {
+        myApp.vm.sessionInfo.listOfMoves.push(sessionUpdate.lastMove);
+        if (sessionUpdate.lastMove[2].type == PlayerActionType.Place) {
+            (myApp.vm.board as Board).placeNewPiece(
+                (sessionUpdate.lastMove[2] as PlayerPlaceAction).newX,
+                (sessionUpdate.lastMove[2] as PlayerPlaceAction).newY,
+                sessionUpdate.lastMove[1]==PlayerColor.Black ? Board.CELL_BLACK:Board.CELL_WHITE
+            );
 
-}
+        } else if (sessionUpdate.lastMove[2].type == PlayerActionType.MakeMove) {
+            var act = sessionUpdate.lastMove[2] as PlayerMoveAction;
+            (myApp.vm.board as Board).makeMove([act.fromX, act.fromY], [act.toX, act.toY]);
+        }
+        myApp.vm.sessionInfo.turn = myApp.vm.sessionInfo.turn == PlayerColor.Black ? PlayerColor.White : PlayerColor.Black;
+        ++myApp.vm.sessionInfo.round;
 
-function movePiece(x1, y1, x2, y2) {
-    socket.emit('makeMove',
-        { type: 1, fromX: x1, fromY: y1, toX: x2, toY: y2 },
-        function (d) { console.log(d) });
+    } else {
+        // out of sync
+        Socket.requestSessionSync(myApp.vm.roomId);
+    }
 
+    myApp.$forceUpdate();
 }
-console.log(getRandomRoomId());
+Socket.requestPlayerSync();
+
+

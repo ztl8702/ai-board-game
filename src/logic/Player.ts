@@ -1,6 +1,7 @@
 import { GameRoom } from "./GameRoom";
 import { ActorFactory } from "../actor/index";
 import * as faker from "faker";
+import { setImmediate } from "timers";
 
 export class Player {
     // Representation of each player in the game
@@ -15,6 +16,10 @@ export class Player {
     }
     public set nickName(value: string) {
         this._nickName = value;
+        this.pushSync();
+        if (this.gameRoom) {
+            this.gameRoom.broadcastRoomSync();
+        }
     }
 
     private gameRoom: GameRoom;
@@ -56,6 +61,7 @@ export class Player {
                 this.state = PlayerState.JoinedAsPlayer;
                 this.gameRoom = room;
             }
+            setImmediate(()=>this.pushSync());
             return result;
         } else {
             return false;
@@ -72,6 +78,7 @@ export class Player {
             this.gameRoom = null;
             this.state = PlayerState.NoRoom;
         }
+        this.pushSync();
     }
 
     public observeRoom(roomId: string) {
@@ -81,6 +88,7 @@ export class Player {
             this.gameRoom = room;
             this.state = PlayerState.JoinedAsObserver;
         }
+        this.pushSync();
     }
 
     public tryTakeAction(a: PlayerAction): PlayerActionResult {
@@ -92,12 +100,20 @@ export class Player {
     }
 
     public newSession() {
-
+        if (this.state == PlayerState.JoinedAsPlayer) {
+            this.gameRoom.newSession();
+        }
     }
 
     public tryStartGame() {
         if (this.state == PlayerState.JoinedAsPlayer) {
             this.gameRoom.startGame();
+        }
+    }
+
+    public tryNewSession() {
+        if (this.state == PlayerState.JoinedAsPlayer) {
+            this.gameRoom.newSession();
         }
     }
 
@@ -107,9 +123,18 @@ export class Player {
         }
     }
 
+    public pushSync() {
+        this.send('playerSync', {
+            state: this.state,
+            roomId: this.gameRoom ? this.gameRoom.getId() : null,
+            id: this.id,
+            nickName: this.nickName
+        });
+    }
+
 }
 
-enum PlayerState {
+export enum PlayerState {
     NoRoom,
     JoinedAsPlayer,
     JoinedAsObserver
