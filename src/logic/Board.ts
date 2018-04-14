@@ -65,7 +65,7 @@ export class Board {
     }
 
     private get minX(): number {
-        return this.BOARD_MAX_SIZE - this.currentBoardSize;
+        return Math.floor((this.BOARD_MAX_SIZE - this.currentBoardSize)/2);
     }
 
     private get maxX(): number {

@@ -5,7 +5,9 @@ export class GameSession {
 
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
-    private readonly NUMBER_OF_PIECES: number = 2//12;
+    private readonly NUMBER_OF_PIECES: number = 12;
+    private readonly FIRST_SHRINK : number = 128;
+    private readonly SECOND_SHRINK: number = 192;
 
 
     private id: string;
@@ -115,7 +117,7 @@ export class GameSession {
                     this.pushSync();
                     return;
                 }
-                if (this.moveCount == 128 || this.moveCount == 192) {
+                if (this.moveCount == this.FIRST_SHRINK || this.moveCount == this.SECOND_SHRINK) {
                     // after move #128 and #192
                     this.board.shrinkBoard();
                     // @todo: check winning again
