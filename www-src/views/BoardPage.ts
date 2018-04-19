@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { Socket } from '../utils';
-import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn } from "../components";
+import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress } from "../components";
 import { ClientViewModel } from '../models/ClientViewModel';
 import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction } from '../../src/logic';
 declare var $ : any;
@@ -13,7 +13,7 @@ declare var $ : any;
     template: `
     <div class="ui grid stackable doubling container">
         <div class="two column row">
-            <div class="seven wide column">
+            <div class="nine wide column">
                 <play-board 
                     v-bind:mode="theMode" 
                     v-bind:board="viewModel.board" 
@@ -21,15 +21,24 @@ declare var $ : any;
                     v-model="boardOutput"
                     v-bind:rotate="shouldRotateBoard" />
             </div>
-            <div class="nine wide column">
-                <whos-turn v-bind:yours="myTurn" v-bind:oppo="!myTurn && !hasWinner" />
-                <placing-progress-bar 
-                    v-bind:progress="10" 
-                    label="Placing Phase" 
-                    v-bind:total="24"/>
-                <h1 v-if="hasWinner==false">Playing {{roomId}} - {{getPhaseString()}} Round #{{viewModel.sessionInfo.round}}</h1>
+            <div class="seven wide column">
+                <div v-if="hasWinner==false">
+                    <whos-turn v-bind:yours="myTurn" v-bind:oppo="!myTurn && !hasWinner" />
+                    <placing-progress-bar 
+                        v-bind:progress="viewModel.sessionInfo.round" 
+                        v-bind:total="24"
+                        v-if="isPlacing" />
+                    <moving-progress
+                        v-if="isMoving" 
+                        v-bind:total="12"
+                        v-bind:mine="myPiecesCount"
+                        v-bind:oppo="oppoPiecesCount"
+                    />
+                </div>
+                    <h1>Playing {{roomId}} - {{getPhaseString()}} Round #{{viewModel.sessionInfo.round}}</h1>
                 <h1 v-if="hasWinner" style="color:red">Winner is {{winnerName}}! <button @click="onReturnClicked">Return to room</button></h1>
                 <div v-if="myTurn">
+                    <p>{{previewMove}}</p>
                     <button @click="onSubmit" class="ui blue button" v-if="showButton">Submit (Enter)</button>
                     <button @click="onPass" class="ui yellow button" v-if="isMoving" >Pass</button>
                 </div>
@@ -46,16 +55,16 @@ declare var $ : any;
                     </thead>
                     <tbody>
                         <tr v-for="(move,index) in listOfMoves.slice().reverse()">
-                        <td>{{index}}</td>
-                        <td>{{move}}</td>
+                        <td>{{move[0]}}</td>
+                        <td>{{move[1]}}</td>
                         </tr>
-                        
                     </tbody>
                 </table>
             </div>
         </div>
+
     </div>`,
-    components: { PlayBoard, PlacingProgressBar, WhosTurn }
+    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress }
 })
 export class BoardPage extends Vue {
     @Prop()
@@ -82,6 +91,18 @@ export class BoardPage extends Vue {
     mounted() {
         
         Socket.requestSessionSync(this.viewModel.roomId);
+        window.addEventListener('keydown', this.onKeyPress);
+    }
+
+    onKeyPress(e) {
+        console.log(e.keyCode);
+        if (e.keyCode == 13 && this.boardOutput) {
+            if (confirm("Are you sure you want to submit this move?"))  this.onSubmit();
+        }
+    }
+
+    beforeDestroy() {
+        window.removeEventListener('keydown', this.onKeyPress);
     }
     getPhaseString() {
         try {
@@ -135,6 +156,26 @@ export class BoardPage extends Vue {
         }
     }
 
+    get myPiecesCount():number {
+        if (this.side() == PlayerColor.White) {
+            return this.viewModel.sessionInfo.whitePiece;
+        } else if (this.side() == PlayerColor.Black) {
+            return this.viewModel.sessionInfo.blackPiece;
+        } else {
+            return 0;
+        }
+    }
+
+    get oppoPiecesCount():number{
+        if (this.side() == PlayerColor.White) {
+            return this.viewModel.sessionInfo.blackPiece;
+        } else if (this.side() == PlayerColor.Black) {
+            return this.viewModel.sessionInfo.whitePiece;
+        } else {
+            return 0;
+        }
+    }
+
     get playerColor(): string {
         if (this.side() == PlayerColor.Black) {
             return Board.CELL_BLACK;
@@ -166,14 +207,29 @@ export class BoardPage extends Vue {
         return false;
     }
 
+    get previewMove() {
+        if (this.boardOutput) {
+            if (this.viewModel.sessionInfo.phase == GamePhase.Placing) {
+                return `Placing a new piece at (${this.boardOutput.newX}, ${this.boardOutput.newY})?`;
+            } else if (this.viewModel.sessionInfo.phase == GamePhase.Moving) {
+                return `Moving the piece from (${this.boardOutput.fromX}, ${this.boardOutput.fromY}) to (${this.boardOutput.toX},${this.boardOutput.toY})?`;
+            }
+        } else {
+            return "";
+        }
+    }
+
     onSubmit() {
-        console.log('To submit move:', this.boardOutput);
-        // var submit = 
-        if (this.viewModel.sessionInfo.phase == GamePhase.Placing) {
-            Socket.placePiece(this.boardOutput.newX, this.boardOutput.newY);
-        } else if (this.viewModel.sessionInfo.phase == GamePhase.Moving) {
-            Socket.movePiece(this.boardOutput.fromX, this.boardOutput.fromY,
-                this.boardOutput.toX, this.boardOutput.toY);
+        if (this.boardOutput) {
+            console.log('To submit move:', this.boardOutput);
+            // var submit = 
+            if (this.viewModel.sessionInfo.phase == GamePhase.Placing) {
+                Socket.placePiece(this.boardOutput.newX, this.boardOutput.newY);
+            } else if (this.viewModel.sessionInfo.phase == GamePhase.Moving) {
+                Socket.movePiece(this.boardOutput.fromX, this.boardOutput.fromY,
+                    this.boardOutput.toX, this.boardOutput.toY);
+            }
+
         }
 
     }
@@ -182,18 +238,18 @@ export class BoardPage extends Vue {
         Socket.pass();
     }
 
-    get listOfMoves(): Array<string> {
+    get listOfMoves(): Array<any> {
         if (!this.viewModel.sessionInfo.listOfMoves) return [];
         return this.viewModel.sessionInfo.listOfMoves.map(
-            (move) => {
+            (move, i) => {
                 var playerName = move[1] == PlayerColor.Black ? this.viewModel.roomInfo.blackPlayerName : this.viewModel.roomInfo.whitePlayerName;
                 var moveType = move[2].type;
                 if (moveType==PlayerActionType.MakeMove) {
                     let act = move[2] as PlayerMoveAction;
-                    return `Player ${playerName} moved (${act.fromX},${act.fromY}) to (${act.toX},${act.toY}).`
+                    return [i, `Player ${playerName} moved (${act.fromX},${act.fromY}) to (${act.toX},${act.toY}).`];
                 } else {
                     let act = move[2] as PlayerPlaceAction;
-                    return `Player ${playerName} placed a piece at (${act.newX},${act.newY}).`
+                    return [i, `Player ${playerName} placed a piece at (${act.newX},${act.newY}).`];
                 }
             }
         )

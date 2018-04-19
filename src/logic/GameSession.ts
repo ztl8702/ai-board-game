@@ -5,7 +5,7 @@ export class GameSession {
 
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
-    private readonly NUMBER_OF_PIECES: number = 12;
+    public static readonly NUMBER_OF_PIECES: number = 12;
     private readonly FIRST_SHRINK : number = 128;
     private readonly SECOND_SHRINK: number = 192;
 
@@ -86,10 +86,12 @@ export class GameSession {
                 phase: this.phase,
                 timeLeftForThisTurn: -1
             }));
+            setImmediate(() => this.pushSync());
             return PlayerActionResult.success();
         } else {
             return PlayerActionResult.failed("Invalid action type.");
         }
+        
     }
 
     public nextRound() {
@@ -105,8 +107,8 @@ export class GameSession {
             this.round = 1;
             this.turn = this.upperHand;
             this.phase = GamePhase.Placing;
-            this.whiteToPlace = this.NUMBER_OF_PIECES;
-            this.blackToPlace = this.NUMBER_OF_PIECES;
+            this.whiteToPlace = GameSession.NUMBER_OF_PIECES;
+            this.blackToPlace = GameSession.NUMBER_OF_PIECES;
 
         }
         else {
@@ -158,7 +160,9 @@ export class GameSession {
             phase: this.phase,
             listOfMoves: this.actions,
             timeSinceStart: this.getTime(),
-            timeLeftForThisTurn: -1
+            timeLeftForThisTurn: -1,
+            whitePiece: this.board.pieceCount(PlayerColor.White),
+            blackPiece: this.board.pieceCount(PlayerColor.Black)
         };
     }
 
@@ -191,6 +195,8 @@ export interface GameSessionSync {
     round: number;
     turn: PlayerColor;
     winner: PlayerColor | null;
+    whitePiece: number;
+    blackPiece: number;
     phase: GamePhase;
     timeLeftForThisTurn: number; //seconds
     timeSinceStart: number; //seconds

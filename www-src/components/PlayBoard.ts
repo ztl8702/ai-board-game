@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Component from "vue-class-component";
 import { BoardCell, HighlightStyle, IndexCell } from './';
 import { Board } from "../../src/logic";
-import { Prop } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import { Socket } from '../utils';
 
 
@@ -52,17 +52,18 @@ export class PlayBoard extends Vue {
     mode: PlayBoardMode = PlayBoardMode.ViewOnly;
     @Prop({})
     playerColor: string;
-    watch = {
-        'mode': (val) => {
-            if (val == PlayBoardMode.ViewOnly) {
-                this.selectionState = PlayBoardSelectionState.NoSelection;
-                this.selectedCell = null;
-                this.targetCell = null;
-                this.availableCells = [];
-            }
-            //this.mode = val;
+
+    @Watch("mode")
+    onModeChanged(val) {
+        if (val == PlayBoardMode.ViewOnly) {
+            this.selectionState = PlayBoardSelectionState.NoSelection;
+            this.selectedCell = null;
+            this.targetCell = null;
+            this.availableCells = [];
         }
+        //this.mode = val;
     }
+
     @Prop({})
     value: any;
 

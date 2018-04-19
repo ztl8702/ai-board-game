@@ -94,6 +94,19 @@ export class Board {
         }
     }
 
+    public pieceCount(color: PlayerColor): number {
+        let colorStr = color == PlayerColor.Black ? Board.CELL_BLACK : Board.CELL_WHITE;
+        let myCount = 0;
+        for (let x = this.minX; x <= this.maxX; ++x) {
+            for (let y = this.minY; y <= this.maxY; ++y) {
+                if (this.get(x, y) == colorStr) {
+                    ++myCount;
+                } 
+            }
+        }
+        return myCount;
+    }
+
     private checkWinning(color: PlayerColor) {
         let colorStr = color == PlayerColor.Black ? Board.CELL_BLACK : Board.CELL_WHITE;
         let opponentColor = this.getOpponentColor(colorStr);
