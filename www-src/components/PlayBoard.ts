@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Component from "vue-class-component";
-import { BoardCell, HighlightStyle } from './BoardCell';
+import { BoardCell, HighlightStyle, IndexCell } from './';
 import { Board } from "../../src/logic";
 import { Prop } from "vue-property-decorator";
 import { Socket } from '../utils';
@@ -16,7 +16,12 @@ export enum PlayBoardMode {
 @Component({
     name: 'play-board',
     template: `<table class="board">
+    <tr>
+        <index-cell />
+        <index-cell v-for="col in rows[0].cols" v-bind:displayText="col.x" /> 
+    </tr>
     <tr v-for="row in rows">
+        <index-cell v-bind:displayText="row.id" />
         <board-cell v-for="col in row.cols" 
         v-bind:x="col.x"
         v-bind:y="col.y"
@@ -26,7 +31,7 @@ export enum PlayBoardMode {
         />
     </tr>
     </table>`,
-    components: { BoardCell }
+    components: { BoardCell, IndexCell }
 })
 export class PlayBoard extends Vue {
 
@@ -60,6 +65,9 @@ export class PlayBoard extends Vue {
     }
     @Prop({})
     value: any;
+
+    @Prop({})
+    rotate: boolean = false;
 
     updated() {
         console.log('PlayBoard updated.')
@@ -109,15 +117,28 @@ export class PlayBoard extends Vue {
 
     get rows(): any {
         var result = [];
-        for (var y = 0; y <= 7; ++y) {
-            var currentRow = { 'cols': [] };
-            for (var x = 0; x <= 7; ++x) {
-                currentRow['cols'].push({
-                    'x': x,
-                    'y': y
-                });
+        if (!this.rotate) {
+            for (var y = 0; y <= 7; ++y) {
+                var currentRow = { 'id': y, 'cols': [] };
+                for (var x = 0; x <= 7; ++x) {
+                    currentRow['cols'].push({
+                        'x': x,
+                        'y': y
+                    });
+                }
+                result.push(currentRow);
             }
-            result.push(currentRow);
+        } else {
+            for (var y = 7; y >= 0; --y) {
+                var currentRow = { 'id': y, 'cols': [] };
+                for (var x = 7; x >= 0; --x) {
+                    currentRow['cols'].push({
+                        'x': x,
+                        'y': y
+                    });
+                }
+                result.push(currentRow);
+            }
         }
         return result;
     }

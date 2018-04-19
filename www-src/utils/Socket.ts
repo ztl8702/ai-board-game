@@ -42,6 +42,10 @@ export class Socket {
     public static joinRoom(roomId) {
         this.socket.emit('joinRoom', roomId);
     }
+
+    public static pass() {
+        this.socket.emit('pass');
+    }
     
     public static observeRoom(roomId) {
         this.socket.emit('observeRoom', roomId);

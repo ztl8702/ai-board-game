@@ -1,16 +1,30 @@
 import Vue from 'vue';
-import { PlayBoard } from "./PlayBoard";
-import { WelcomePage } from "./WelcomePage";
-import { RoomPage } from "./RoomPage";
-import { BoardPage } from "./BoardPage";
-import { ClientViewModel } from '../models/ClientViewModel';
-import { Socket } from '../utils';
+import { PlayBoard } from "./components";
+import { BoardPage, RoomPage, WelcomePage } from "./views";
+import { ClientViewModel } from './models/ClientViewModel';
+import { Socket } from './utils';
 
 
 export var App = Vue.extend({
     template: `
     <div>
-        current page: {{vm.page}} your name: {{vm.playerName}} <button @click="onChangeName">Change</button>
+        <div class="ui secondary  menu">
+            <a class="active item">
+            current page: {{vm.page}}
+            </a>
+            <a class="item">
+            Messages
+            </a>
+            <a class="item">
+            Friends
+            </a>
+            <div class="right menu">
+                <a class="ui item">
+                Welcome, {{vm.playerName}} (<a @click="onChangeName">Change</a>)
+                </a>
+            </div>
+        </div>
+        
         <welcome-page v-if="vm.page == 'welcome'" v-bind:playerName="vm.playerName" />
         <room-page v-bind:roomId="vm.roomId" v-bind:viewModel="vm" v-if="vm.page=='room'"/>
         <board-page v-bind:viewModel="vm" v-if="vm.page=='board'"/>

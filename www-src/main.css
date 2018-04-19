@@ -47,6 +47,12 @@ table.board {
     width: 40px;
     overflow: hidden;
 }
+
+.board-cell.index {
+  font-size:15px;
+  color: darkgray;
+  background: white;
+}
 .board-cell.dead {
     background: gray;
 }
