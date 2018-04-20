@@ -27,10 +27,7 @@ import { Socket } from '../utils';
     </div>`,
 })
 export class WelcomePage extends Vue {
-    roomId: string;
-    data = {
-        'roomId': ''
-    }
+    roomId: string = '';
 
     @Prop()
     playerName: string;

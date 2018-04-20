@@ -13,11 +13,11 @@ import { WelcomePlayerCard } from "../components";
             <div class="ui relaxed grid">
                 <div class="two column row">
                     <div class="column">
-                        <welcome-player-card v-bind:playerName="viewModel.roomInfo ? viewModel.roomInfo.blackPlayerName : ''"
+                        <welcome-player-card v-bind:playerName="viewModel && viewModel.roomInfo ? viewModel.roomInfo.blackPlayerName : ''"
                          side="black" />
                     </div>
                     <div class="column">
-                        <welcome-player-card v-bind:playerName="viewModel.roomInfo ? viewModel.roomInfo.whitePlayerName : ''"
+                        <welcome-player-card v-bind:playerName="viewModel && viewModel.roomInfo ? viewModel.roomInfo.whitePlayerName : ''"
                          side="white" />
                     </div>
                 </div>
@@ -33,9 +33,9 @@ import { WelcomePlayerCard } from "../components";
 })
 export class RoomPage extends Vue {
     @Prop()
-    roomId: string;
+    roomId: string = null;
     @Prop()
-    viewModel: any;
+    viewModel: any = null;
     constructor() {
         super();
     }

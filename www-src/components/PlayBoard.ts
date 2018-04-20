@@ -158,12 +158,9 @@ export class PlayBoard extends Vue {
     isAllowedRow(y: number): boolean {
         if (this.mode == PlayBoardMode.SelectForPlacing) {
             if (y >= this.allowedRowStart && y <= this.allowedRowEnd) {
-                console.log('row',y, 'allowed');
                 return true;
             }
         }
-        console.log('row',y, 'not allowed');
-         
         return false;
     }
 
