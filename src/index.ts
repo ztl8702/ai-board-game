@@ -1,9 +1,17 @@
 import { ActorFactory } from "./actor";
 import { Player, GameRoomState, GameRoom } from "./logic";
 import { setImmediate } from "timers";
+import { DBConnection } from "./db";
 const express = require('express');
-
 var cryptolib = require("crypto");
+
+// DB
+var conn = new DBConnection();
+ActorFactory._conn = conn;
+conn.test().then(_ => {
+    conn.migrate();
+});
+
 
 var app = require('express')();
 var expressSession = require('express-session');
@@ -46,7 +54,7 @@ io.on('connection', function (socket) {
         // player's client events
         socket.on('playerSyncRequest', function (callback) {
             //thePlayer
-            setImmediate(()=>thePlayer.pushSync());
+            setImmediate(() => thePlayer.pushSync());
         });
 
         socket.on('roomSyncRequest', function (roomId) {
@@ -74,14 +82,14 @@ io.on('connection', function (socket) {
             console.log('Player ' + thePlayer.nickName + ' changing name to ' + newNickname);
             thePlayer.nickName = newNickname;
             // send room update
-            
+
         });
 
         socket.on('startGame', function () {
             thePlayer.tryStartGame();
         });
 
-        socket.on('newSession', function() {
+        socket.on('newSession', function () {
             thePlayer.tryNewSession();
         })
 

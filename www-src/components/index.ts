@@ -6,3 +6,4 @@ export * from "./WhosTurn";
 export * from "./ProgressBar";
 export * from "./MovingProgress";
 export * from "./PlacingProgressBar";
+export * from "./Dimmer";

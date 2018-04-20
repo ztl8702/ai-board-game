@@ -2,12 +2,14 @@ import { PlayerColor, Board } from "./Board";
 import { Player } from "./Player";
 import { GameSession, GameSessionSync, PlayerAction, PlayerActionResult, GameSessionUpdate } from "./";
 import { ActorFactory } from "../actor/index";
+import { DBConnection } from "../db";
 
 export class GameRoom {
     // representation of each game play
     private id: string;
     private state: GameRoomState;
 
+    private _conn: DBConnection;
 
     private playerCount = 0;
     private whitePlayer: Player;
@@ -15,14 +17,19 @@ export class GameRoom {
     private observers: Array<Player>;
     private currentSession: GameSession;
 
-    constructor(id: string) {
+    constructor(id: string, conn: DBConnection) {
         console.log("GameRoom", id, "created.");
         this.id = id;
         this.state = GameRoomState.WaitingForPlayers;
         this.observers = [];
         this.currentSession = this.currentSession = ActorFactory.getActor("GameSession", null);
-        this.currentSession.onPushSync = ()=>{this.broadcastSessionSync();};
-        this.currentSession.onUpdate = (u)=> this.broadcastSessionUpdate(u);
+        this.currentSession.onPushSync = () => { this.broadcastSessionSync(); };
+        this.currentSession.onUpdate = (u) => this.broadcastSessionUpdate(u);
+        this.currentSession.OnEnded = () => {
+            console.log('Game ended, saving to DB.');
+            this._conn.saveGameSession(this.currentSession, this.whitePlayer.getId(), this.blackPlayer.getId());
+        };
+        this._conn = conn;
     }
 
     public isFull(): boolean {
@@ -34,8 +41,8 @@ export class GameRoom {
     }
 
 
-    public addPlayer(newPlayer: Player):boolean {
-        var result :boolean = false;
+    public addPlayer(newPlayer: Player): boolean {
+        var result: boolean = false;
 
         switch (this.state) {
             case GameRoomState.WaitingForPlayers:
@@ -44,12 +51,12 @@ export class GameRoom {
                     this.blackPlayer = newPlayer;
                     ++this.playerCount;
                     result = true;
-                    console.log("Player "+newPlayer.nickName+" joined GameRoom "+ this.id+" as black player.");
-                } else if (this.playerCount <2 && this.whitePlayer == null) {
+                    console.log("Player " + newPlayer.nickName + " joined GameRoom " + this.id + " as black player.");
+                } else if (this.playerCount < 2 && this.whitePlayer == null) {
                     this.whitePlayer = newPlayer;
                     ++this.playerCount;
                     result = true;
-                    console.log("Player "+newPlayer.nickName+" joined GameRoom "+ this.id+" as white player.");                    
+                    console.log("Player " + newPlayer.nickName + " joined GameRoom " + this.id + " as white player.");
                 }
                 if (this.playerCount == 2) {
                     this.changeState(GameRoomState.Ready);
@@ -60,7 +67,7 @@ export class GameRoom {
         return result;
 
     }
-    
+
     private doRemovePlayer(player: Player) {
         if (player == this.blackPlayer) {
             this.blackPlayer = null;
@@ -75,8 +82,11 @@ export class GameRoom {
         switch (this.state) {
             case GameRoomState.Playing:
                 // the game is ongoing
+                if (this.blackPlayer != player && this.whitePlayer != player) break;
+                // end the game first, triggering saving
+                this.currentSession.endGame();
+                // then remove playing.
                 this.doRemovePlayer(player);
-
                 this.changeState(GameRoomState.DisplayResult);
 
                 break;
@@ -87,15 +97,15 @@ export class GameRoom {
 
             case GameRoomState.Ready:
                 this.doRemovePlayer(player);
-                if (this.playerCount<2) this.changeState(GameRoomState.WaitingForPlayers);
+                if (this.playerCount < 2) this.changeState(GameRoomState.WaitingForPlayers);
                 break;
-                
+
         }
         this.broadcastRoomSync();
     }
 
     public addObserver(obs: Player) {
-        if ( this.observers.indexOf(obs) == -1) {
+        if (this.observers.indexOf(obs) == -1) {
             this.observers.push(obs);
         }
         this.broadcastRoomSync();
@@ -103,7 +113,7 @@ export class GameRoom {
 
     public removeObserver(obs: Player) {
         var index = this.observers.indexOf(obs);
-        if ( index != -1) {
+        if (index != -1) {
             this.observers.splice(index, 1);
         }
         this.broadcastRoomSync();
@@ -120,12 +130,12 @@ export class GameRoom {
 
     public broadcastRoomSync() {
         // Send room sync to all players and observers
-        var roomSync : GameRoomSync = this.getSyncObject();
-        function sendRoomSyncToPlayer(p:Player, rs: GameRoomSync) {
+        var roomSync: GameRoomSync = this.getSyncObject();
+        function sendRoomSyncToPlayer(p: Player, rs: GameRoomSync) {
             p.send('roomSync', rs);
         }
-        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer,roomSync);
-        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer,roomSync);
+        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer, roomSync);
+        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer, roomSync);
         this.observers.forEach(obs => {
             sendRoomSyncToPlayer(obs, roomSync);
         });
@@ -133,22 +143,22 @@ export class GameRoom {
 
     private broadcastSessionSync() {
         var s = this.currentSession.getSyncObject();
-        function sendRoomSyncToPlayer(p:Player, rs: GameSessionSync) {
+        function sendRoomSyncToPlayer(p: Player, rs: GameSessionSync) {
             p.send('sessionSync', rs);
         }
-        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer,s);
-        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer,s);
+        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer, s);
+        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer, s);
         this.observers.forEach(obs => {
             sendRoomSyncToPlayer(obs, s);
         });
     }
 
-    private broadcastSessionUpdate(u:GameSessionUpdate) {
-        function sendRoomSyncToPlayer(p:Player, rs: GameSessionUpdate) {
+    private broadcastSessionUpdate(u: GameSessionUpdate) {
+        function sendRoomSyncToPlayer(p: Player, rs: GameSessionUpdate) {
             p.send('sessionUpdate', rs);
         }
-        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer,u);
-        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer,u);
+        if (this.blackPlayer) sendRoomSyncToPlayer(this.blackPlayer, u);
+        if (this.whitePlayer) sendRoomSyncToPlayer(this.whitePlayer, u);
         this.observers.forEach(obs => {
             sendRoomSyncToPlayer(obs, u);
         });
@@ -164,10 +174,14 @@ export class GameRoom {
             this.currentSession.onPushSync = null;
             this.currentSession.onUpdate = null;
             ActorFactory.archiveActor("GameSession", this.currentSession.getId());
-            
+
             this.currentSession = ActorFactory.getActor("GameSession", null);
-            this.currentSession.onPushSync = ()=>{this.broadcastSessionSync();};
-            this.currentSession.onUpdate = (u)=> this.broadcastSessionUpdate(u);
+            this.currentSession.onPushSync = () => { this.broadcastSessionSync(); };
+            this.currentSession.onUpdate = (u) => this.broadcastSessionUpdate(u);
+            this.currentSession.OnEnded = () => {
+                console.log('Game ended, saving to DB.');
+                this._conn.saveGameSession(this.currentSession, this.whitePlayer.getId(), this.blackPlayer.getId());
+            };
             if (this.isFull()) {
                 this.changeState(GameRoomState.Ready);
             } else {
@@ -175,19 +189,19 @@ export class GameRoom {
             }
             this.broadcastRoomSync();
             this.broadcastSessionSync();
-            
+
         }
     }
 
-    public getSessionSyncObject() : GameSessionSync {
+    public getSessionSyncObject(): GameSessionSync {
         return this.currentSession.getSyncObject();
     }
 
     public getSyncObject(): GameRoomSync {
-        var result : GameRoomSync = {
+        var result: GameRoomSync = {
             blackPlayerId: this.blackPlayer ? this.blackPlayer.getId() : null,
             blackPlayerName: this.blackPlayer ? this.blackPlayer.nickName : null,
-            whitePlayerId: this.whitePlayer ? this.whitePlayer.getId() :null,
+            whitePlayerId: this.whitePlayer ? this.whitePlayer.getId() : null,
             whitePlayerName: this.whitePlayer ? this.whitePlayer.nickName : null,
             state: this.state,
             observersCount: this.observers.length
@@ -203,7 +217,7 @@ export class GameRoom {
         }
     }
 
-    private whichPlayer(p: Player): PlayerColor|null {
+    private whichPlayer(p: Player): PlayerColor | null {
         if (p == this.whitePlayer) return PlayerColor.White;
         if (p == this.blackPlayer) return PlayerColor.Black;
         return null;
@@ -222,7 +236,7 @@ export class GameRoom {
             return result;
         }
 
-        var result = this.currentSession.tryTakeAction(act,side);
+        var result = this.currentSession.tryTakeAction(act, side);
         return result;
     }
 
@@ -240,8 +254,8 @@ export interface GameRoomSync {
     blackPlayerId: string;
     whitePlayerName: string;
     whitePlayerId: string;
-    observersCount:number;
-  // board: GameSessionSync;
+    observersCount: number;
+    // board: GameSessionSync;
     state: GameRoomState;
 }
 

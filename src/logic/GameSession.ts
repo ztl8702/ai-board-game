@@ -3,9 +3,10 @@ import { setImmediate } from "timers";
 
 export class GameSession {
 
+    // Game Settings
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
-    public static readonly NUMBER_OF_PIECES: number = 12;
+    public static readonly NUMBER_OF_PIECES: number = 2;
     private readonly FIRST_SHRINK : number = 128;
     private readonly SECOND_SHRINK: number = 192;
 
@@ -22,7 +23,7 @@ export class GameSession {
     private blackToPlace: number;
     private moveCount: number; // only counts moving phase
     private ended: boolean = false;
-    private actions: Array<[number, PlayerColor, PlayerAction]>;
+    public actions: Array<[number, PlayerColor, PlayerAction]>;
 
     constructor(id: string) {
         this.id = id;
@@ -99,8 +100,8 @@ export class GameSession {
         //DEBUG
         console.log("Round " + this.round);
         this.board.printBoard();
-        console.log("")
-        console.log("")
+        console.log("");
+        console.log("");
 
         if (this.round == 0) {
             // initialise
@@ -115,7 +116,7 @@ export class GameSession {
             if (this.phase == GamePhase.Moving) {
                 // @todo: check winning first
                 if (this.board.getWinner() != null){
-                    this.ended = true;
+                    this.endGame();
                     this.pushSync();
                     return;
                 }
@@ -181,6 +182,16 @@ export class GameSession {
             this.onPushSync(s);
         }
     }
+
+    public endGame() {
+        if (!this.ended) {
+            this.ended = true;
+            if (this.OnEnded) {
+                this.OnEnded();
+            }
+        }
+    }
+    public OnEnded:Function = null;
 }
 
 export interface GameSessionUpdate {

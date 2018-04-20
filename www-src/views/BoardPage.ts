@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { Socket } from '../utils';
-import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress } from "../components";
+import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer } from "../components";
 import { ClientViewModel } from '../models/ClientViewModel';
 import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction } from '../../src/logic';
 declare var $ : any;
@@ -12,6 +12,10 @@ declare var $ : any;
     name: 'board-page',
     template: `
     <div class="ui grid stackable doubling container">
+        <my-dimmer v-if="hasWinner" >
+            <i class="heart icon"></i>
+            Winner is {{winnerName}}! <button @click="onReturnClicked">Return to room</button>
+        </my-dimmer>
         <div class="two column row">
             <div class="nine wide column">
                 <play-board 
@@ -36,7 +40,7 @@ declare var $ : any;
                     />
                 </div>
                     <h1>Playing {{roomId}} - {{getPhaseString()}} Round #{{viewModel.sessionInfo.round}}</h1>
-                <h1 v-if="hasWinner" style="color:red">Winner is {{winnerName}}! <button @click="onReturnClicked">Return to room</button></h1>
+                
                 <div v-if="myTurn">
                     <p>{{previewMove}}</p>
                     <button @click="onSubmit" class="ui blue button" v-if="showButton">Submit (Enter)</button>
@@ -64,7 +68,7 @@ declare var $ : any;
         </div>
 
     </div>`,
-    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress }
+    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer}
 })
 export class BoardPage extends Vue {
     @Prop()

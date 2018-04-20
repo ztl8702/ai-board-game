@@ -141,8 +141,9 @@ export enum PlayerState {
 }
 
 export enum PlayerActionType {
-    Place,
-    MakeMove
+    Pass = 0,
+    Place = 1,
+    MakeMove = 2,
 }
 
 export class PlayerAction {
@@ -161,6 +162,10 @@ export interface PlayerMoveAction extends PlayerAction {
     toX: number;
     toY: number;
     type: PlayerActionType.MakeMove;
+}
+
+export interface PlayerForfeitMove extends PlayerAction {
+    type: PlayerActionType.Pass;
 }
 
 export class PlayerActionResult {
