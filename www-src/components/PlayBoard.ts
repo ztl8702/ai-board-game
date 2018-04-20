@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Component from "vue-class-component";
 import { BoardCell, HighlightStyle, IndexCell } from './';
-import { Board } from "../../src/logic";
+import { Board, PlayerAction, PlayerActionType, PlayerPlaceAction, PlayerMoveAction } from "../../src/logic";
 import { Prop, Watch } from "vue-property-decorator";
 import { Socket } from '../utils';
 
@@ -28,6 +28,7 @@ export enum PlayBoardMode {
             v-bind:y="col.y"
             v-bind:pieceColor="getPieceColor(col.x, col.y)"
             v-bind:highlight="getHighlightStyle(col.x, col.y)"
+            v-bind:highlightLast="getHighlightLast(col.x, col.y)"
             v-on:clicked="cellClicked"
             />
         </div>
@@ -56,15 +57,17 @@ export class PlayBoard extends Vue {
 
     @Watch("mode")
     onModeChanged(val) {
-       // if (val == PlayBoardMode.ViewOnly) {
-            this.selectionState = PlayBoardSelectionState.NoSelection;
-            this.selectedCell = null;
-            this.targetCell = null;
-            this.availableCells = [];
-            this.$emit('input', null);
+        // if (val == PlayBoardMode.ViewOnly) {
+        this.selectionState = PlayBoardSelectionState.NoSelection;
+        this.selectedCell = null;
+        this.targetCell = null;
+        this.availableCells = [];
+        this.$emit('input', null);
         //} 
         //this.mode = val;
     }
+    @Prop({})
+    lastMove: PlayerAction = null;
 
     @Prop({})
     value: any;
@@ -144,6 +147,27 @@ export class PlayBoard extends Vue {
             }
         }
         return result;
+    }
+
+    getHighlightLast(x: number, y: number) {
+        if (this.lastMove != null) {
+            if (this.lastMove.type == PlayerActionType.Place) {
+                if (x == (this.lastMove as PlayerPlaceAction).newX
+                    && y == (this.lastMove as PlayerPlaceAction).newY) {
+                    return HighlightStyle.LastMove1;
+                }
+            } else if (this.lastMove.type == PlayerActionType.MakeMove) {
+                if (x == (this.lastMove as PlayerMoveAction).fromX
+                    && y == (this.lastMove as PlayerMoveAction).fromY) {
+                    return HighlightStyle.LastMove1;
+                }
+                if (x == (this.lastMove as PlayerMoveAction).toX
+                    && y == (this.lastMove as PlayerMoveAction).toY) {
+                    return HighlightStyle.LastMove2;
+                }
+            }
+        }
+        return HighlightStyle.None;
     }
 
     getHighlightStyle(x: number, y: number): HighlightStyle {

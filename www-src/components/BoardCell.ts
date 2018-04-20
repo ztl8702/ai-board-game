@@ -8,7 +8,9 @@ export enum HighlightStyle {
     None,
     Selected,
     Hint,
-    Target
+    Target,
+    LastMove1,
+    LastMove2
 }
 
 @Component({
@@ -16,7 +18,7 @@ export enum HighlightStyle {
     template: `
         <div 
             class="board-cell" 
-            v-bind:class="{ pblack: isBlack, pwhite: isWhite, selected: isSelected, hint: isHint, target: isTarget, dead: isDead, corner:isCorner}" 
+            v-bind:class="{ pblack: isBlack, pwhite: isWhite, selected: isSelected, hint: isHint, target: isTarget, dead: isDead, corner:isCorner, lastmove1: isLastMove1, lastmove2: isLastMove2}" 
             @click="onClick"><div class="board-cell__inner">{{ displayText }}</div></div>`,
 })
 export class BoardCell extends Vue {
@@ -31,6 +33,9 @@ export class BoardCell extends Vue {
 
     @Prop({ default: HighlightStyle.None })
     highlight: HighlightStyle;
+
+    @Prop({ default: HighlightStyle.None })
+    highlightLast: HighlightStyle;
 
     get isBlack(): boolean {
         return (this.pieceColor == Board.CELL_BLACK);
@@ -59,6 +64,14 @@ export class BoardCell extends Vue {
 
     get isCorner(): boolean{
         return this.pieceColor == Board.CELL_CORNER;
+    }
+
+    get isLastMove1(): boolean{
+        return this.highlightLast == HighlightStyle.LastMove1;
+    }
+
+    get isLastMove2(): boolean{
+        return this.highlightLast == HighlightStyle.LastMove2;
     }
 
     get displayText(): string {

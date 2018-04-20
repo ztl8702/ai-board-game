@@ -4,7 +4,7 @@ import { Prop } from "vue-property-decorator";
 import { Socket } from '../utils';
 import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer } from "../components";
 import { ClientViewModel } from '../models/ClientViewModel';
-import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction } from '../../src/logic';
+import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction, PlayerAction } from '../../src/logic';
 declare var $ : any;
 
 
@@ -26,7 +26,9 @@ declare var $ : any;
                     v-bind:board="viewModel.board" 
                     v-bind:playerColor="playerColor" 
                     v-model="boardOutput"
-                    v-bind:rotate="shouldRotateBoard" />
+                    v-bind:rotate="shouldRotateBoard"
+                    v-bind:lastMove="lastMove" 
+                />
             </div>
             <div class="seven wide column">
                 <div class="ui segment" v-if="hasWinner==false">
@@ -258,6 +260,13 @@ export class BoardPage extends Vue {
         if (confirm("Are you sure you want to quit? Game will end if you quit.")) {
             Socket.leaveRoom();
         }
+    }
+
+    get lastMove(): PlayerAction {
+        if (this.viewModel.sessionInfo.listOfMoves.length>0) {
+            return this.viewModel.sessionInfo.listOfMoves[this.viewModel.sessionInfo.listOfMoves.length-1][2];
+        }
+        return null;
     }
 
     get listOfMoves(): Array<any> {

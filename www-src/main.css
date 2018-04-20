@@ -1,12 +1,12 @@
 
 
 .board__row {
-  min-width: 400px;
+  min-width: 420px;
   display: table;
 }
 .board-cell {
-  border: 2px solid white; 
-    display:inline-block;
+    margin: 3px; 
+    display: inline-block;
     width: 40px;
     min-width:40px;
     max-width:40px;
@@ -58,6 +58,14 @@
     background: lightblue;
 }
 
+.board-cell.lastmove1 {
+  box-shadow: inset 0px 0px 0px 3px lightblue;
+}
+
+.board-cell.lastmove2{
+  box-shadow: inset 0px 0px 0px 3px #ffee7f;
+}
+
 .board-cell.target{
     background: lightcoral;
     animation: colorchange 1s infinite; /* animation-name followed by duration in seconds*/
@@ -66,16 +74,16 @@
 
   @keyframes colorchange
   {
-    0%   {background: lightcoral;}
+    0%   {background: #ffee7f;}
     50%  {background: white;}
-    100% {background: lightcoral;}
+    100% {background: #ffee7f;}
   }
 
   @-webkit-keyframes colorchange /* Safari and Chrome - necessary duplicate */
   {
-    0%   {background: lightcoral;}
+    0%   {background: #ffee7f;}
     50%  {background: white;}
-    100% {background: lightcoral;}
+    100% {background: #ffee7f;}
   }
 
 .board-cell.pblack{
