@@ -33,21 +33,20 @@ declare var $ : any;
                     <whos-turn v-bind:yours="myTurn" v-bind:oppo="!myTurn && !hasWinner" />
                     <placing-progress-bar 
                         v-bind:progress="viewModel.sessionInfo.round-1" 
-                        v-bind:total="24"
                         v-if="isPlacing" />
                     <moving-progress
                         v-if="isMoving" 
-                        v-bind:total="12"
                         v-bind:mine="myPiecesCount"
                         v-bind:oppo="oppoPiecesCount"
                     />
                 </div>
                 <div class="ui segment">
                     <h2>Room {{viewModel.roomId}} <button class="ui button" @click="onQuit">Quit</button></h2>
+                    <h3> {{sideText}}</h3>
                     <h3> {{getPhaseString()}} Turn #{{viewModel.sessionInfo.round}}</h3>
                 </div>
                 <div class="ui segment" v-if="myTurn">
-                    <p>{{previewMove}}</p>
+                    <p v-if="showButton">{{previewMove}}</p>
                     <button @click="onSubmit" class="ui blue button" v-if="showButton">Submit (Enter)</button>
                     <button @click="onPass" class="ui yellow button" v-if="isMoving" >Pass</button>
                 </div>
@@ -79,9 +78,6 @@ export class BoardPage extends Vue {
     @Prop()
     viewModel: ClientViewModel;
 
-    data = {
-        'boardOutput': null
-    };
 
     boardOutput = null;
     constructor() {
@@ -165,6 +161,17 @@ export class BoardPage extends Vue {
         }
     }
 
+    get sideText():string {
+        if (this.side() == PlayerColor.Black) {
+            return "Your piece: @";
+        } else if (this.side() == PlayerColor.White) {
+            return "Your piece: O";
+        }
+        else {
+            return "";
+        }
+    }
+
     get myPiecesCount():number {
         if (this.side() == PlayerColor.White) {
             return this.viewModel.sessionInfo.whitePiece;
@@ -208,7 +215,7 @@ export class BoardPage extends Vue {
     get showButton(): boolean {
         if (this.theMode != PlayBoardMode.ViewOnly) {
             if (this.boardOutput != null) {
-                return true;
+                if (this.boardOutput.newX !=null || this.boardOutput.fromX!=null) return true;
             } else {
                 return false;
             }

@@ -55,12 +55,13 @@ export class PlayBoard extends Vue {
 
     @Watch("mode")
     onModeChanged(val) {
-        if (val == PlayBoardMode.ViewOnly) {
+       // if (val == PlayBoardMode.ViewOnly) {
             this.selectionState = PlayBoardSelectionState.NoSelection;
             this.selectedCell = null;
             this.targetCell = null;
             this.availableCells = [];
-        }
+            this.$emit('input', null);
+        //} 
         //this.mode = val;
     }
 
