@@ -53,7 +53,7 @@ declare var $ : any;
             </div>
         </div>
         <div class="one column row">
-            <div class="column">
+            <div class="column" style="max-height:200px; overflow-y:scroll; overflow-x:scroll;">
                 <table class="ui single line table">
                     <thead>
                         <tr>
