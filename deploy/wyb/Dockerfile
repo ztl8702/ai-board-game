@@ -9,7 +9,7 @@ COPY . ./
 
 RUN yarn install --production=false
 
-RUN gulp frontend:rebuild && tsc 
+RUN gulp frontend:rebuild-prod && tsc 
 
 FROM node:8-alpine
 WORKDIR /app

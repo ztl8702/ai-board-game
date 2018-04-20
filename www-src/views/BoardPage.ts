@@ -4,8 +4,8 @@ import { Prop } from "vue-property-decorator";
 import { Socket } from '../utils';
 import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer } from "../components";
 import { ClientViewModel } from '../models/ClientViewModel';
-import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction, PlayerAction } from '../../src/logic';
-declare var $ : any;
+import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction, PlayerAction, GameSession } from '../../src/logic';
+declare var $: any;
 
 
 @Component({
@@ -17,7 +17,7 @@ declare var $ : any;
             Winner is {{winnerName}}! <button @click="onReturnClicked">Return to room</button>
         </my-dimmer>
         <my-dimmer v-if="!hasWinner && hasEnded" >
-            Game ended because some loser quitted. <button @click="onReturnClicked">Return to room</button>
+            Game ended because your opponent quitted. <button class="ui huge button" @click="onReturnClicked">Return to room</button>
         </my-dimmer>
         <div class="two column row">
             <div class="nine wide column">
@@ -28,6 +28,8 @@ declare var $ : any;
                     v-model="boardOutput"
                     v-bind:rotate="shouldRotateBoard"
                     v-bind:lastMove="lastMove" 
+                    v-bind:allowedRowStart="allowedRows[0]"
+                    v-bind:allowedRowEnd="allowedRows[1]"
                 />
             </div>
             <div class="seven wide column">
@@ -45,7 +47,8 @@ declare var $ : any;
                 <div class="ui segment">
                     <h2>Room {{viewModel.roomId}} <button class="ui button" @click="onQuit">Quit</button></h2>
                     <h3> {{sideText}}</h3>
-                    <h3> {{getPhaseString()}} Turn #{{viewModel.sessionInfo.round}}</h3>
+                    <h3> {{getPhaseString()}} Turn #{{turnNumber}}</h3>
+                    <a class="ui red label" v-if="showWarning">Board about to shrink</a>
                 </div>
                 <div class="ui segment" v-if="myTurn">
                     <p v-if="showButton">{{previewMove}}</p>
@@ -74,7 +77,7 @@ declare var $ : any;
         </div>
 
     </div>`,
-    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer}
+    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer }
 })
 export class BoardPage extends Vue {
     @Prop()
@@ -96,7 +99,7 @@ export class BoardPage extends Vue {
         });
     }
     mounted() {
-        
+
         Socket.requestSessionSync(this.viewModel.roomId);
         window.addEventListener('keydown', this.onKeyPress);
     }
@@ -104,7 +107,7 @@ export class BoardPage extends Vue {
     onKeyPress(e) {
         console.log(e.keyCode);
         if (e.keyCode == 13 && this.boardOutput) {
-            if (confirm("Are you sure you want to submit this move?"))  this.onSubmit();
+            if (confirm("Are you sure you want to submit this move?")) this.onSubmit();
         }
     }
 
@@ -124,33 +127,47 @@ export class BoardPage extends Vue {
         }
 
     }
+    get turnNumber() {
+        if (this.isPlacing) return (this.viewModel.sessionInfo.round);
+        if (this.isMoving) return (this.viewModel.sessionInfo.round - GameSession.NUMBER_OF_PIECES * 2);
+    }
 
-    get shouldRotateBoard() :boolean {
+    get showWarning() {
+        if (this.isMoving) {
+            if (this.turnNumber == GameSession.FIRST_SHRINK
+                || this.turnNumber == GameSession.SECOND_SHRINK) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    get shouldRotateBoard(): boolean {
         return this.side() == PlayerColor.White;
     }
 
-    get isPlacing() : boolean{
+    get isPlacing(): boolean {
         try {
             if (this.viewModel.sessionInfo.phase == GamePhase.Placing) {
                 return true;
-            } 
+            }
         } catch {
 
         }
         return false;
     }
 
-    get isMoving() : boolean {
+    get isMoving(): boolean {
         try {
             if (this.viewModel.sessionInfo.phase == GamePhase.Moving) {
                 return true;
-            } 
+            }
         } catch {
 
         }
         return false;
     }
-    
+
     side(): PlayerColor {
         if (this.viewModel.roomInfo.blackPlayerId == this.viewModel.playerId) {
             return PlayerColor.Black;
@@ -163,18 +180,24 @@ export class BoardPage extends Vue {
         }
     }
 
-    get sideText():string {
+    get allowedRows() {
+        if (this.side() == PlayerColor.White) return [0, 5];
+        if (this.side() == PlayerColor.Black) return [2, 7];
+        return [-1, -1];
+    }
+
+    get sideText(): string {
         if (this.side() == PlayerColor.Black) {
             return "Your piece: @";
         } else if (this.side() == PlayerColor.White) {
-            return "Your piece: O";
+            return "Your piece: O, the board is rotated 180° for you";
         }
         else {
             return "";
         }
     }
 
-    get myPiecesCount():number {
+    get myPiecesCount(): number {
         if (this.side() == PlayerColor.White) {
             return this.viewModel.sessionInfo.whitePiece;
         } else if (this.side() == PlayerColor.Black) {
@@ -184,7 +207,7 @@ export class BoardPage extends Vue {
         }
     }
 
-    get oppoPiecesCount():number{
+    get oppoPiecesCount(): number {
         if (this.side() == PlayerColor.White) {
             return this.viewModel.sessionInfo.blackPiece;
         } else if (this.side() == PlayerColor.Black) {
@@ -217,7 +240,7 @@ export class BoardPage extends Vue {
     get showButton(): boolean {
         if (this.theMode != PlayBoardMode.ViewOnly) {
             if (this.boardOutput != null) {
-                if (this.boardOutput.newX !=null || this.boardOutput.fromX!=null) return true;
+                if (this.boardOutput.newX != null || this.boardOutput.fromX != null) return true;
             } else {
                 return false;
             }
@@ -263,8 +286,8 @@ export class BoardPage extends Vue {
     }
 
     get lastMove(): PlayerAction {
-        if (this.viewModel.sessionInfo.listOfMoves.length>0) {
-            return this.viewModel.sessionInfo.listOfMoves[this.viewModel.sessionInfo.listOfMoves.length-1][2];
+        if (this.viewModel.sessionInfo.listOfMoves.length > 0) {
+            return this.viewModel.sessionInfo.listOfMoves[this.viewModel.sessionInfo.listOfMoves.length - 1][2];
         }
         return null;
     }
@@ -275,10 +298,10 @@ export class BoardPage extends Vue {
             (move, i) => {
                 var playerName = move[1] == PlayerColor.Black ? this.viewModel.roomInfo.blackPlayerName : this.viewModel.roomInfo.whitePlayerName;
                 var moveType = move[2].type;
-                if (moveType==PlayerActionType.MakeMove) {
+                if (moveType == PlayerActionType.MakeMove) {
                     let act = move[2] as PlayerMoveAction;
                     return [i, `Player ${playerName} moved (${act.fromX},${act.fromY}) to (${act.toX},${act.toY}).`];
-                } else if (moveType==PlayerActionType.Place){
+                } else if (moveType == PlayerActionType.Place) {
                     let act = move[2] as PlayerPlaceAction;
                     return [i, `Player ${playerName} placed a piece at (${act.newX},${act.newY}).`];
                 } else {
@@ -288,7 +311,7 @@ export class BoardPage extends Vue {
         )
     }
 
-    get hasWinner() : boolean {
+    get hasWinner(): boolean {
         return this.viewModel.sessionInfo.winner != null;
     }
 
@@ -296,7 +319,7 @@ export class BoardPage extends Vue {
         return this.viewModel.sessionInfo.quitter == true;
     }
 
-    get winnerName() : string{
+    get winnerName(): string {
         if (this.viewModel.sessionInfo.winner == PlayerColor.Black) {
             return this.viewModel.roomInfo.blackPlayerName;
         } else if (this.viewModel.sessionInfo.winner == PlayerColor.White) {
@@ -308,7 +331,7 @@ export class BoardPage extends Vue {
         Socket.newSession();
     }
 
-    get myTurn() : boolean {
+    get myTurn(): boolean {
         if (this.hasWinner) return false;
         if (this.viewModel.sessionInfo.turn == PlayerColor.Black && this.viewModel.roomInfo.blackPlayerId == this.viewModel.playerId)
             return true;

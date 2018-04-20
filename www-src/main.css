@@ -4,6 +4,11 @@
   min-width: 420px;
   display: table;
 }
+
+.board__row.allowed {
+  background: lightgreen;
+}
+
 .board-cell {
     margin: 3px; 
     display: inline-block;

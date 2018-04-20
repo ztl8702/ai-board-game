@@ -21,7 +21,7 @@ import { Socket } from '../utils';
            <!-- <h2>Leaderboard</h2>-->
            <div style="margin-top:100px;">
            <hr />
-           <i>Disclaimer: "Watch Your Back" is designed by the COMP30024 teaching team (lecturer: Sarah Monazam Erfani; head tutor: Matthew Farrugia-Roberts) at the University of Melbourne. This online game is independently implemented by <a href="http://github.com/ztl8702/">Tianlei Zheng</a> and <a href="http://github.com/TTVS/">Terrence Lua</a>. For bugs, <a href="mailto:wybonline@googlegroups.com">send us an email</a>.
+           <i>Disclaimer: "Watch Your Back" is designed by the COMP30024 teaching team (lecturer: Sarah Monazam Erfani; head tutor: Matthew Farrugia-Roberts) at the University of Melbourne. This online game is independently implemented by <a href="http://github.com/ztl8702/">Tianlei Zheng</a> and <a href="http://github.com/TTVS/">Terrence Lua</a>. For bugs, <a href="mailto:wybonline@googlegroups.com">send us an email</a>.</i>
            </div>
         </div>
     </div>`,
