@@ -8,15 +8,9 @@ import { Socket } from './utils';
 export var App = Vue.extend({
     template: `
     <div>
-        <div class="ui secondary  menu">
+        <div class="ui stackable menu">
             <a class="active item">
             current page: {{vm.page}}
-            </a>
-            <a class="item">
-            Messages
-            </a>
-            <a class="item">
-            Friends
             </a>
             <div class="right menu">
                 <a class="ui item">
