@@ -21,7 +21,7 @@ export enum PlayBoardMode {
             <index-cell />
             <index-cell v-for="col in rows[0].cols" v-bind:displayText="col.x" /> 
         </div>
-        <div class="board__row" v-for="row in rows">
+        <div class="board__row" v-bind:class="getClasses(row.id)" v-for="row in rows">
             <index-cell v-bind:displayText="row.id" />
             <board-cell v-for="col in row.cols" 
             v-bind:x="col.x"
@@ -36,7 +36,7 @@ export enum PlayBoardMode {
     components: { BoardCell, IndexCell }
 })
 export class PlayBoard extends Vue {
-
+    getClasses = (y) => ({ 'allowed': this.isAllowedRow(y) })
     selectedCell: any | null = null;
     targetCell: any | null = null;
     availableCells: Array<[number, number]> = [];
@@ -54,6 +54,12 @@ export class PlayBoard extends Vue {
     mode: PlayBoardMode = PlayBoardMode.ViewOnly;
     @Prop({})
     playerColor: string;
+
+    @Prop({})
+    allowedRowStart: number = null;
+
+    @Prop({})
+    allowedRowEnd: number = null;
 
     @Watch("mode")
     onModeChanged(val) {
@@ -147,6 +153,18 @@ export class PlayBoard extends Vue {
             }
         }
         return result;
+    }
+
+    isAllowedRow(y: number): boolean {
+        if (this.mode == PlayBoardMode.SelectForPlacing) {
+            if (y >= this.allowedRowStart && y <= this.allowedRowEnd) {
+                console.log('row',y, 'allowed');
+                return true;
+            }
+        }
+        console.log('row',y, 'not allowed');
+         
+        return false;
     }
 
     getHighlightLast(x: number, y: number) {
