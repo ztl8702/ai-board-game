@@ -83,6 +83,7 @@ export class GameRoom {
             case GameRoomState.Playing:
                 // the game is ongoing
                 if (this.blackPlayer != player && this.whitePlayer != player) break;
+                this.currentSession.hasQuitter = true;
                 // end the game first, triggering saving
                 this.currentSession.endGame();
                 // then remove playing.

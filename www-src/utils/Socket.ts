@@ -44,7 +44,9 @@ export class Socket {
     }
 
     public static pass() {
-        this.socket.emit('pass');
+        this.socket.emit('makeMove', {
+            type: PlayerActionType.Pass,
+        }, function (d) { console.log(d) });
     }
 
     public static observeRoom(roomId) {

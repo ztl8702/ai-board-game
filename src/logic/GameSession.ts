@@ -7,7 +7,7 @@ export class GameSession {
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
     public static readonly NUMBER_OF_PIECES: number = 2;
-    private readonly FIRST_SHRINK : number = 128;
+    private readonly FIRST_SHRINK: number = 128;
     private readonly SECOND_SHRINK: number = 192;
 
 
@@ -24,6 +24,7 @@ export class GameSession {
     private moveCount: number; // only counts moving phase
     private ended: boolean = false;
     public actions: Array<[number, PlayerColor, PlayerAction]>;
+    public hasQuitter: boolean = false;
 
     constructor(id: string) {
         this.id = id;
@@ -89,10 +90,22 @@ export class GameSession {
             }));
             setImmediate(() => this.pushSync());
             return PlayerActionResult.success();
-        } else {
+        } else if (this.phase == GamePhase.Moving && act.type == PlayerActionType.Pass) {
+            this.actions.push([this.round, color, act]);
+            this.moveCount++;
+            setImmediate(() => this.nextRound());
+            setImmediate(() => this.sendUpdate({
+                lastMove: this.actions[this.actions.length - 1],
+                timeSinceStart: this.getTime(),
+                phase: this.phase,
+                timeLeftForThisTurn: -1
+            }));
+            return PlayerActionResult.success();
+        }
+        else {
             return PlayerActionResult.failed("Invalid action type.");
         }
-        
+
     }
 
     public nextRound() {
@@ -115,9 +128,8 @@ export class GameSession {
         else {
             if (this.phase == GamePhase.Moving) {
                 // @todo: check winning first
-                if (this.board.getWinner() != null){
+                if (this.board.getWinner() != null) {
                     this.endGame();
-                    this.pushSync();
                     return;
                 }
                 if (this.moveCount == this.FIRST_SHRINK || this.moveCount == this.SECOND_SHRINK) {
@@ -147,7 +159,7 @@ export class GameSession {
 
     private getTime(): number {
         // seconds since the start of the game
-        if (this.startTime == null) { return 0;}
+        if (this.startTime == null) { return 0; }
         var now = new Date(Date.now());
         return (now.getTime() - this.startTime.getTime()) / 1000;
     }
@@ -163,7 +175,8 @@ export class GameSession {
             timeSinceStart: this.getTime(),
             timeLeftForThisTurn: -1,
             whitePiece: this.board.pieceCount(PlayerColor.White),
-            blackPiece: this.board.pieceCount(PlayerColor.Black)
+            blackPiece: this.board.pieceCount(PlayerColor.Black),
+            quitter: this.hasQuitter
         };
     }
 
@@ -186,12 +199,13 @@ export class GameSession {
     public endGame() {
         if (!this.ended) {
             this.ended = true;
+            this.pushSync();
             if (this.OnEnded) {
                 this.OnEnded();
             }
         }
     }
-    public OnEnded:Function = null;
+    public OnEnded: Function = null;
 }
 
 export interface GameSessionUpdate {
@@ -212,6 +226,7 @@ export interface GameSessionSync {
     timeLeftForThisTurn: number; //seconds
     timeSinceStart: number; //seconds
     listOfMoves: Array<[number, PlayerColor, PlayerAction]>;
+    quitter: boolean;
 }
 
 

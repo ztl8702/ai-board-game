@@ -10,7 +10,7 @@ export var App = Vue.extend({
     <div>
         <div class="ui stackable menu">
             <a class="active item">
-            current page: {{vm.page}}
+            Watch Your Back
             </a>
             <div class="right menu">
                 <a class="ui item">

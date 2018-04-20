@@ -16,6 +16,9 @@ declare var $ : any;
             <i class="heart icon"></i>
             Winner is {{winnerName}}! <button @click="onReturnClicked">Return to room</button>
         </my-dimmer>
+        <my-dimmer v-if="!hasWinner && hasEnded" >
+            Game ended because some loser quitted. <button @click="onReturnClicked">Return to room</button>
+        </my-dimmer>
         <div class="two column row">
             <div class="nine wide column">
                 <play-board 
@@ -26,10 +29,10 @@ declare var $ : any;
                     v-bind:rotate="shouldRotateBoard" />
             </div>
             <div class="seven wide column">
-                <div v-if="hasWinner==false">
+                <div class="ui segment" v-if="hasWinner==false">
                     <whos-turn v-bind:yours="myTurn" v-bind:oppo="!myTurn && !hasWinner" />
                     <placing-progress-bar 
-                        v-bind:progress="viewModel.sessionInfo.round" 
+                        v-bind:progress="viewModel.sessionInfo.round-1" 
                         v-bind:total="24"
                         v-if="isPlacing" />
                     <moving-progress
@@ -39,9 +42,11 @@ declare var $ : any;
                         v-bind:oppo="oppoPiecesCount"
                     />
                 </div>
-                    <h1>Playing {{roomId}} - {{getPhaseString()}} Round #{{viewModel.sessionInfo.round}}</h1>
-                
-                <div v-if="myTurn">
+                <div class="ui segment">
+                    <h2>Room {{viewModel.roomId}} <button class="ui button" @click="onQuit">Quit</button></h2>
+                    <h3> {{getPhaseString()}} Turn #{{viewModel.sessionInfo.round}}</h3>
+                </div>
+                <div class="ui segment" v-if="myTurn">
                     <p>{{previewMove}}</p>
                     <button @click="onSubmit" class="ui blue button" v-if="showButton">Submit (Enter)</button>
                     <button @click="onPass" class="ui yellow button" v-if="isMoving" >Pass</button>
@@ -242,6 +247,12 @@ export class BoardPage extends Vue {
         Socket.pass();
     }
 
+    onQuit() {
+        if (confirm("Are you sure you want to quit? Game will end if you quit.")) {
+            Socket.leaveRoom();
+        }
+    }
+
     get listOfMoves(): Array<any> {
         if (!this.viewModel.sessionInfo.listOfMoves) return [];
         return this.viewModel.sessionInfo.listOfMoves.map(
@@ -251,9 +262,11 @@ export class BoardPage extends Vue {
                 if (moveType==PlayerActionType.MakeMove) {
                     let act = move[2] as PlayerMoveAction;
                     return [i, `Player ${playerName} moved (${act.fromX},${act.fromY}) to (${act.toX},${act.toY}).`];
-                } else {
+                } else if (moveType==PlayerActionType.Place){
                     let act = move[2] as PlayerPlaceAction;
                     return [i, `Player ${playerName} placed a piece at (${act.newX},${act.newY}).`];
+                } else {
+                    return [i, `Player ${playerName} chose to pass.`];
                 }
             }
         )
@@ -261,6 +274,10 @@ export class BoardPage extends Vue {
 
     get hasWinner() : boolean {
         return this.viewModel.sessionInfo.winner != null;
+    }
+
+    get hasEnded(): boolean {
+        return this.viewModel.sessionInfo.quitter == true;
     }
 
     get winnerName() : string{
