@@ -6,9 +6,9 @@ export class GameSession {
     // Game Settings
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
-    public static readonly NUMBER_OF_PIECES: number = 2; //12
-    public static readonly FIRST_SHRINK: number = 8; //128
-    public static readonly SECOND_SHRINK: number = 12; //192
+    public static readonly NUMBER_OF_PIECES: number = 12; //12
+    public static readonly FIRST_SHRINK: number = 128; //128
+    public static readonly SECOND_SHRINK: number = 192; //192
 
 
     private id: string;
