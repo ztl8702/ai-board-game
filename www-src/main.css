@@ -1,23 +1,12 @@
-table.board {
-    border-collapse: collapse;
-  }
-  table.board td {
-    border: 5px solid white; 
-  }
-  table.board tr:first-child td {
-    border-top: 0;
-  }
-  table.board tr td:first-child {
-    border-left: 0;
-  }
-  table.board tr:last-child td {
-    border-bottom: 0;
-  }
-  table.board tr td:last-child {
-    border-right: 0;
-  }
 
+
+.board__row {
+  min-width: 420px;
+  display: table;
+}
 .board-cell {
+    margin: 3px; 
+    display: inline-block;
     width: 40px;
     min-width:40px;
     max-width:40px;
@@ -47,6 +36,12 @@ table.board {
     width: 40px;
     overflow: hidden;
 }
+
+.board-cell.index {
+  font-size:15px;
+  color: darkgray;
+  background: white;
+}
 .board-cell.dead {
     background: gray;
 }
@@ -63,6 +58,14 @@ table.board {
     background: lightblue;
 }
 
+.board-cell.lastmove1 {
+  box-shadow: inset 0px 0px 0px 3px lightblue;
+}
+
+.board-cell.lastmove2{
+  box-shadow: inset 0px 0px 0px 3px #ffee7f;
+}
+
 .board-cell.target{
     background: lightcoral;
     animation: colorchange 1s infinite; /* animation-name followed by duration in seconds*/
@@ -71,16 +74,16 @@ table.board {
 
   @keyframes colorchange
   {
-    0%   {background: lightcoral;}
+    0%   {background: #ffee7f;}
     50%  {background: white;}
-    100% {background: lightcoral;}
+    100% {background: #ffee7f;}
   }
 
   @-webkit-keyframes colorchange /* Safari and Chrome - necessary duplicate */
   {
-    0%   {background: lightcoral;}
+    0%   {background: #ffee7f;}
     50%  {background: white;}
-    100% {background: lightcoral;}
+    100% {background: #ffee7f;}
   }
 
 .board-cell.pblack{

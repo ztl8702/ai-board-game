@@ -37,5 +37,6 @@
     ```
 
 1. Go to the browser and visit `http://localhost:3000`
+> Use a different browser (or incognito mode) to simulate multiple users
 
-1. Use a different browser (or incognito mode) to simulate multiple users
+1. Run `gulp frontend:watch` in another terminal to automatically recompile frontend code when it changes.

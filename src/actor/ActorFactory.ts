@@ -1,9 +1,13 @@
 import {GameRoom, Player, GameSession} from "../logic";
+import { DBConnection } from "../db";
 var cryptol = require("crypto");
 
 
 
 export class ActorFactory {
+
+    static _conn : DBConnection;
+
     private static dict = {
         'GameRoom': {},
         'Player': {},
@@ -18,7 +22,7 @@ export class ActorFactory {
         if (this.dict[type][id] == null) {
             switch (type) {
                 case 'GameRoom':
-                    this.dict[type][id] = new GameRoom(id);
+                    this.dict[type][id] = new GameRoom(id, ActorFactory._conn);
                     break;
                 case 'GameSession':
                     this.dict[type][id] = new GameSession(id);

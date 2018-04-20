@@ -3,10 +3,11 @@ import { setImmediate } from "timers";
 
 export class GameSession {
 
+    // Game Settings
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
-    private readonly NUMBER_OF_PIECES: number = 12;
-    private readonly FIRST_SHRINK : number = 128;
+    public static readonly NUMBER_OF_PIECES: number = 2;
+    private readonly FIRST_SHRINK: number = 128;
     private readonly SECOND_SHRINK: number = 192;
 
 
@@ -22,7 +23,8 @@ export class GameSession {
     private blackToPlace: number;
     private moveCount: number; // only counts moving phase
     private ended: boolean = false;
-    private actions: Array<[number, PlayerColor, PlayerAction]>;
+    public actions: Array<[number, PlayerColor, PlayerAction]>;
+    public hasQuitter: boolean = false;
 
     constructor(id: string) {
         this.id = id;
@@ -86,10 +88,24 @@ export class GameSession {
                 phase: this.phase,
                 timeLeftForThisTurn: -1
             }));
+            setImmediate(() => this.pushSync());
             return PlayerActionResult.success();
-        } else {
+        } else if (this.phase == GamePhase.Moving && act.type == PlayerActionType.Pass) {
+            this.actions.push([this.round, color, act]);
+            this.moveCount++;
+            setImmediate(() => this.nextRound());
+            setImmediate(() => this.sendUpdate({
+                lastMove: this.actions[this.actions.length - 1],
+                timeSinceStart: this.getTime(),
+                phase: this.phase,
+                timeLeftForThisTurn: -1
+            }));
+            return PlayerActionResult.success();
+        }
+        else {
             return PlayerActionResult.failed("Invalid action type.");
         }
+
     }
 
     public nextRound() {
@@ -97,24 +113,23 @@ export class GameSession {
         //DEBUG
         console.log("Round " + this.round);
         this.board.printBoard();
-        console.log("")
-        console.log("")
+        console.log("");
+        console.log("");
 
         if (this.round == 0) {
             // initialise
             this.round = 1;
             this.turn = this.upperHand;
             this.phase = GamePhase.Placing;
-            this.whiteToPlace = this.NUMBER_OF_PIECES;
-            this.blackToPlace = this.NUMBER_OF_PIECES;
+            this.whiteToPlace = GameSession.NUMBER_OF_PIECES;
+            this.blackToPlace = GameSession.NUMBER_OF_PIECES;
 
         }
         else {
             if (this.phase == GamePhase.Moving) {
                 // @todo: check winning first
-                if (this.board.getWinner() != null){
-                    this.ended = true;
-                    this.pushSync();
+                if (this.board.getWinner() != null) {
+                    this.endGame();
                     return;
                 }
                 if (this.moveCount == this.FIRST_SHRINK || this.moveCount == this.SECOND_SHRINK) {
@@ -144,7 +159,7 @@ export class GameSession {
 
     private getTime(): number {
         // seconds since the start of the game
-        if (this.startTime == null) { return 0;}
+        if (this.startTime == null) { return 0; }
         var now = new Date(Date.now());
         return (now.getTime() - this.startTime.getTime()) / 1000;
     }
@@ -158,7 +173,10 @@ export class GameSession {
             phase: this.phase,
             listOfMoves: this.actions,
             timeSinceStart: this.getTime(),
-            timeLeftForThisTurn: -1
+            timeLeftForThisTurn: -1,
+            whitePiece: this.board.pieceCount(PlayerColor.White),
+            blackPiece: this.board.pieceCount(PlayerColor.Black),
+            quitter: this.hasQuitter
         };
     }
 
@@ -177,6 +195,17 @@ export class GameSession {
             this.onPushSync(s);
         }
     }
+
+    public endGame() {
+        if (!this.ended) {
+            this.ended = true;
+            this.pushSync();
+            if (this.OnEnded) {
+                this.OnEnded();
+            }
+        }
+    }
+    public OnEnded: Function = null;
 }
 
 export interface GameSessionUpdate {
@@ -191,10 +220,13 @@ export interface GameSessionSync {
     round: number;
     turn: PlayerColor;
     winner: PlayerColor | null;
+    whitePiece: number;
+    blackPiece: number;
     phase: GamePhase;
     timeLeftForThisTurn: number; //seconds
     timeSinceStart: number; //seconds
     listOfMoves: Array<[number, PlayerColor, PlayerAction]>;
+    quitter: boolean;
 }
 
 

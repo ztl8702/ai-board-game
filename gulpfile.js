@@ -18,4 +18,8 @@ gulp.task('frontend:clean', ()=>{
     return del('public/**', {force:true});
 });
 
+gulp.task('frontend:watch', ()=>{
+    return gulp.watch('www-src/**/*', ["frontend:build"]);
+});
+
 gulp.task('frontend:rebuild',['frontend:clean','frontend:build']);

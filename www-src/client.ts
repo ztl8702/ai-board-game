@@ -1,6 +1,6 @@
 import { Board, PlayerSync, PlayerState, GameRoomSync, GameRoomState, GameSessionSync, GameSessionUpdate, PlayerActionType, PlayerPlaceAction, PlayerMoveAction, PlayerColor } from "../src/logic"
 
-import { App } from "./components/App";
+import { App } from "./App";
 import { Socket } from "./utils";
 import { setInterval } from "timers";
 

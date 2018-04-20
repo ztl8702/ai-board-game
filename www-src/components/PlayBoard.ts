@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import Component from "vue-class-component";
-import { BoardCell, HighlightStyle } from './BoardCell';
-import { Board } from "../../src/logic";
-import { Prop } from "vue-property-decorator";
+import { BoardCell, HighlightStyle, IndexCell } from './';
+import { Board, PlayerAction, PlayerActionType, PlayerPlaceAction, PlayerMoveAction } from "../../src/logic";
+import { Prop, Watch } from "vue-property-decorator";
 import { Socket } from '../utils';
 
 
@@ -15,18 +15,25 @@ export enum PlayBoardMode {
 
 @Component({
     name: 'play-board',
-    template: `<table class="board">
-    <tr v-for="row in rows">
-        <board-cell v-for="col in row.cols" 
-        v-bind:x="col.x"
-        v-bind:y="col.y"
-        v-bind:pieceColor="getPieceColor(col.x, col.y)"
-        v-bind:highlight="getHighlightStyle(col.x, col.y)"
-        v-on:clicked="cellClicked"
-        />
-    </tr>
-    </table>`,
-    components: { BoardCell }
+    template: `
+    <div class="board">
+        <div class="board__row">
+            <index-cell />
+            <index-cell v-for="col in rows[0].cols" v-bind:displayText="col.x" /> 
+        </div>
+        <div class="board__row" v-for="row in rows">
+            <index-cell v-bind:displayText="row.id" />
+            <board-cell v-for="col in row.cols" 
+            v-bind:x="col.x"
+            v-bind:y="col.y"
+            v-bind:pieceColor="getPieceColor(col.x, col.y)"
+            v-bind:highlight="getHighlightStyle(col.x, col.y)"
+            v-bind:highlightLast="getHighlightLast(col.x, col.y)"
+            v-on:clicked="cellClicked"
+            />
+        </div>
+    </div>`,
+    components: { BoardCell, IndexCell }
 })
 export class PlayBoard extends Vue {
 
@@ -47,19 +54,26 @@ export class PlayBoard extends Vue {
     mode: PlayBoardMode = PlayBoardMode.ViewOnly;
     @Prop({})
     playerColor: string;
-    watch = {
-        'mode': (val) => {
-            if (val == PlayBoardMode.ViewOnly) {
-                this.selectionState = PlayBoardSelectionState.NoSelection;
-                this.selectedCell = null;
-                this.targetCell = null;
-                this.availableCells = [];
-            }
-            //this.mode = val;
-        }
+
+    @Watch("mode")
+    onModeChanged(val) {
+        // if (val == PlayBoardMode.ViewOnly) {
+        this.selectionState = PlayBoardSelectionState.NoSelection;
+        this.selectedCell = null;
+        this.targetCell = null;
+        this.availableCells = [];
+        this.$emit('input', null);
+        //} 
+        //this.mode = val;
     }
     @Prop({})
+    lastMove: PlayerAction = null;
+
+    @Prop({})
     value: any;
+
+    @Prop({})
+    rotate: boolean = false;
 
     updated() {
         console.log('PlayBoard updated.')
@@ -109,17 +123,51 @@ export class PlayBoard extends Vue {
 
     get rows(): any {
         var result = [];
-        for (var y = 0; y <= 7; ++y) {
-            var currentRow = { 'cols': [] };
-            for (var x = 0; x <= 7; ++x) {
-                currentRow['cols'].push({
-                    'x': x,
-                    'y': y
-                });
+        if (!this.rotate) {
+            for (var y = 0; y <= 7; ++y) {
+                var currentRow = { 'id': y, 'cols': [] };
+                for (var x = 0; x <= 7; ++x) {
+                    currentRow['cols'].push({
+                        'x': x,
+                        'y': y
+                    });
+                }
+                result.push(currentRow);
             }
-            result.push(currentRow);
+        } else {
+            for (var y = 7; y >= 0; --y) {
+                var currentRow = { 'id': y, 'cols': [] };
+                for (var x = 7; x >= 0; --x) {
+                    currentRow['cols'].push({
+                        'x': x,
+                        'y': y
+                    });
+                }
+                result.push(currentRow);
+            }
         }
         return result;
+    }
+
+    getHighlightLast(x: number, y: number) {
+        if (this.lastMove != null) {
+            if (this.lastMove.type == PlayerActionType.Place) {
+                if (x == (this.lastMove as PlayerPlaceAction).newX
+                    && y == (this.lastMove as PlayerPlaceAction).newY) {
+                    return HighlightStyle.LastMove1;
+                }
+            } else if (this.lastMove.type == PlayerActionType.MakeMove) {
+                if (x == (this.lastMove as PlayerMoveAction).fromX
+                    && y == (this.lastMove as PlayerMoveAction).fromY) {
+                    return HighlightStyle.LastMove1;
+                }
+                if (x == (this.lastMove as PlayerMoveAction).toX
+                    && y == (this.lastMove as PlayerMoveAction).toY) {
+                    return HighlightStyle.LastMove2;
+                }
+            }
+        }
+        return HighlightStyle.None;
     }
 
     getHighlightStyle(x: number, y: number): HighlightStyle {
