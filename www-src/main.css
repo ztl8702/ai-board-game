@@ -8,6 +8,7 @@
 .board__row.allowed {
   background: lightgreen;
 }
+
 .board-cell {
     margin: 3px; 
     display: inline-block;
