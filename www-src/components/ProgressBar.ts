@@ -3,7 +3,7 @@ import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 
 
-declare var $:any;
+declare var $: any;
 @Component({
     name: 'progress-bar',
     template: ` 
@@ -15,10 +15,10 @@ declare var $:any;
 export class ProgressBar extends Vue {
 
 
-    @Prop({ default: 50})
+    @Prop({ default: 50 })
     progress: number = 50;
 
-    @Prop({default :100})
+    @Prop({ default: 100 })
     total: number = 100;
 
     @Prop()
@@ -31,7 +31,7 @@ export class ProgressBar extends Vue {
         console.log($(this.$el), $(this.$el).progress);
         window['haha'] = $(this.$el).progress;
         $(this.$el).progress({
-            'percent': this.percent 
+            'percent': this.percent
         });
     }
 
@@ -42,9 +42,8 @@ export class ProgressBar extends Vue {
     @Watch("progress")
     @Watch("total")
     private redraw() {
-        console.log("redraw", this.percent);
         $(this.$el).progress({
-            'percent': this.percent 
+            'percent': this.percent
         });
     }
 
@@ -54,7 +53,7 @@ export class ProgressBar extends Vue {
     }
 
     get percent() {
-        return 100* this.progress / this.total;
+        return 100 * this.progress / this.total;
     }
 
     constructor() {

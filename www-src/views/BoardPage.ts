@@ -226,13 +226,16 @@ export class BoardPage extends Vue {
         }
     }
     get theMode(): PlayBoardMode {
-        console.log('side=', this.side(), 'turn=', this.viewModel.sessionInfo.turn);
-        if (this.hasWinner) return PlayBoardMode.ViewOnly;
-        if (this.viewModel.sessionInfo.phase == GamePhase.Placing && this.viewModel.sessionInfo.turn == this.side()) {
-            return PlayBoardMode.SelectForPlacing;
-        } else if (this.viewModel.sessionInfo.phase == GamePhase.Moving && this.viewModel.sessionInfo.turn == this.side()) {
-            return PlayBoardMode.SelectForMoving;
-        } else {
+        try {
+            if (this.hasWinner) return PlayBoardMode.ViewOnly;
+            if (this.viewModel.sessionInfo.phase == GamePhase.Placing && this.viewModel.sessionInfo.turn == this.side()) {
+                return PlayBoardMode.SelectForPlacing;
+            } else if (this.viewModel.sessionInfo.phase == GamePhase.Moving && this.viewModel.sessionInfo.turn == this.side()) {
+                return PlayBoardMode.SelectForMoving;
+            } else {
+                return PlayBoardMode.ViewOnly;
+            }
+        } catch {
             return PlayBoardMode.ViewOnly;
         }
     }
@@ -286,37 +289,56 @@ export class BoardPage extends Vue {
     }
 
     get lastMove(): PlayerAction {
-        if (this.viewModel.sessionInfo.listOfMoves.length > 0) {
-            return this.viewModel.sessionInfo.listOfMoves[this.viewModel.sessionInfo.listOfMoves.length - 1][2];
+        try {
+            if (this.viewModel.sessionInfo.listOfMoves.length > 0) {
+                return this.viewModel.sessionInfo.listOfMoves[this.viewModel.sessionInfo.listOfMoves.length - 1][2];
+            }
+        } catch {
+            return null;
         }
         return null;
     }
 
     get listOfMoves(): Array<any> {
-        if (!this.viewModel.sessionInfo.listOfMoves) return [];
-        return this.viewModel.sessionInfo.listOfMoves.map(
-            (move, i) => {
-                var playerName = move[1] == PlayerColor.Black ? this.viewModel.roomInfo.blackPlayerName : this.viewModel.roomInfo.whitePlayerName;
-                var moveType = move[2].type;
-                if (moveType == PlayerActionType.MakeMove) {
-                    let act = move[2] as PlayerMoveAction;
-                    return [i, `Player ${playerName} moved (${act.fromX},${act.fromY}) to (${act.toX},${act.toY}).`];
-                } else if (moveType == PlayerActionType.Place) {
-                    let act = move[2] as PlayerPlaceAction;
-                    return [i, `Player ${playerName} placed a piece at (${act.newX},${act.newY}).`];
-                } else {
-                    return [i, `Player ${playerName} chose to pass.`];
+        try {
+            if (!this.viewModel.sessionInfo.listOfMoves) return [];
+            return this.viewModel.sessionInfo.listOfMoves.map(
+                (move, i) => {
+                    var playerName = move[1] == PlayerColor.Black ? this.viewModel.roomInfo.blackPlayerName : this.viewModel.roomInfo.whitePlayerName;
+                    var moveType = move[2].type;
+                    if (moveType == PlayerActionType.MakeMove) {
+                        let act = move[2] as PlayerMoveAction;
+                        return [i, `Player ${playerName} moved (${act.fromX},${act.fromY}) to (${act.toX},${act.toY}).`];
+                    } else if (moveType == PlayerActionType.Place) {
+                        let act = move[2] as PlayerPlaceAction;
+                        return [i, `Player ${playerName} placed a piece at (${act.newX},${act.newY}).`];
+                    } else {
+                        return [i, `Player ${playerName} chose to pass.`];
+                    }
                 }
-            }
-        )
+            )
+
+        } catch {
+            return [];
+        }
     }
 
     get hasWinner(): boolean {
-        return this.viewModel.sessionInfo.winner != null;
+        try {
+            return this.viewModel.sessionInfo.winner != null;
+        } catch {
+            return false;
+        }
+
     }
 
     get hasEnded(): boolean {
-        return this.viewModel.sessionInfo.quitter == true;
+        try {
+
+            return this.viewModel.sessionInfo.quitter == true;
+        } catch {
+            return false;
+        }
     }
 
     get winnerName(): string {
@@ -332,11 +354,16 @@ export class BoardPage extends Vue {
     }
 
     get myTurn(): boolean {
-        if (this.hasWinner) return false;
-        if (this.viewModel.sessionInfo.turn == PlayerColor.Black && this.viewModel.roomInfo.blackPlayerId == this.viewModel.playerId)
-            return true;
-        if (this.viewModel.sessionInfo.turn == PlayerColor.White && this.viewModel.roomInfo.whitePlayerId == this.viewModel.playerId)
-            return true;
-        return false;
+        try {
+            if (this.hasWinner) return false;
+            if (this.viewModel.sessionInfo.turn == PlayerColor.Black && this.viewModel.roomInfo.blackPlayerId == this.viewModel.playerId)
+                return true;
+            if (this.viewModel.sessionInfo.turn == PlayerColor.White && this.viewModel.roomInfo.whitePlayerId == this.viewModel.playerId)
+                return true;
+            return false;
+        } catch {
+            return false;
+        }
+            
     }
 }
