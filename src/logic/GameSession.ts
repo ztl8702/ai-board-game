@@ -6,9 +6,9 @@ export class GameSession {
     // Game Settings
     // @todo: double check spec
     private readonly upperHand: PlayerColor = PlayerColor.Black;
-    public static readonly NUMBER_OF_PIECES: number = 2;
-    private readonly FIRST_SHRINK: number = 128;
-    private readonly SECOND_SHRINK: number = 192;
+    public static readonly NUMBER_OF_PIECES: number = 2; //12
+    public static readonly FIRST_SHRINK: number = 8; //128
+    public static readonly SECOND_SHRINK: number = 12; //192
 
 
     private id: string;
@@ -132,10 +132,14 @@ export class GameSession {
                     this.endGame();
                     return;
                 }
-                if (this.moveCount == this.FIRST_SHRINK || this.moveCount == this.SECOND_SHRINK) {
+                if (this.moveCount == GameSession.FIRST_SHRINK || this.moveCount == GameSession.SECOND_SHRINK) {
                     // after move #128 and #192
                     this.board.shrinkBoard();
                     // @todo: check winning again
+                    if (this.board.getWinner() != null) {
+                        this.endGame();
+                        return;
+                    }
                     setImmediate(() => this.pushSync());
                 }
                 this.turn = (this.turn == PlayerColor.Black) ? PlayerColor.White : PlayerColor.Black;
@@ -148,10 +152,13 @@ export class GameSession {
                     this.turn = this.upperHand;
                     this.roundStartTime = new Date(Date.now());
                     setImmediate(() => this.pushSync());
+                    if (this.board.getWinner() != null) {
+                        this.endGame();
+                        return;
+                    }
                 } else {
                     this.turn = (this.turn == PlayerColor.Black) ? PlayerColor.White : PlayerColor.Black;
                 }
-
                 this.round++;
             }
         }

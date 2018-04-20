@@ -17,7 +17,7 @@ declare var $: any;
             Winner is {{winnerName}}! <button @click="onReturnClicked">Return to room</button>
         </my-dimmer>
         <my-dimmer v-if="!hasWinner && hasEnded" >
-            Game ended because your opponent quitted. <button @click="onReturnClicked">Return to room</button>
+            Game ended because your opponent quitted. <button class="ui huge button" @click="onReturnClicked">Return to room</button>
         </my-dimmer>
         <div class="two column row">
             <div class="nine wide column">
