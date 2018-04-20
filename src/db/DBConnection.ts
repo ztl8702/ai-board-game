@@ -1,8 +1,17 @@
 import * as Sequelize from 'sequelize';
 import { GameSession, PlayerAction } from '../logic';
+import { isProduction, getEnv } from '../util';
 
 // test only. change for production
-const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/wyb');
+var connString : string;
+
+if (isProduction()) {
+    connString = getEnv("WYB_DB");
+} else {
+    connString = 'postgres://postgres:password@localhost:5432/wyb';
+}
+const sequelize = new Sequelize(connString);
+
 export class DBConnection {
 
     async test(): Promise<boolean> {
