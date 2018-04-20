@@ -15,22 +15,23 @@ export enum PlayBoardMode {
 
 @Component({
     name: 'play-board',
-    template: `<table class="board">
-    <tr>
-        <index-cell />
-        <index-cell v-for="col in rows[0].cols" v-bind:displayText="col.x" /> 
-    </tr>
-    <tr v-for="row in rows">
-        <index-cell v-bind:displayText="row.id" />
-        <board-cell v-for="col in row.cols" 
-        v-bind:x="col.x"
-        v-bind:y="col.y"
-        v-bind:pieceColor="getPieceColor(col.x, col.y)"
-        v-bind:highlight="getHighlightStyle(col.x, col.y)"
-        v-on:clicked="cellClicked"
-        />
-    </tr>
-    </table>`,
+    template: `
+    <div class="board">
+        <div class="board__row">
+            <index-cell />
+            <index-cell v-for="col in rows[0].cols" v-bind:displayText="col.x" /> 
+        </div>
+        <div class="board__row" v-for="row in rows">
+            <index-cell v-bind:displayText="row.id" />
+            <board-cell v-for="col in row.cols" 
+            v-bind:x="col.x"
+            v-bind:y="col.y"
+            v-bind:pieceColor="getPieceColor(col.x, col.y)"
+            v-bind:highlight="getHighlightStyle(col.x, col.y)"
+            v-on:clicked="cellClicked"
+            />
+        </div>
+    </div>`,
     components: { BoardCell, IndexCell }
 })
 export class PlayBoard extends Vue {

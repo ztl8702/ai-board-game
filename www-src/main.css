@@ -1,23 +1,12 @@
-table.board {
-    border-collapse: collapse;
-  }
-  table.board td {
-    border: 5px solid white; 
-  }
-  table.board tr:first-child td {
-    border-top: 0;
-  }
-  table.board tr td:first-child {
-    border-left: 0;
-  }
-  table.board tr:last-child td {
-    border-bottom: 0;
-  }
-  table.board tr td:last-child {
-    border-right: 0;
-  }
 
+
+.board__row {
+  min-width: 400px;
+  display: table;
+}
 .board-cell {
+  border: 2px solid white; 
+    display:inline-block;
     width: 40px;
     min-width:40px;
     max-width:40px;

@@ -14,10 +14,10 @@ export enum HighlightStyle {
 @Component({
     name:'board-cell',
     template: `
-        <td 
+        <div 
             class="board-cell" 
             v-bind:class="{ pblack: isBlack, pwhite: isWhite, selected: isSelected, hint: isHint, target: isTarget, dead: isDead, corner:isCorner}" 
-            @click="onClick"><div class="board-cell__inner">{{ displayText }}</div></td>`,
+            @click="onClick"><div class="board-cell__inner">{{ displayText }}</div></div>`,
 })
 export class BoardCell extends Vue {
 
