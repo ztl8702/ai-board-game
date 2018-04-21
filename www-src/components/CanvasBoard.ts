@@ -13,7 +13,11 @@ Vue.use(VueKonva);
     name: 'canvas-board',
     template: ` 
     <v-stage :config="configStage">
+        <v-layer ref="layer2">
+            <v-rect ref="zone" v-if="showZone" :config="configZone" />
+        </v-layer>
         <v-layer ref="layer">
+        
             <canvas-index-cell :left="0" :top="0" />
             <canvas-index-cell v-for="(col,i) in rows.rows[0].cols" :left="getX(i+1)" :top="0" v-bind:displayText="col.x.toString()" /> 
             <canvas-index-cell v-for="(row,i) in rows.rows" :left="0" :top="getY(i+1)" v-bind:displayText="row.id.toString()" /> 
@@ -30,6 +34,7 @@ Vue.use(VueKonva);
                 v-on:clicked="cellClicked"
                 />
         </v-layer>
+
     </v-stage>`,
     components: { CanvasCell, CanvasIndexCell }
 })
@@ -63,6 +68,9 @@ export class CanvasBoard extends Vue {
         this.board.set(2, 2, Board.CELL_WHITE);
     }
 
+    get showZone() {
+        return this.allowedRowStart >= 0 && this.mode == PlayBoardMode.SelectForPlacing;
+    }
 
     updated() {
         console.log('PlayBoard updated.')
@@ -82,6 +90,7 @@ export class CanvasBoard extends Vue {
             }
         }
     }
+
     get movingOutput() {
         if (this.mode == PlayBoardMode.SelectForMoving && this.selectionState == PlayBoardSelectionState.SelectedTarget) {
             return {
@@ -134,6 +143,17 @@ export class CanvasBoard extends Vue {
             width: CanvasBoard.CELL_SIZE,
             height: CanvasBoard.CELL_SIZE,
             fill: CanvasBoard.BG_NORMAL
+        }
+    }
+
+    get configZone() {
+        return {
+            x: 0,
+            y: this.getY(3),
+            fill: 'lightgreen',
+            width: CanvasBoard.CELL_SIZE * 9 + CanvasBoard.CELL_PADDING * 9,
+            height: CanvasBoard.CELL_SIZE * 6 + CanvasBoard.CELL_PADDING * 6,
+            opacity: 0.8
         }
     }
 
@@ -310,6 +330,36 @@ export class CanvasBoard extends Vue {
         console.log(this.selectionState, this.selectedCell, this.availableCells, this.targetCell);
         this.updateOutput();
         this.$forceUpdate();
+    }
+
+
+    @Watch("mode")
+    onModeChanged(val) {
+        // if (val == PlayBoardMode.ViewOnly) {
+        this.selectionState = PlayBoardSelectionState.NoSelection;
+        this.selectedCell = null;
+        this.targetCell = null;
+        this.availableCells = [];
+        this.$emit('input', null);
+        //} 
+        //this.mode = val;
+    }
+
+    @Watch("mode")
+    @Watch("allowedRowStart") 
+    onUpdateZone() {
+        try {
+            if (this.showZone) {
+                (this.$refs.zone as any).getStage().opacity(0.8);
+            } else {
+                (this.$refs.zone as any).getStage().opacity(0);
+                
+            }
+            (this.$refs.layer2 as any).getStage().draw();
+
+        } catch {
+            
+        }
     }
 
 }
