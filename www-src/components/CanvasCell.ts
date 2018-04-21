@@ -12,7 +12,7 @@ Vue.use(VueKonva);
 @Component({
     name: 'canvas-cell',
     template: ` 
-    <v-group :config="configGroup" @click="onClick">
+    <v-group :config="configGroup" @click="onClick" @tap="onClick">
         <v-rect ref="rect" :config="configRect" />
         <v-text :config="configText" />
     </v-group>`,
