@@ -103,6 +103,10 @@ io.on('connection', function (socket) {
 
         });
 
+        socket.on('sendChat', function (msg) {
+            thePlayer.sendMessageToRoom(msg);
+        });
+
         socket.on('disconnect', function () {
             thePlayer.removeSocket();
             //do nothing

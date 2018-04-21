@@ -32,9 +32,4 @@ export class WelcomePlayerCard extends Vue {
     @Prop()
     side: string;
 
-    constructor() {
-        super();
-    }
-
-
 }

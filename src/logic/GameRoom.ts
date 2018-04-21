@@ -68,6 +68,16 @@ export class GameRoom {
 
     }
 
+    public sendMessage(player:Player, msg: string) {
+        if (this.state == GameRoomState.Playing) {
+            this.broadcastMessage({
+                'senderId': player.getId(),
+                'content' : msg,
+                'senderNickname': player.nickName
+            });
+        }
+    }
+
     private doRemovePlayer(player: Player) {
         if (player == this.blackPlayer) {
             this.blackPlayer = null;
@@ -127,6 +137,18 @@ export class GameRoom {
             this.broadcastRoomSync();
             this.broadcastSessionSync();
         }
+    }
+
+    public broadcastMessage(msg: object) {
+        
+        function sendMessageToPlayer(p: Player, rs: object) {
+            p.send('chat', rs);
+        }
+        if (this.blackPlayer) sendMessageToPlayer(this.blackPlayer, msg);
+        if (this.whitePlayer) sendMessageToPlayer(this.whitePlayer, msg);
+        this.observers.forEach(obs => {
+            sendMessageToPlayer(obs, msg);
+        });
     }
 
     public broadcastRoomSync() {

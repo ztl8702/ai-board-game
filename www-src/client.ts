@@ -45,7 +45,7 @@ function recursiveUpdate(vueComponent) {
     vueComponent.$children.forEach(child => {
         recursiveUpdate(child)
     });
-    
+
 }
 Socket.onSessionSync = (sessionInfo: GameSessionSync) => {
     myApp.vm.sessionInfo = sessionInfo;
@@ -55,7 +55,7 @@ Socket.onSessionSync = (sessionInfo: GameSessionSync) => {
     recursiveUpdate(myApp);
     myApp.vm.sessionInfo.round--;
     recursiveUpdate(myApp);
-    
+
 }
 
 
@@ -72,7 +72,7 @@ Socket.onSessionUpdate = (sessionUpdate: GameSessionUpdate) => {
             (myApp.vm.board as Board).placeNewPiece(
                 (sessionUpdate.lastMove[2] as PlayerPlaceAction).newX,
                 (sessionUpdate.lastMove[2] as PlayerPlaceAction).newY,
-                sessionUpdate.lastMove[1]==PlayerColor.Black ? Board.CELL_BLACK:Board.CELL_WHITE
+                sessionUpdate.lastMove[1] == PlayerColor.Black ? Board.CELL_BLACK : Board.CELL_WHITE
             );
 
         } else if (sessionUpdate.lastMove[2].type == PlayerActionType.MakeMove) {

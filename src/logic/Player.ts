@@ -61,7 +61,7 @@ export class Player {
                 this.state = PlayerState.JoinedAsPlayer;
                 this.gameRoom = room;
             }
-            setImmediate(()=>this.pushSync());
+            setImmediate(() => this.pushSync());
             return result;
         } else {
             return false;
@@ -79,6 +79,12 @@ export class Player {
             this.state = PlayerState.NoRoom;
         }
         this.pushSync();
+    }
+
+    public sendMessageToRoom(msg:string) {
+        if (this.state == PlayerState.JoinedAsPlayer) {
+            this.gameRoom.sendMessage(this, msg);
+        }
     }
 
     public observeRoom(roomId: string) {

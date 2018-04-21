@@ -9,6 +9,9 @@ module.exports = {
     entry: {
         'client': './www-src/client.ts'
     },
+    externals: {
+        'konva': 'Konva'
+    },
     resolve: {
         modules: [
             'node_modules',

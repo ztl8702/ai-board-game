@@ -28,15 +28,9 @@ export class ProgressBar extends Vue {
     isTiny: boolean = false;
 
     mounted() {
-        console.log($(this.$el), $(this.$el).progress);
-        window['haha'] = $(this.$el).progress;
         $(this.$el).progress({
             'percent': this.percent
         });
-    }
-
-    updated() {
-
     }
 
     @Watch("progress")

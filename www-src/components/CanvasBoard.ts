@@ -1,48 +1,66 @@
 import Vue from 'vue';
 import Component from "vue-class-component";
-import { BoardCell, HighlightStyle, IndexCell } from './';
-import { Board, PlayerAction, PlayerActionType, PlayerPlaceAction, PlayerMoveAction } from "../../src/logic";
 import { Prop, Watch } from "vue-property-decorator";
-import { Socket } from '../utils';
+import VueKonva from "vue-konva";
+import { CanvasCell } from "./CanvasCell";
+import { CanvasIndexCell } from "./CanvasIndexCell";
+import { HighlightStyle, PlayBoardMode, PlayBoardSelectionState } from '.';
+import { Board, PlayerAction, PlayerMoveAction, PlayerActionType, PlayerPlaceAction } from '../../src/logic';
 
-
-export enum PlayBoardMode {
-    ViewOnly,
-    SelectForPlacing,
-    SelectForMoving
-}
-
+Vue.use(VueKonva);
 
 @Component({
-    name: 'play-board',
-    template: `
-    <div class="board">
-        <div class="board__row">
-            <index-cell />
-            <index-cell v-for="col in rows[0].cols" v-bind:displayText="col.x" /> 
-        </div>
-        <div class="board__row" v-bind:class="getClasses(row.id)" v-for="row in rows">
-            <index-cell v-bind:displayText="row.id" />
-            <board-cell v-for="col in row.cols" 
-            v-bind:x="col.x"
-            v-bind:y="col.y"
-            v-bind:pieceColor="getPieceColor(col.x, col.y)"
-            v-bind:highlight="getHighlightStyle(col.x, col.y)"
-            v-bind:highlightLast="getHighlightLast(col.x, col.y)"
-            v-on:clicked="cellClicked"
-            />
-        </div>
-    </div>`,
-    components: { BoardCell, IndexCell }
+    name: 'canvas-board',
+    template: ` 
+    <v-stage :config="configStage">
+        <v-layer ref="layer2">
+            <v-rect ref="zone" v-if="showZone" :config="configZone" />
+        </v-layer>
+        <v-layer ref="layer">
+        
+            <canvas-index-cell :left="0" :top="0" />
+            <canvas-index-cell v-for="(col,i) in rows.rows[0].cols" :left="getX(i+1)" :top="0" v-bind:displayText="col.x.toString()" /> 
+            <canvas-index-cell v-for="(row,i) in rows.rows" :left="0" :top="getY(i+1)" v-bind:displayText="row.id.toString()" /> 
+
+            <canvas-cell v-for="cell in rows.meshed" 
+                :x="cell.x"
+                :y="cell.y"
+                :top="getY(cell.j + 1)"
+                :left="getX(cell.i + 1)"
+                :parentRefs="$refs"
+                v-bind:pieceColor="getPieceColor(cell.x, cell.y)"
+                v-bind:highlight="getHighlightStyle(cell.x, cell.y)"
+                v-bind:highlightLast="getHighlightLast(cell.x, cell.y)"
+                v-on:clicked="cellClicked"
+                />
+        </v-layer>
+
+    </v-stage>`,
+    components: { CanvasCell, CanvasIndexCell }
 })
-export class PlayBoard extends Vue {
-    getClasses = (y) => ({ 'allowed': this.isAllowedRow(y) })
+export class CanvasBoard extends Vue {
+
+    public static readonly CELL_SIZE = 40;
+    public static readonly CELL_PADDING = 5;
+    public static readonly BG_NORMAL = "#f5f5f5";
+    public static readonly BG_DEAD = "gray";
+    public static readonly BG_CORNER = "#efefef";
+    public static readonly BG_HINT = "#ffee7f";
+    public static readonly BG_SELECTED = "lightblue";
+
+    @Prop({ default: true }) rotate: boolean = true;
     selectedCell: any | null = null;
     targetCell: any | null = null;
     availableCells: Array<[number, number]> = [];
-    @Prop({})
-    board: Board = new Board();
+    @Prop({}) board: Board = new Board();
     private selectionState: PlayBoardSelectionState = PlayBoardSelectionState.NoSelection;
+    @Prop({}) mode: PlayBoardMode = PlayBoardMode.ViewOnly;
+    @Prop({}) playerColor: string;
+
+    @Prop({}) allowedRowStart: number = null;
+    @Prop({}) allowedRowEnd: number = null;
+    @Prop({}) lastMove: PlayerAction = null;
+    @Prop({}) value: any;
 
     constructor() {
         super();
@@ -50,36 +68,9 @@ export class PlayBoard extends Vue {
         this.board.set(2, 2, Board.CELL_WHITE);
     }
 
-    @Prop({})
-    mode: PlayBoardMode = PlayBoardMode.ViewOnly;
-    @Prop({})
-    playerColor: string;
-
-    @Prop({})
-    allowedRowStart: number = null;
-
-    @Prop({})
-    allowedRowEnd: number = null;
-
-    @Watch("mode")
-    onModeChanged(val) {
-        // if (val == PlayBoardMode.ViewOnly) {
-        this.selectionState = PlayBoardSelectionState.NoSelection;
-        this.selectedCell = null;
-        this.targetCell = null;
-        this.availableCells = [];
-        this.$emit('input', null);
-        //} 
-        //this.mode = val;
+    get showZone() {
+        return this.allowedRowStart >= 0 && this.mode == PlayBoardMode.SelectForPlacing;
     }
-    @Prop({})
-    lastMove: PlayerAction = null;
-
-    @Prop({})
-    value: any;
-
-    @Prop({})
-    rotate: boolean = false;
 
     updated() {
         console.log('PlayBoard updated.')
@@ -88,6 +79,15 @@ export class PlayBoard extends Vue {
             this.selectedCell = null;
             this.targetCell = null;
             this.availableCells = [];
+        }
+    }
+
+    data() {
+        return {
+            configStage: {
+                width: CanvasBoard.CELL_SIZE * 9 + CanvasBoard.CELL_PADDING * 9,
+                height: CanvasBoard.CELL_SIZE * 9 + CanvasBoard.CELL_PADDING * 9
+            }
         }
     }
 
@@ -127,8 +127,38 @@ export class PlayBoard extends Vue {
         }
     }
 
+    getX(col) {
+        return col * (CanvasBoard.CELL_SIZE + CanvasBoard.CELL_PADDING);
+    }
+
+
+    getY(row) {
+        return row * (CanvasBoard.CELL_SIZE + CanvasBoard.CELL_PADDING);
+    }
+
+    configRect(row, col) {
+        return {
+            x: col * (CanvasBoard.CELL_SIZE + CanvasBoard.CELL_PADDING),
+            y: row * (CanvasBoard.CELL_SIZE + CanvasBoard.CELL_PADDING),
+            width: CanvasBoard.CELL_SIZE,
+            height: CanvasBoard.CELL_SIZE,
+            fill: CanvasBoard.BG_NORMAL
+        }
+    }
+
+    get configZone() {
+        return {
+            x: 0,
+            y: this.getY(3),
+            fill: 'lightgreen',
+            width: CanvasBoard.CELL_SIZE * 9 + CanvasBoard.CELL_PADDING * 9,
+            height: CanvasBoard.CELL_SIZE * 6 + CanvasBoard.CELL_PADDING * 6,
+            opacity: 0.8
+        }
+    }
+
     get rows(): any {
-        var result = [];
+        var result = { 'rows': [], 'meshed': [] }
         if (!this.rotate) {
             for (var y = 0; y <= 7; ++y) {
                 var currentRow = { 'id': y, 'cols': [] };
@@ -137,31 +167,29 @@ export class PlayBoard extends Vue {
                         'x': x,
                         'y': y
                     });
+                    result.meshed.push({ 'x': x, 'y': y, 'i': x, 'j': y });
                 }
-                result.push(currentRow);
+                result.rows.push(currentRow);
             }
         } else {
-            for (var y = 7; y >= 0; --y) {
+            for (var y = 7, j = 0; y >= 0; --y, ++j) {
                 var currentRow = { 'id': y, 'cols': [] };
-                for (var x = 7; x >= 0; --x) {
+                for (var x = 7, i = 0; x >= 0; --x, ++i) {
                     currentRow['cols'].push({
                         'x': x,
                         'y': y
                     });
+                    result.meshed.push({ 'x': x, 'y': y, 'i': i, 'j': j });
+
                 }
-                result.push(currentRow);
+                result.rows.push(currentRow);
             }
         }
         return result;
     }
 
-    isAllowedRow(y: number): boolean {
-        if (this.mode == PlayBoardMode.SelectForPlacing) {
-            if (y >= this.allowedRowStart && y <= this.allowedRowEnd) {
-                return true;
-            }
-        }
-        return false;
+    getPieceColor(x, y): string {
+        return this.board.get(x, y);
     }
 
     getHighlightLast(x: number, y: number) {
@@ -227,12 +255,8 @@ export class PlayBoard extends Vue {
         }
     }
 
-    getPieceColor(x, y): string {
-        return this.board.get(x, y);
-    }
-
     cellClicked(x, y) {
-        console.log(`PlayBoard: cell clicked (${x},${y})`);
+        console.log(`CanvasBoard: cell clicked (${x},${y})`);
         switch (this.mode) {
             case PlayBoardMode.ViewOnly:
                 this.selectedCell = null;
@@ -307,11 +331,35 @@ export class PlayBoard extends Vue {
         this.updateOutput();
         this.$forceUpdate();
     }
-}
 
-export enum PlayBoardSelectionState {
-    NoSelection,
-    SelectedOne,
-    SelectedTarget,
-}
 
+    @Watch("mode")
+    onModeChanged(val) {
+        // if (val == PlayBoardMode.ViewOnly) {
+        this.selectionState = PlayBoardSelectionState.NoSelection;
+        this.selectedCell = null;
+        this.targetCell = null;
+        this.availableCells = [];
+        this.$emit('input', null);
+        //} 
+        //this.mode = val;
+    }
+
+    @Watch("mode")
+    @Watch("allowedRowStart") 
+    onUpdateZone() {
+        try {
+            if (this.showZone) {
+                (this.$refs.zone as any).getStage().opacity(0.8);
+            } else {
+                (this.$refs.zone as any).getStage().opacity(0);
+                
+            }
+            (this.$refs.layer2 as any).getStage().draw();
+
+        } catch {
+            
+        }
+    }
+
+}

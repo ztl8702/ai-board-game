@@ -15,7 +15,8 @@
     "sequelize": "^4.37.6",
     "socket.io": "^2.1.0",
     "typescript": "^2.8.1",
-    "vue": "^2.5.16"
+    "vue": "^2.5.16",
+    "vue-konva": "^1.0.5"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",
