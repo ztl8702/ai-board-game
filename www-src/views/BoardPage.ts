@@ -23,7 +23,7 @@ declare var $: any;
         </my-dimmer>
         <div class="two column row">
             <div class="nine wide column">
-                <canvas-board
+                <canvas-board class="board"
                     v-bind:mode="theMode" 
                     v-bind:board="viewModel.board" 
                     v-bind:playerColor="playerColor" 

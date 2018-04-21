@@ -145,7 +145,7 @@ export class CanvasCell extends Vue {
     get configText() {
         return {
             text: this.displayText,
-            x: 5,
+            x: 10,
             y: 5,
             fill: "black",
             fontSize: 30,
