@@ -119,7 +119,7 @@ export class BoardPage extends Vue {
 
     onKeyPress(e) {
         console.log(e.keyCode);
-        if (e.keyCode == 13 && this.boardOutput) {
+        if (e.keyCode == 13 && this.boardOutput && this.showButton) {
             if (confirm("Are you sure you want to submit this move?")) this.onSubmit();
         }
     }
