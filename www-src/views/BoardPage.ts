@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { Socket } from '../utils';
+import { Socket, beep } from '../utils';
 import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer } from "../components";
 import { ClientViewModel } from '../models/ClientViewModel';
 import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction, PlayerAction, GameSession } from '../../src/logic';
@@ -57,6 +57,17 @@ declare var $: any;
                     <button @click="onSubmit" class="ui blue button" v-if="showButton">Submit (Enter)</button>
                     <button @click="onPass" class="ui yellow button" v-if="isMoving" >Pass</button>
                 </div>
+                <div class="ui segment">
+                    <div ref="chatbox" style="max-height:100px; overflow-y:scroll; overflow-x:hidden;">
+                        <p v-for="m in chatmessages" style="margin-bottom:0">
+                            <b>{{m.senderNickname}}</b>: {{m.content}}
+                        </p>
+                    </div>
+                    <div class="ui action small input center">
+                         <input v-model="chatMessage" placeholder="Chat message..." type="text"/>
+                        <button class="ui small button" @click="onSendChat">Send</button>
+                     </div>
+                </div>
             </div>
         </div>
         <div class="one column row">
@@ -83,8 +94,9 @@ declare var $: any;
 export class BoardPage extends Vue {
     @Prop()
     viewModel: ClientViewModel;
-
+    chatMessage= '';
     boardOutput = null;
+    chatmessages=[];
     constructor() {
         super();
     }
@@ -99,10 +111,11 @@ export class BoardPage extends Vue {
         });
     }
     mounted() {
-
+        Socket.onChat = this.onReceiveChat;
         Socket.requestSessionSync(this.viewModel.roomId);
         window.addEventListener('keydown', this.onKeyPress);
     }
+
 
     onKeyPress(e) {
         console.log(e.keyCode);
@@ -112,6 +125,8 @@ export class BoardPage extends Vue {
     }
 
     beforeDestroy() {
+        Socket.onChat = null;
+        
         window.removeEventListener('keydown', this.onKeyPress);
     }
     getPhaseString() {
@@ -278,12 +293,31 @@ export class BoardPage extends Vue {
 
     }
 
+    onSendChat() {
+        if (this.chatMessage != '') {
+            Socket.sendMessage(this.chatMessage);
+            this.chatMessage = '';
+        } 
+    }
+
+    onReceiveChat(m) {
+        this.chatmessages.push(m);
+        //this.$forceUpdate();
+        if (m.senderId != this.viewModel.playerId) {
+            beep();   
+        }
+        (this.$refs.chatbox as any).scrollTop = (this.$refs.chatbox as any).scrollHeight;
+    }
+
+    
     onPass() {
-        Socket.pass();
+        if (confirm("Are you sure you want to pass this turn?")) {
+            Socket.pass();
+        }
     }
 
     onQuit() {
-        if (confirm("Are you sure you want to quit? Game will end if you quit.")) {
+        if (confirm("Are you sure you want to quit? The game will end if you quit.")) {
             Socket.leaveRoom();
         }
     }

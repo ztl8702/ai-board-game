@@ -81,6 +81,12 @@ export class Player {
         this.pushSync();
     }
 
+    public sendMessageToRoom(msg:string) {
+        if (this.state == PlayerState.JoinedAsPlayer) {
+            this.gameRoom.sendMessage(this, msg);
+        }
+    }
+
     public observeRoom(roomId: string) {
         if (this.state == PlayerState.NoRoom) {
             var room = ActorFactory.getActor('GameRoom', roomId) as GameRoom;

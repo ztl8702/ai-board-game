@@ -33,6 +33,14 @@ export class Socket {
             }
         });
 
+        Socket.socket.on('chat', function (msg) {
+            console.log('chat', msg);
+            if (Socket.onChat) {
+                Socket.onChat(msg);
+            }
+
+        })
+
     }
 
     public static startGame() {
@@ -97,11 +105,15 @@ export class Socket {
     public static leaveRoom() {
         this.socket.emit('leaveRoom');
     }
+    public static sendMessage(m: string) {
+        this.socket.emit('sendChat', m);
+    }
 
     public static onRoomSync: Function;
     public static onSessionSync: Function;
     public static onPlayerSync: Function;
     public static onSessionUpdate: Function;
+    public static onChat: Function;
 }
 
 Socket.initialize();
