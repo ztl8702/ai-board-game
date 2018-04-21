@@ -3,7 +3,7 @@ import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 
 
-declare var $:any;
+declare var $: any;
 @Component({
     name: 'my-dimmer',
     template: ` 
@@ -17,9 +17,7 @@ declare var $:any;
 })
 export class MyDimmer extends Vue {
 
-
     mounted() {
-        
         $(this.$el).dimmer("show");
     }
 

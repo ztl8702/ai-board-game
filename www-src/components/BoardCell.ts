@@ -14,7 +14,7 @@ export enum HighlightStyle {
 }
 
 @Component({
-    name:'board-cell',
+    name: 'board-cell',
     template: `
         <div 
             class="board-cell" 
@@ -62,15 +62,15 @@ export class BoardCell extends Vue {
         return this.pieceColor == Board.CELL_DEAD;
     }
 
-    get isCorner(): boolean{
+    get isCorner(): boolean {
         return this.pieceColor == Board.CELL_CORNER;
     }
 
-    get isLastMove1(): boolean{
+    get isLastMove1(): boolean {
         return this.highlightLast == HighlightStyle.LastMove1;
     }
 
-    get isLastMove2(): boolean{
+    get isLastMove2(): boolean {
         return this.highlightLast == HighlightStyle.LastMove2;
     }
 
@@ -89,7 +89,7 @@ export class BoardCell extends Vue {
 
     private onClick(): void {
         console.log(`Cell (${this.x},${this.y}) clicked.`);
-        this.$emit('clicked',this.x,this.y);
+        this.$emit('clicked', this.x, this.y);
     }
 
 

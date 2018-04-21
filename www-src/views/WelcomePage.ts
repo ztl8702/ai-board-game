@@ -5,7 +5,7 @@ import { Socket } from '../utils';
 
 
 @Component({
-    name:'welcome-page',
+    name: 'welcome-page',
     template: `
     <div class="ui one column center aligned grid container">
         <div class="column">
@@ -21,7 +21,7 @@ import { Socket } from '../utils';
            <!-- <h2>Leaderboard</h2>-->
            <div style="margin-top:100px;">
            <hr />
-           <i>Disclaimer: "Watch Your Back" is designed by the COMP30024 teaching team (lecturer: Sarah Monazam Erfani; head tutor: Matthew Farrugia-Roberts) at the University of Melbourne. This online game is independently implemented by <a href="http://github.com/ztl8702/">Tianlei Zheng</a> and <a href="http://github.com/TTVS/">Terrence Lua</a>. For bugs, <a href="mailto:wybonline@googlegroups.com">send us an email</a>.</i>
+           <i>Disclaimer: "Watch Your Back" is designed by the COMP30024 teaching team (lecturer: Sarah Monazam Erfani; head tutor: Matthew Farrugia-Roberts) at the University of Melbourne. This online game is independently implemented by <a href="http://github.com/ztl8702/">Tianlei Zheng</a> and <a href="http://github.com/TTVS/">Therrense Lua</a>. For bugs, <a href="mailto:wybonline@googlegroups.com">send us an email</a>.</i>
            </div>
         </div>
     </div>`,
@@ -36,8 +36,8 @@ export class WelcomePage extends Vue {
     }
 
     onJoinClicked() {
-        if (this.roomId != '' && this.roomId!=null) {
-            this.roomId = this.roomId.substring(0,50); //limit length
+        if (this.roomId != '' && this.roomId != null) {
+            this.roomId = this.roomId.substring(0, 50); //limit length
             Socket.joinRoom(this.roomId);
         }
     }

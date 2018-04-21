@@ -5,7 +5,7 @@ import { Socket } from '../utils';
 import { WelcomePlayerCard } from "../components";
 
 @Component({
-    name:'room-page',
+    name: 'room-page',
     template: `
     <div class="ui one column center aligned grid container">
         <div class="column">
@@ -29,7 +29,7 @@ import { WelcomePlayerCard } from "../components";
             </div>
         </div>
     </div>`,
-    components: {WelcomePlayerCard}
+    components: { WelcomePlayerCard }
 })
 export class RoomPage extends Vue {
     @Prop()
@@ -39,11 +39,11 @@ export class RoomPage extends Vue {
     constructor() {
         super();
     }
-    
+
     mounted() {
-        
+
     }
-    
+
     onStartClicked() {
         Socket.startGame();
     }
@@ -52,5 +52,5 @@ export class RoomPage extends Vue {
         Socket.leaveRoom();
     }
 
- 
+
 }

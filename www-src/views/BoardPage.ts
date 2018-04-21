@@ -83,7 +83,6 @@ export class BoardPage extends Vue {
     @Prop()
     viewModel: ClientViewModel;
 
-
     boardOutput = null;
     constructor() {
         super();
@@ -364,6 +363,6 @@ export class BoardPage extends Vue {
         } catch {
             return false;
         }
-            
+
     }
 }

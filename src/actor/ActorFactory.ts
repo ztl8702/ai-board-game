@@ -1,4 +1,4 @@
-import {GameRoom, Player, GameSession} from "../logic";
+import { GameRoom, Player, GameSession } from "../logic";
 import { DBConnection } from "../db";
 var cryptol = require("crypto");
 
@@ -6,7 +6,7 @@ var cryptol = require("crypto");
 
 export class ActorFactory {
 
-    static _conn : DBConnection;
+    static _conn: DBConnection;
 
     private static dict = {
         'GameRoom': {},
@@ -14,8 +14,8 @@ export class ActorFactory {
         'GameSession': {}
     }
 
-    public static getActor(type:string, id: string) :any {
-        if (id == null || id == ''){
+    public static getActor(type: string, id: string): any {
+        if (id == null || id == '') {
             // generate random id
             id = cryptol.randomBytes(16).toString("hex");
         }
@@ -35,7 +35,7 @@ export class ActorFactory {
         return this.dict[type][id];
     }
 
-    public static archiveActor(type:string, id:string) {
+    public static archiveActor(type: string, id: string) {
 
     }
 }
