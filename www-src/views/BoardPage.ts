@@ -94,9 +94,9 @@ declare var $: any;
 export class BoardPage extends Vue {
     @Prop()
     viewModel: ClientViewModel;
-    chatMessage= '';
+    chatMessage = '';
     boardOutput = null;
-    chatmessages=[];
+    chatmessages = [];
     constructor() {
         super();
     }
@@ -126,7 +126,7 @@ export class BoardPage extends Vue {
 
     beforeDestroy() {
         Socket.onChat = null;
-        
+
         window.removeEventListener('keydown', this.onKeyPress);
     }
     getPhaseString() {
@@ -297,19 +297,19 @@ export class BoardPage extends Vue {
         if (this.chatMessage != '') {
             Socket.sendMessage(this.chatMessage);
             this.chatMessage = '';
-        } 
+        }
     }
 
     onReceiveChat(m) {
         this.chatmessages.push(m);
         //this.$forceUpdate();
         if (m.senderId != this.viewModel.playerId) {
-            beep();   
+            beep();
         }
         (this.$refs.chatbox as any).scrollTop = (this.$refs.chatbox as any).scrollHeight;
     }
 
-    
+
     onPass() {
         if (confirm("Are you sure you want to pass this turn?")) {
             Socket.pass();
@@ -398,6 +398,5 @@ export class BoardPage extends Vue {
         } catch {
             return false;
         }
-
     }
 }
