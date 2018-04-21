@@ -5,6 +5,8 @@ import { Socket } from '../utils';
 import { PlayBoard, PlayBoardMode, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer } from "../components";
 import { ClientViewModel } from '../models/ClientViewModel';
 import { GamePhase, PlayerColor, PlayerActionType, Player, Board, PlayerMoveAction, PlayerPlaceAction, PlayerAction, GameSession } from '../../src/logic';
+import { CanvasBoard } from "../components/CanvasBoard";
+
 declare var $: any;
 
 
@@ -21,7 +23,7 @@ declare var $: any;
         </my-dimmer>
         <div class="two column row">
             <div class="nine wide column">
-                <play-board 
+                <canvas-board
                     v-bind:mode="theMode" 
                     v-bind:board="viewModel.board" 
                     v-bind:playerColor="playerColor" 
@@ -29,7 +31,7 @@ declare var $: any;
                     v-bind:rotate="shouldRotateBoard"
                     v-bind:lastMove="lastMove" 
                     v-bind:allowedRowStart="allowedRows[0]"
-                    v-bind:allowedRowEnd="allowedRows[1]"
+                    v-bind:allowedRowEnd="allowedRows[1]"               
                 />
             </div>
             <div class="seven wide column">
@@ -75,9 +77,8 @@ declare var $: any;
                 </table>
             </div>
         </div>
-
     </div>`,
-    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer }
+    components: { PlayBoard, PlacingProgressBar, WhosTurn, MovingProgress, MyDimmer, CanvasBoard }
 })
 export class BoardPage extends Vue {
     @Prop()
