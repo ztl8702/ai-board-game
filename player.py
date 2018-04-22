@@ -5,6 +5,8 @@ from parta_dfs import DFS
 from faster_bfs import faster_BFS
 from faster_dfs import faster_DFS
 
+# test
+
 PLACING_PHASE
 MOVING_PHASE
 SHRINK_ONE
