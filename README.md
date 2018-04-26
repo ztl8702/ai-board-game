@@ -1,7 +1,14 @@
 # comp30024-ai-project
 
-## About this branch
+> Radium's personal working branch for Part B
 
-This branch contains current workings from before break which includes some search optimisation that reduces the search space by removing spaces that are not likely to be used.
+## Documentation
 
-A different implementation can be found in branch radium/subsearch.
+```
+make html
+```
+
+## Unit tests
+```
+pytest
+```

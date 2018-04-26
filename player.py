@@ -1,28 +1,30 @@
 import copy
 from common import Board
-from parta import BFS
-from parta_dfs import DFS
-from faster_bfs import faster_BFS
-from faster_dfs import faster_DFS
-
-# test
-
-PLACING_PHASE
-MOVING_PHASE
-SHRINK_ONE
-SHRINK_TWO
-SHRINK_THREE
+from minimax import MiniMaxSolver
 
 class Player:
 	def __init__(self, colour):
-		board = Board()
-		myColour = colour
-		turn = 0
+		self.board = Board()
+		self.colour = Board.PIECE_BLACK if colour=='black' else Board.PIECE_WHITE
+		self.lastTurn = 0
+		self.moving = False
+		self.solver = MiniMaxSolver(self.colour)
 
 
 	def action(self, turns):
-		search.bestMove() == 
-
+		if (turns < self.lastTurn and not self.moving):
+			self.moving = True
+			self.solver.MAX_DEPTH += 2
+		
+		if (self.moving):
+			bestMove = self.solver.minimax(self.board, turns+1+24)
+		else:
+			bestMove = self.solver.minimax(self.board, turns+1)
+			self.lastTurn = turns
+		self.board = self.board.apply_action(bestMove, self.colour)
+		print('bestmove', bestMove)
+		return bestMove
+		"""
 		if ():
 			# place a piece
 			return (x, y)
@@ -32,30 +34,14 @@ class Player:
 		else:
 			# forfeit a turn
 			return None
-
+"""
 
 	def update(self, action):
-		board.makeMove()
-		def makeMove(self, x, y, newX, newY, ourPiece)
+		"""Opponent made a move
+		"""
+		self.board = self.board.apply_action(action, self.board._get_opponent_colour(self.colour))
 
 
-
-def parseAction(action):
-	if action is None:
-		# forfeit turn
-		return None
-	else:
-		(x, y) = action
-		if (isinstance(x, tuple) and isinstance(y, tuple)):
-			(a, b) = x
-			(c, d) = y
-
-			# move piece
-			return ((a, b), (c, d))
-		else:
-			# place piece
-			return (x, y)
-		
 
 
 

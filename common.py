@@ -229,6 +229,16 @@ class Board:
 
         return possibleMoves
 
+    def get_empty_cells(self):
+        """
+        """
+        result = []
+        for x in range(self._min_xy(), self._max_xy()+1):
+            for y in range(self._min_xy(), self._max_xy()+1):
+                if (self.isEmpty(x, y)):
+                    result.append((x, y))
+        return result
+
     def getHashValue(self):
         '''
         Computes a hash value for entire board.
@@ -473,6 +483,20 @@ class Board:
 
         return board
 
+    def apply_action(self, action, colour):
+        if action is None:
+            # forfeit turn
+            return copy.deepcopy(self)
+        else:
+            (x, y) = action
+            if (isinstance(x, tuple) and isinstance(y, tuple)):
+                (a, b) = x
+                (c, d) = y
+                return self.makeMove(a, b, c, d, colour)
+            else:
+                # place piece
+                return self.placePiece(x, y, colour)
+
     def shrink(self):
         """
         Shrinks the board. (`boardSize -= 2`)
@@ -505,11 +529,11 @@ class Board:
                 adj2X = adjX + direction[0]
                 adj2Y = adjY + direction[1]
 
-                if (board.isWithinBoard(adjX,adjY) and
+                if (board.isWithinBoard(adjX, adjY) and
                     board.get(adjX, adjY) in [Board.PIECE_BLACK, Board.PIECE_WHITE] and
                     board.isWithinBoard(adj2X, adj2Y) and
-                    board.get(adj2X, adj2Y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]):
-                    if (board.get(adjX,adjY)!=board.get(adj2X, adj2Y)):
+                        board.get(adj2X, adj2Y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]):
+                    if (board.get(adjX, adjY) != board.get(adj2X, adj2Y)):
                         board.set(adjX, adjY, Board.PIECE_EMPTY)
 
         return board

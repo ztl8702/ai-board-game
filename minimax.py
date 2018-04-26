@@ -1,78 +1,114 @@
-##########################
-######   MINI-MAX   ######
-##########################
+from common import Board
 
-class MiniMax:
-    # print utility value of root node (assuming it is max)
-    # print names of all nodes visited during search
-    def __init__(self, game_tree):
-        self.game_tree = game_tree  # GameTree
-        self.root = game_tree.root  # GameNode
-        self.currentNode = None     # GameNode
-        self.successors = []        # List of GameNodes
+
+class MiniMaxSolver:
+
+    MAX_DEPTH = 3  # Maximum search depth
+    TURNS_BEFORE_SHRINK = [128, 192]
+    infinity = float('inf')
+
+    def __init__(self, colour):
+        self.colour = colour
+        self.visited = {}
         return
 
-    def minimax(self, node):
+    def h(self, board):
+        """Utility function
+
+        h(state) = ourPieces - opponentsPiece
+        """
+        ourPieces = board.getAllPieces(self.colour)
+        oppoPieces = board.getAllPieces(
+            board._get_opponent_colour(self.colour))
+        return len(ourPieces) - len(oppoPieces)
+
+    def minimax(self, board, currentTurn):
         # first, find the max value
-        best_val = self.max_value(node) # should be root node of tree
-
-        # second, find the node which HAS that max value
-        #  --> means we need to propagate the values back up the
-        #      tree as part of our minimax algorithm
-        successors = self.getSuccessors(node)
-        print "MiniMax:  Utility Value of Root Node: = " + str(best_val)
-        # find the node with our best move
-        best_move = None
-        for elem in successors:   # ---> Need to propagate values up tree for this to work
-            if elem.value == best_val:
-                best_move = elem
-                break
-
-        # return that best value that we've found
+        # should be root node of tree
+        (best_move, best_val) = self.max_value(board, currentTurn, 1)
         return best_move
 
+    def max_value(self, board, currentTurn, depth):
+        """Max represents our turn
+        """
+        if self.isTerminal(board, depth, currentTurn):
+            return (None, self.h(board))
 
-    def max_value(self, node):
-        print "MiniMax-->MAX: Visited Node :: " + node.Name
-        if self.isTerminal(node):
-            return self.getUtility(node)
+        max_value = -self.infinity
+        max_move = None
 
-        infinity = float('inf')
-        max_value = -infinity
+        successors_states = self.getSuccessors(board, currentTurn, self.colour)
+        for (move, state) in successors_states:
+            tmp = self.min_value(state, currentTurn+1, depth+1)[1]
+            if (tmp > max_value):
+                max_move = move
+                max_value = tmp
+        return (max_move, max_value)
 
-        successors_states = self.getSuccessors(node)
-        for state in successors_states:
-            max_value = max(max_value, self.min_value(state))
-        return max_value
+    def min_value(self, board, currentTurn, depth):
+        """Min represents opponent's turn
+        """
+        if self.isTerminal(board, depth, currentTurn):
+            return (None, self.h(board))
 
-    def min_value(self, node):
-        print "MiniMax-->MIN: Visited Node :: " + node.Name
-        if self.isTerminal(node):
-            return self.getUtility(node)
+        min_value = self.infinity
+        min_move = None
 
-        infinity = float('inf')
-        min_value = infinity
-
-        successor_states = self.getSuccessors(node)
-        for state in successor_states:
-            min_value = min(min_value, self.max_value(state))
-        return min_value
+        successors_states = self.getSuccessors(board, currentTurn, board._get_opponent_colour(self.colour))
+        for (move, state) in successors_states:
+            tmp = self.max_value(state, currentTurn+1, depth+1)[1]
+            if (tmp < min_value):
+                min_move = move
+                min_value = tmp
+        return (min_move, min_value)
 
     #                     #
     #   UTILITY METHODS   #
     #                     #
 
     # successor states in a game tree are the child nodes...
-    def getSuccessors(self, node):
-        assert node is not None
-        return node.children
+    def getSuccessors(self, board, currentTurn, side='@'):
+        if (currentTurn <= 24):
+            # placing phase
+            if side == Board.PIECE_BLACK:
+                validYZone = range(2, 8)
+            else:
+                validYZone = range(0, 6)
+            moves = [(x, y)
+                     for (x, y) in board.get_empty_cells() if y in validYZone]
+            #print(side, moves)
 
-    # return true if the node has NO children (successor states)
-    # return false if the node has children (successor states)
-    def isTerminal(self, node):
-        assert node is not None
-        return len(node.children) == 0
+            newStates = [((x, y), board.placePiece(x, y, side))
+                         for (x, y) in moves]
+        else:
+            # Moving phase
+            ourPieces = board.getAllPieces(side)
+            moves = []
+            for (x, y) in ourPieces:
+                moves += board.getAvailableMoves(x, y)
 
-    def getUtility(self, node):
-        assert node is not None
-        return node.value
+            if currentTurn in self.TURNS_BEFORE_SHRINK:
+                newStates = [
+                    (((fromX, fromY), (toX, toY)),
+                     board.makeMove(fromX, fromY, toX, toY, side).shrink()
+                     )
+                    for ((fromX, fromY), (toX, toY)) in moves
+                ]
+            else:
+                newStates = [
+                    (((fromX, fromY), (toX, toY)),
+                     board.makeMove(fromX, fromY, toX, toY, side)
+                     )
+                    for ((fromX, fromY), (toX, toY)) in moves
+                ]
+
+        return newStates
+
+    def isTerminal(self, board, depth, currentTurn):
+        """Terminate if either side wins;
+        or if we reached maximum search depth.
+        """
+        return ((depth >= self.MAX_DEPTH) or
+                (currentTurn > 24 and
+                 (board.isWon(Board.PIECE_BLACK) or board.isWon(Board.PIECE_WHITE))
+                 ))

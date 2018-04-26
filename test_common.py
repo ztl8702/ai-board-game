@@ -41,10 +41,17 @@ def test_min_max():
     board = Board()
 
     assert board._min_xy() == 0
-
     assert board._max_xy() == 7
 
-    # todo: after shrink
+    board2 = board.shrink()
+
+    # old one should not have changed
+    assert board._min_xy() == 0
+    assert board._max_xy() == 7
+    # new one should change
+    assert board2._min_xy() == 1
+    assert board2._max_xy() == 6
+
 
 
 def test_shrink_board():
@@ -72,6 +79,16 @@ def test_shrink_board():
               "#X----X#",
               "########") == board2.toTokenString())
     
+def test_get_empty_cells():
+    layout =p("X------X",
+             "--------",
+             "--------",
+             "--------",
+             "--------",
+             "--------",
+             "--------",
+             "X------X")
+    assert len(Board.fromTokenString(layout).get_empty_cells()) == 60
 
 def test_place_piece():
     pass
