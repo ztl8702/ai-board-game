@@ -78,6 +78,15 @@ class Board:
         initially the board size is set to the maximum
         '''
         self.boardSize = self.MAX_BOARD_SIZE
+        self.board = CellsArray(self.boardSize)
+        for x in range(Board.MAX_BOARD_SIZE):
+            for y in range(Board.MAX_BOARD_SIZE):
+                self.set(x,y,Board.PIECE_EMPTY)
+
+        self.set(0, 0, Board.PIECE_CORNER)
+        self.set(0, self.boardSize-1, Board.PIECE_CORNER)
+        self.set(self.boardSize-1, 0, Board.PIECE_CORNER)
+        self.set(self.boardSize-1, self.boardSize-1, Board.PIECE_CORNER)
 
     def readInput(self):
         ''' 
@@ -442,3 +451,37 @@ class Board:
             availableMoves = self.getAvailableMoves(x, y)
             result = result + len(availableMoves)
         return result
+
+
+    def toTokenString(self):
+        """
+        Converts the board layout to one line string.
+        Mainly used for unit tests.
+        """
+        result = ""
+        for y in range(Board.MAX_BOARD_SIZE):
+            for x in range(Board.MAX_BOARD_SIZE):
+                result = result + self.get(x,y)
+            if (y!=Board.MAX_BOARD_SIZE-1):
+                result = result + "\\\\"
+        return result
+
+    @classmethod
+    def fromTokenString(cls, ts):
+        """
+        Creates a new `Board` instance from a tokenString.
+        """
+        rows = ts.strip().split("\\\\")
+        assert len(rows) == cls.MAX_BOARD_SIZE
+        board = cls()
+        for y in range(Board.MAX_BOARD_SIZE):
+            for x in range(Board.MAX_BOARD_SIZE):
+                board.set(x,y, rows[y][x])
+
+        # determine board size
+        if (board.get(0,0) == cls.PIECE_INVALID):
+            board.boardSize -= 1
+            if (board.get(1,1) == cls.PIECE_INVALID):
+                board.boardSize -= 1
+        
+        return board
