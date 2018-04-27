@@ -1,50 +1,23 @@
-import copy
-from common import Board
+from playerbase import PlayerBase
 from minimax import MiniMaxSolver
 
-TURNS_BEFORE_SHRINK = [128, 192]
 
+class Player(PlayerBase):
+    """Our naive minimax agent with alpha-beta pruning
+    """
 
-class Player:
     def __init__(self, colour):
-        self.board = Board()
-        self.colour = Board.PIECE_BLACK if colour == 'black' else Board.PIECE_WHITE
-        self.lastTurn = 0
-        self.moving = False
+        super().__init__(colour)
         self.solver = MiniMaxSolver(self.colour)
 
-    def action(self, turns):
-        if (turns < self.lastTurn and not self.moving):
-            self.moving = True
-        #	self.solver.MAX_DEPTH += 1
+    def on_opponent_action(self, action):
+        # For this agent
+        # We aren't going to do anything about opponent's action
+        print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.")
 
-        if (self.moving):
-            bestMove = self.solver.minimax(self.board, turns+1+24)
+    def on_request_action(self, isMoving, turn, board):
+        if (isMoving):
+            bestMove = self.solver.minimax(board, turn + 24)
         else:
-            bestMove = self.solver.minimax(self.board, turns+1)
-        self.board = self.board.apply_action(bestMove, self.colour)
-        self.lastTurn = turns+1
-        if (self.lastTurn in TURNS_BEFORE_SHRINK):
-            self.board = self.board.shrink()
-        print('Turn', self.lastTurn, 'bestmove', bestMove)
+            bestMove = self.solver.minimax(board, turn)
         return bestMove
-        """
-		if ():
-			# place a piece
-			return (x, y)
-		elif():
-			# moving a piece
-			return ((a, b), (c, d))
-		else:
-			# forfeit a turn
-			return None
-"""
-
-    def update(self, action):
-        """Opponent made a move
-        """
-        self.board = self.board.apply_action(
-            action, self.board._get_opponent_colour(self.colour))
-        self.lastTurn += 1
-        if (self.lastTurn in TURNS_BEFORE_SHRINK):
-            self.board = self.board.shrink()
