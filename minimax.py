@@ -4,12 +4,11 @@ from common import Board
 class MiniMaxSolver:
 
     MAX_DEPTH = 3  # Maximum search depth
-    TURNS_BEFORE_SHRINK = [128, 192]
+    TURNS_BEFORE_SHRINK = [128 + 24, 192 + 24]
     infinity = float('inf')
 
     def __init__(self, colour):
         self.colour = colour
-        self.visited = {}
         return
 
     def h(self, board):
@@ -25,12 +24,15 @@ class MiniMaxSolver:
     def minimax(self, board, currentTurn):
         # first, find the max value
         # should be root node of tree
+        self.visited = {}
         (best_move, best_val) = self.max_value(board, currentTurn, 1)
         return best_move
 
     def max_value(self, board, currentTurn, depth):
         """Max represents our turn
         """
+        if ((currentTurn, board.getHashValue()) in self.visited):
+            return self.visited[(currentTurn, board.getHashValue())]
         if self.isTerminal(board, depth, currentTurn):
             return (None, self.h(board))
 
@@ -38,28 +40,36 @@ class MiniMaxSolver:
         max_move = None
 
         successors_states = self.getSuccessors(board, currentTurn, self.colour)
+        print("max", "successor_states", len(successors_states))
         for (move, state) in successors_states:
             tmp = self.min_value(state, currentTurn+1, depth+1)[1]
             if (tmp > max_value):
                 max_move = move
                 max_value = tmp
+        self.visited[(currentTurn, board.getHashValue())
+                     ] = (max_move, max_value)
         return (max_move, max_value)
 
     def min_value(self, board, currentTurn, depth):
         """Min represents opponent's turn
         """
+        if ((currentTurn, board.getHashValue()) in self.visited):
+            return self.visited[(currentTurn, board.getHashValue())]
         if self.isTerminal(board, depth, currentTurn):
             return (None, self.h(board))
 
         min_value = self.infinity
         min_move = None
 
-        successors_states = self.getSuccessors(board, currentTurn, board._get_opponent_colour(self.colour))
+        successors_states = self.getSuccessors(
+            board, currentTurn, board._get_opponent_colour(self.colour))
         for (move, state) in successors_states:
             tmp = self.max_value(state, currentTurn+1, depth+1)[1]
             if (tmp < min_value):
                 min_move = move
                 min_value = tmp
+        self.visited[(currentTurn, board.getHashValue())
+                     ] = (min_move, min_value)
         return (min_move, min_value)
 
     #                     #

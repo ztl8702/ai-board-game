@@ -262,23 +262,28 @@ class Board:
                     currentDigit = 1
                 elif (self.get(x, y) == self.PIECE_WHITE):
                     currentDigit = 2
-                else:
+                elif (self.get(x, y) == self.PIECE_BLACK):
                     currentDigit = 3
-                total = total + currentDigit * (4 ** order)
+                else:
+                    currentDigit = 4
+                total = total + currentDigit * (5 ** order)
                 order = order + 1
         return total
 
     def isWon(self, ourPiece):
         '''
-        Check if all opponent pieces are eliminated
+        Check if all opponent pieces are eliminated,
+        and we still have pieces left
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
-
-        for x in range(0, self.boardSize):
-            for y in range(0, self.boardSize):
+        hasOurPiece = False
+        for x in range(self._min_xy(), self._max_xy()+1):
+            for y in range(self._min_xy(), self._max_xy()+1):
                 if self.get(x, y) == opponentPiece:
                     return False
-        return True
+                if self.get(x, y) == ourPiece:
+                    hasOurPiece = True
+        return hasOurPiece
 
     def _get_opponent_colour(self, ourColour):
         '''
@@ -504,7 +509,7 @@ class Board:
         Returns a new `Board` instance.
         """
         if (self.boardSize <= 4):
-            return
+            return self
 
         board = copy.deepcopy(self)
         # clean the surrounding circle
@@ -585,8 +590,8 @@ class Board:
 
         # determine board size
         if (board.get(0, 0) == cls.PIECE_INVALID):
-            board.boardSize -= 1
+            board.boardSize -= 2
             if (board.get(1, 1) == cls.PIECE_INVALID):
-                board.boardSize -= 1
+                board.boardSize -= 2
 
         return board

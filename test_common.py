@@ -34,6 +34,17 @@ def test_board_parsing():
     board1 = Board.fromTokenString(layout1)
     assert(board1.toTokenString() == layout1)
 
+    layout2 = p("########",
+               "########",
+               "##X-OX##",
+               "##-O@-##",
+               "##@O--##",
+               "##XO-X##",
+               "########",
+               "########")
+    board2 = Board.fromTokenString(layout2)
+    assert board2.boardSize == 4
+
 def test_min_max():
     """
     """
@@ -52,7 +63,15 @@ def test_min_max():
     assert board2._min_xy() == 1
     assert board2._max_xy() == 6
 
+    board3 = board2.shrink()
 
+    # old one should not have changed
+    assert board2._min_xy() == 1
+    assert board2._max_xy() == 6
+    # new one should change
+    assert board3._min_xy() == 2
+    assert board3._max_xy() == 5
+    assert board3.boardSize == 4
 
 def test_shrink_board():
     layout1 = p("X------X",
@@ -89,6 +108,50 @@ def test_get_empty_cells():
              "--------",
              "X------X")
     assert len(Board.fromTokenString(layout).get_empty_cells()) == 60
+
+
+def test_is_won():
+    layout=p("X------X",
+             "--------",
+             "--------",
+             "--------",
+             "---@----",
+             "--------",
+             "--------",
+             "X------X")
+    board = Board.fromTokenString(layout)
+    assert board.isWon(Board.PIECE_BLACK) == True
+    assert board.isWon(Board.PIECE_WHITE) == False
+
+    layout=p("X------X",
+             "--------",
+             "--------",
+             "--------",
+             "--------",
+             "--------",
+             "--------",
+             "X------X")
+    board = Board.fromTokenString(layout)
+    assert board.isWon(Board.PIECE_BLACK) == False
+    assert board.isWon(Board.PIECE_WHITE) == False
+
+
+def test_is_won_on_shrinked_board():
+
+    # This was a layout that caused a bug. 
+    # This testcase is for preventing regression. 
+    layout = p("########",
+               "########",
+               "##X-OX##",
+               "##-O@-##",
+               "##@O--##",
+               "##XO-X##",
+               "########",
+               "########")
+    board = Board.fromTokenString(layout)
+    assert(board.isWon(Board.PIECE_BLACK) == False)
+    assert(board.isWon(Board.PIECE_WHITE) == False)
+
 
 def test_place_piece():
     pass
