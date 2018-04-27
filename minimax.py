@@ -1,11 +1,12 @@
 from common import Board
 
+INFINITY = float('inf')
+
 
 class MiniMaxSolver:
 
     MAX_DEPTH = 3  # Maximum search depth
     TURNS_BEFORE_SHRINK = [128 + 24, 192 + 24]
-    infinity = float('inf')
 
     def __init__(self, colour):
         self.colour = colour
@@ -28,29 +29,46 @@ class MiniMaxSolver:
         (best_move, best_val) = self.max_value(board, currentTurn, 1)
         return best_move
 
-    def max_value(self, board, currentTurn, depth):
+    def _range_intersect(self, a, b):
+        a_lower, a_upper = a
+        b_lower, b_upper = b
+        if (a_upper < b_lower or b_upper < a_lower):
+            return (INFINITY, -INFINITY)  # No intersection
+        return (max(a_lower, b_lower), min(a_upper, b_upper))
+
+    def _is_empty_set(self, a):
+        a_lower, a_upper = a
+        return a_lower > a_upper
+
+    def max_value(self, board, currentTurn, depth, validRange=(-INFINITY, INFINITY)):
         """Max represents our turn
+
+        validRange is used for alpha-beta pruning
+        The boundaries are inclusive.
         """
         if ((currentTurn, board.getHashValue()) in self.visited):
             return self.visited[(currentTurn, board.getHashValue())]
         if self.isTerminal(board, depth, currentTurn):
             return (None, self.h(board))
 
-        max_value = -self.infinity
+        max_value = -INFINITY
         max_move = None
 
         successors_states = self.getSuccessors(board, currentTurn, self.colour)
         print("max", "successor_states", len(successors_states))
         for (move, state) in successors_states:
-            tmp = self.min_value(state, currentTurn+1, depth+1)[1]
+            tmp = self.min_value(state, currentTurn+1, depth+1,
+                                 self._range_intersect((max_value, INFINITY), validRange))[1]
             if (tmp > max_value):
                 max_move = move
                 max_value = tmp
+                if (self._is_empty_set(self._range_intersect(validRange, (max_value, INFINITY)))):
+                    break
         self.visited[(currentTurn, board.getHashValue())
                      ] = (max_move, max_value)
         return (max_move, max_value)
 
-    def min_value(self, board, currentTurn, depth):
+    def min_value(self, board, currentTurn, depth, validRange=(-INFINITY, INFINITY)):
         """Min represents opponent's turn
         """
         if ((currentTurn, board.getHashValue()) in self.visited):
@@ -58,16 +76,19 @@ class MiniMaxSolver:
         if self.isTerminal(board, depth, currentTurn):
             return (None, self.h(board))
 
-        min_value = self.infinity
+        min_value = INFINITY
         min_move = None
 
         successors_states = self.getSuccessors(
             board, currentTurn, board._get_opponent_colour(self.colour))
         for (move, state) in successors_states:
-            tmp = self.max_value(state, currentTurn+1, depth+1)[1]
+            tmp = self.max_value(state, currentTurn+1, depth+1,
+                                 self._range_intersect((-INFINITY, min_value), validRange))[1]
             if (tmp < min_value):
                 min_move = move
                 min_value = tmp
+                if (self._is_empty_set(self._range_intersect(validRange, (-INFINITY, min_value)))):
+                    break
         self.visited[(currentTurn, board.getHashValue())
                      ] = (min_move, min_value)
         return (min_move, min_value)
