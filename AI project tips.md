@@ -1,3 +1,23 @@
+
+from tutorial discussion (30/4/18)
+1. only store the delta (changes) of the board and not deepcopy as it is alwasy (n^2)
+
+2. make code Unit Testable especially for type errors
+2.1 explicitly type function
+
+3. use byte arrays
+
+
+
+coefficient
+- which round
+- number of pieces
+- grouping of pieces
+- where ur facing relevant enemies
+
+
+dicussion from much earlier
+
 1. Detecting reflecting states
 -	Similar to repeated states
 
