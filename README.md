@@ -12,3 +12,13 @@ make html
 ```
 pytest
 ```
+
+## Play against self
+```
+python ./referee.py player player
+```
+
+## Play against dummy player
+```
+python ./referee.py player dummpy_player
+```
