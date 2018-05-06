@@ -22,10 +22,17 @@ class Player(PlayerBase):
                 validYZone = range(0, 6)
             moves = [(x, y)
                      for (x, y) in board.get_empty_cells() if y in validYZone]
+
+            if (not moves):
+                return None
+            
             return random.choice(moves)
         else:
             ourPieces = board.getAllPieces(self.colour)
             moves = []
             for (x, y) in ourPieces:
                 moves += board.getAvailableMoves(x, y)
+
+            if (not moves):
+                return None
             return random.choice(moves)

@@ -12,8 +12,53 @@ Draft AI
 
 
 Additional Stuff
-- alterntive Player class
+- alternative Player class
 - modified referee
 - additional programs to test player strategy
 - programs to create training data for ML
 - programs for other purpose not directly related to Player class
+
+
+Notes about assessment criteria:
+	Total: 22 marks
+		- 4 marks
+			- quality of code
+			- OOP
+			- readability
+			- comments & docstrings
+		- 4 marks
+			- correctness of program
+			- no runtime errors
+			- no illegal moves
+			- no violation of memory constraints (100MB entire game)
+			- no violation of time constraints (60s entire game)
+		- 7 marks
+			- performance of our Player againts smart AI
+		- 7 marks
+			- pro-active points
+			- techniques used not taught in lectures
+
+
+What have we done so far?
+- placing phase
+- moving phase
+	1. alpha-beta minimax with depth limiting 
+	2. reducing search space
+	3. detecting mirroring & symmetry
+
+Going to do
+- placing phase
+	4. placing pieces to kill
+	5. placing pieces at strategic positions
+- moving phase
+	6. using byte arrays
+	7. optimising efficiency of search
+	8. only storing deltas/changes
+	9. monte carlo search
+	10. TDLeaf search
+	11. negamax (basically combining max and min function), negascout/principle variation search, SSS* (sorting game tree for faster discovery)
+
+
+
+
+
