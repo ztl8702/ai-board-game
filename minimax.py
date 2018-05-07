@@ -20,7 +20,7 @@ class MiniMaxSolver:
         ourPieces = board.getAllPieces(self.colour)
         oppoPieces = board.getAllPieces(
             board._get_opponent_colour(self.colour))
-        return len(ourPieces) - len(oppoPieces)
+        return len(ourPieces) - 2*len(oppoPieces)
 
     def minimax(self, board, currentTurn):
         # first, find the max value
@@ -55,7 +55,7 @@ class MiniMaxSolver:
         max_move = None
 
         successors_states = self.getSuccessors(board, currentTurn, self.colour)
-        print("max", "successor_states", len(successors_states))
+       # print(" "*(depth-1)+"max", "successor_states", len(successors_states))
         for (move, state) in successors_states:
             tmp = self.min_value(state, currentTurn+1, depth+1,
                                  self._range_intersect((max_value, INFINITY), validRange))[1]
@@ -81,6 +81,7 @@ class MiniMaxSolver:
 
         successors_states = self.getSuccessors(
             board, currentTurn, board._get_opponent_colour(self.colour))
+        #print(" "*(depth-1)+"min", "successor_states", len(successors_states))
         for (move, state) in successors_states:
             tmp = self.max_value(state, currentTurn+1, depth+1,
                                  self._range_intersect((-INFINITY, min_value), validRange))[1]
@@ -107,7 +108,6 @@ class MiniMaxSolver:
                 validYZone = range(0, 6)
             moves = [(x, y)
                      for (x, y) in board.get_empty_cells() if y in validYZone]
-            #print(side, moves)
 
             newStates = [((x, y), board.placePiece(x, y, side))
                          for (x, y) in moves]
