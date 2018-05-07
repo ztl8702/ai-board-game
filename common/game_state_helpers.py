@@ -1,0 +1,37 @@
+from . import Board
+
+def get_successor_board_states(self, board, currentTurn, side='@')-> Type[Board]:
+        if (currentTurn <= 24):
+            # placing phase
+            if side == Board.PIECE_BLACK:
+                validYZone = range(2, 8)
+            else:
+                validYZone = range(0, 6)
+            moves = [(x, y)
+                     for (x, y) in board.get_empty_cells() if y in validYZone]
+
+            newStates = [((x, y), board.placePiece(x, y, side))
+                         for (x, y) in moves]
+        else:
+            # Moving phase
+            ourPieces = board.getAllPieces(side)
+            moves = []
+            for (x, y) in ourPieces:
+                moves += board.getAvailableMoves(x, y)
+
+            if currentTurn in self.TURNS_BEFORE_SHRINK:
+                newStates = [
+                    (((fromX, fromY), (toX, toY)),
+                     board.makeMove(fromX, fromY, toX, toY, side).shrink()
+                     )
+                    for ((fromX, fromY), (toX, toY)) in moves
+                ]
+            else:
+                newStates = [
+                    (((fromX, fromY), (toX, toY)),
+                     board.makeMove(fromX, fromY, toX, toY, side)
+                     )
+                    for ((fromX, fromY), (toX, toY)) in moves
+                ]
+
+        return newStates
