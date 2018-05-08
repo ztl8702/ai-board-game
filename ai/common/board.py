@@ -1,15 +1,16 @@
 from .cells_array import CellsArray
 from .MoveType import MoveType
 from .board_status import BoardStatus
+from .i_board import IBoard
+from .config import MAX_BOARD_SIZE
 import copy
 
 
 
-class Board:
+class Board(IBoard):
     '''
     Representation of the board
     '''
-    MAX_BOARD_SIZE = 8  # maximum board size
 
     DIRECTION = [
         [-1, 0],  # left
@@ -39,10 +40,10 @@ class Board:
         '''
         initially the board size is set to the maximum
         '''
-        self.boardSize = self.MAX_BOARD_SIZE
+        self.boardSize = MAX_BOARD_SIZE
         self.board = CellsArray(self.boardSize)
-        for x in range(Board.MAX_BOARD_SIZE):
-            for y in range(Board.MAX_BOARD_SIZE):
+        for x in range(MAX_BOARD_SIZE):
+            for y in range(MAX_BOARD_SIZE):
                 self.set(x, y, Board.PIECE_EMPTY)
         self._update_corners()
 
@@ -54,7 +55,7 @@ class Board:
     def _min_xy(self):
         """Min value of X or Y
         """
-        return (Board.MAX_BOARD_SIZE - self.boardSize) // 2
+        return (MAX_BOARD_SIZE - self.boardSize) // 2
 
     def _corner_cells(self):
         return [
@@ -77,11 +78,11 @@ class Board:
         Read and parse the board layout from stdin
         leaving aside last command line
         '''
-        tmpBoard = CellsArray(self.MAX_BOARD_SIZE)
+        tmpBoard = CellsArray(MAX_BOARD_SIZE)
 
-        for x in range(0, self.MAX_BOARD_SIZE):
+        for x in range(0, MAX_BOARD_SIZE):
             row = input().strip().split(" ")
-            for y in range(0, self.MAX_BOARD_SIZE):
+            for y in range(0, MAX_BOARD_SIZE):
                 tmpBoard.set(x, y, row[y])
 
         self.board = tmpBoard.getInverted()
@@ -92,7 +93,7 @@ class Board:
         '''
         board = self.board.getInverted()
         print(" ", end="")
-        for i in range(self.MAX_BOARD_SIZE):
+        for i in range(MAX_BOARD_SIZE):
             print(i, end=" ")
         print()
 
@@ -543,10 +544,10 @@ class Board:
         Mainly used for unit tests.
         """
         result = ""
-        for y in range(Board.MAX_BOARD_SIZE):
-            for x in range(Board.MAX_BOARD_SIZE):
+        for y in range(MAX_BOARD_SIZE):
+            for x in range(MAX_BOARD_SIZE):
                 result = result + self.get(x, y)
-            if (y != Board.MAX_BOARD_SIZE-1):
+            if (y != MAX_BOARD_SIZE-1):
                 result = result + "\\\\"
         return result
 
@@ -556,10 +557,10 @@ class Board:
         Creates a new `Board` instance from a tokenString.
         """
         rows = ts.strip().split("\\\\")
-        assert len(rows) == cls.MAX_BOARD_SIZE
+        assert len(rows) == MAX_BOARD_SIZE
         board = cls()
-        for y in range(Board.MAX_BOARD_SIZE):
-            for x in range(Board.MAX_BOARD_SIZE):
+        for y in range(MAX_BOARD_SIZE):
+            for x in range(MAX_BOARD_SIZE):
                 board.set(x, y, rows[y][x])
 
         # determine board size
