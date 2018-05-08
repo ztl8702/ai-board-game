@@ -3,7 +3,7 @@ Performance tests
 """
 
 from datetime import datetime, timedelta
-from ai.common.board import Board
+from ai.common import Board
 from ai.algos.mc import solver
 from ai.common.helpers import p
 
@@ -39,7 +39,7 @@ def perf_test_mc_solver():
 
     solver.find_next_move(board, 1, '@')
 
-#perf_test_board_io()
+perf_test_board_io()
 import cProfile
 
-cProfile.run('perf_test_mc_solver()')
+#cProfile.run('perf_test_mc_solver()')

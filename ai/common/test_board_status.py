@@ -1,5 +1,5 @@
 from .helpers import p
-from .board import Board
+from . import Board
 from .board_status import BoardStatus
 
 def test_board_state_black_won():
