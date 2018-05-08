@@ -35,6 +35,8 @@ class LazyBoard(IBoard):
     PIECE_CORNER = 'X'  # corner piece
     PIECE_INVALID = '#'    # not a valid piece
 
+    PLAYER_PIECES = set([PIECE_BLACK, PIECE_WHITE])
+
     # performance optimization
     set_mapping = {
         PIECE_WHITE: 0,
@@ -59,12 +61,24 @@ class LazyBoard(IBoard):
         if (cloneFrom != None):
             self.boardSize = cloneFrom.boardSize
             self._update_borders()
-            self.board = copy.deepcopy(cloneFrom.board)
+            self.masterCopy = False
+            self.unapplied_actions = list(cloneFrom.unapplied_actions)
+            self.all_pieces = cloneFrom.all_pieces
+            self.has_unapplied_actions = True
+            self.board = cloneFrom.board
         else:
             self.boardSize = MAX_BOARD_SIZE
             self._update_borders()
+            self.masterCopy = True
+            self.has_unapplied_actions = False
+            self.unapplied_actions = []
             self.board = [array.array('B', [0]*MAX_BOARD_SIZE)
                           for x in range(MAX_BOARD_SIZE)]
+            self.all_pieces = {
+                self.PIECE_BLACK: set(),
+                self.PIECE_WHITE: set()
+            }
+
             for x in range(MAX_BOARD_SIZE):
                 for y in range(MAX_BOARD_SIZE):
                     self.set_p(x, y, self.PIECE_EMPTY)
@@ -125,6 +139,9 @@ class LazyBoard(IBoard):
         '''
           Gets the piece at coordinate (x, y)
         '''
+        if self.has_unapplied_actions:
+            self.has_unapplied_actions = False
+            self._apply_unapplied_actions()
         # if (self.isWithinBoard(x, y)):
         return self.get_mapping[self.board[x][y]]
         # else:
@@ -136,8 +153,21 @@ class LazyBoard(IBoard):
 
         Avoid name conflict with set (built-in type)
         '''
-        # if self.isWithinBoard(x, y):
+        if not self.masterCopy:
+            self.board = copy.deepcopy(self.board)
+            self.masterCopy = True
         self.board[x][y] = self.set_mapping[value]
+
+    def _apply_unapplied_actions(self):
+        for action in self.unapplied_actions:
+            actionType, args = action
+            if actionType == 'makeMove':
+                x, y, newX, newY, ourPiece = args
+                self._do_make_move(x, y, newX, newY, ourPiece)
+            elif actionType == 'placePiece':
+                newX, newY, ourPiece = args
+                self._do_place_piece(newX, newY, ourPiece)
+        self.unapplied_actions.clear()
 
     def getMoveType(self, x, y, direction):
         '''
@@ -155,7 +185,7 @@ class LazyBoard(IBoard):
         newY2 = newY + self.DIRECTION[direction][1]
         if self.isWithinBoard(newX2, newY2) and \
                 self.isEmpty(newX2, newY2) and \
-                self.get(newX, newY) in [self.PIECE_WHITE, self.PIECE_BLACK]:
+                self.get(newX, newY) in self.PLAYER_PIECES:
             return MoveType.JUMP
 
         # not a valid move, so can't move
@@ -169,7 +199,7 @@ class LazyBoard(IBoard):
         '''
 
         # return no moves available if piece is not playable
-        if not (self.get(x, y) in [self.PIECE_WHITE, self.PIECE_BLACK]):
+        if not (self.get(x, y) in self.PLAYER_PIECES):
             return []
 
         possibleMoves = []
@@ -323,14 +353,17 @@ class LazyBoard(IBoard):
         Returns a new instance of `Board`.
         '''
         board = LazyBoard(self)
-
-        # make the move
-        board.set_p(newX, newY, ourPiece)
-        board.set_p(x, y, self.PIECE_EMPTY)
-
-        board._check_elimination(newX, newY, ourPiece)
-
+        board.unapplied_actions.append(
+            ('makeMove', (x, y, newX, newY, ourPiece))
+        )
         return board
+
+    def _do_make_move(self, x, y, newX, newY, ourPiece):
+
+        self.set_p(newX, newY, ourPiece)
+        self.set_p(x, y, self.PIECE_EMPTY)
+
+        self._check_elimination(newX, newY, ourPiece)
 
     def placePiece(self, newX, newY, ourPiece):
         """
@@ -340,11 +373,15 @@ class LazyBoard(IBoard):
         """
 
         board = LazyBoard(self)
-
-        board.set_p(newX, newY, ourPiece)
-        board._check_elimination(newX, newY, ourPiece)
+        board.unapplied_actions.append(
+            ('placePiece', (newX, newY, ourPiece))
+        )
 
         return board
+
+    def _do_place_piece(self, newX, newY, colour):
+        self.set_p(newX, newY, colour)
+        self._check_elimination(newX, newY, colour)
 
     def apply_action(self, action, colour):
         if action is None:

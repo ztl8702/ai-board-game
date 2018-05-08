@@ -5,6 +5,7 @@ from .helpers import p
 Unit tests for common.py
 """
 
+
 def test_board_parsing():
     """Ensures `to_token_string` and `from_token_string` works properly. Basis for other unit tests.
     """
@@ -168,6 +169,29 @@ def test_is_won_on_shrinked_board():
     assert(board.isWon(Board.PIECE_WHITE) == False)
 
 
+def test_get_all_pieces():
+    layout1 = p("########",
+                "#XO---X#",
+                "#---O--#",
+                "#O----@#",
+                "#-----O#",
+                "#------#",
+                "#X----X#",
+                "########")
+    board1 = Board.from_token_string(layout1)
+    allWhitePieces = board1.get_all_pieces('O')
+    assert((2, 1) in allWhitePieces)
+    assert((4, 2) in allWhitePieces)
+    assert((1, 3) in allWhitePieces)
+    assert((6, 4) in allWhitePieces)
+    assert(len(allWhitePieces) == 4)
+
+    board1.set_p(4, 5, 'O')
+    allWhitePieces = board1.get_all_pieces('O')
+    assert(len(allWhitePieces) == 5)
+    assert((4, 5) in allWhitePieces)
+
+
 def test_get_all_pieces_should_find_pieces_after_shrink():
     # This was a bug
     # This testcase is for preventing regression
@@ -273,3 +297,29 @@ def test_move_piece_and_eliminate():
                 "#X----X#",
                 "########")
     assert(boardAfter.to_token_string() == layout2)
+
+
+def test_multiple_moves():
+    layout1 = p("########",
+                "#XO---X#",
+                "#----O-#",
+                "#O----@#",
+                "#-----O#",
+                "#------#",
+                "#X----X#",
+                "########")
+    board1 = Board.from_token_string(layout1)
+    boardAfter = board1.makeMove(5, 2, 6, 2, 'O') \
+        .placePiece(4, 5, '@') \
+        .placePiece(3, 5, 'O') \
+        .placePiece(5, 5, 'O')
+    layout2 = p("########",
+                "#XO---X#",
+                "#-----O#",
+                "#O-----#",
+                "#-----O#",
+                "#--O-O-#",
+                "#X----X#",
+                "########")
+    assert(boardAfter.to_token_string() == layout2)
+    pass
