@@ -258,9 +258,9 @@ class LazyBoard(IBoard):
         self._apply_unapplied_actions()
         joined = b''
         for arr in self.board:
-            joined = joined+arr.tostring()
-        self.hash_value_cache = joined
-        return joined
+            joined = joined+arr.tobytes()
+        self.hash_value_cache = hash(joined)
+        return hash(joined)
 
     def isWon(self, ourPiece, is_placing=False):
         '''
