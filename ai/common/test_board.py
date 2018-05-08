@@ -126,6 +126,10 @@ def test_get_empty_cells():
     assert len(Board.from_token_string(layout).get_empty_cells()) == 60
 
 
+def test_get_available_moves():
+    pass
+
+
 def test_is_won():
     layout = p("X------X",
                "--------",
@@ -191,21 +195,36 @@ def test_get_all_pieces():
     assert(len(allWhitePieces) == 5)
     assert((4, 5) in allWhitePieces)
 
+    layout2 = p("X-----OX",
+                "--------",
+                "--@---@-",
+                "O-@OO--O",
+                "-@@---OO",
+                "-O-OO--O",
+                "@--@-@@-",
+                "X------X"
+                )
+    board2 = Board.from_token_string(layout2)
+    allWhitePieces = board2.get_all_pieces('O')
+    allBlackPieces = board2.get_all_pieces('@')
+    assert(len(allWhitePieces) == 11)
+    assert(len(allBlackPieces) == 9)
+
 
 def test_get_all_pieces_should_find_pieces_after_shrink():
     # This was a bug
     # This testcase is for preventing regression
 
-    layout1 = p("########",
-                "#XO---X#",
-                "#---O--#",
-                "#O----@#",
-                "#-----O#",
-                "#------#",
-                "#X----X#",
-                "########")
+    layout1 = p("X------X",
+                "--O-----",
+                "----O---",
+                "-O----@-",
+                "@-----O-",
+                "--------",
+                "-@----@-",
+                "X------X")
     board1 = Board.from_token_string(layout1)
-    allBlackPieces = board1.get_all_pieces('@')
+    allBlackPieces = board1.shrink().get_all_pieces('@')
 
     assert(len(allBlackPieces) == 1)
     assert((6, 3) in allBlackPieces)
@@ -253,6 +272,28 @@ def test_place_piece_and_eliminate():
                 "--------",
                 "X------X")
     assert(boardAfter.to_token_string() == layout2)
+
+
+def test_hash_value():
+    layout1 = p("X-----OX",
+                "--------",
+                "--------",
+                "--------",
+                "--------",
+                "--------",
+                "--------",
+                "X------X")
+    board1 = Board.from_token_string(layout1)
+    hash1 = board1.getHashValue()
+    hash2 = board1.makeMove(6, 0, 5, 0, 'O').getHashValue()
+    hash3 = board1.makeMove(6, 0, 5, 0, 'O').makeMove(
+        5, 0, 6, 0, 'O').getHashValue()
+    assert(hash1 == hash3)
+    assert(hash2 != hash3)
+
+    board1.set_p(1,1,'@')
+    hash4 = board1.getHashValue()
+    assert(hash4!=hash3)
 
 
 def test_move_piece():

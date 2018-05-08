@@ -9,6 +9,8 @@ import array
 class LazyBoard(IBoard):
     '''
     Representation of the board
+
+    With "lazy actions" to improve performance
     '''
 
     DIRECTION = [
@@ -66,23 +68,24 @@ class LazyBoard(IBoard):
             self.all_pieces = cloneFrom.all_pieces
             self.has_unapplied_actions = True
             self.board = cloneFrom.board
+            self.hash_value_cache = None
         else:
             self.boardSize = MAX_BOARD_SIZE
             self._update_borders()
             self.masterCopy = True
             self.has_unapplied_actions = False
             self.unapplied_actions = []
-            self.board = [array.array('B', [0]*MAX_BOARD_SIZE)
+            self.board = [array.array('B', [2]*MAX_BOARD_SIZE)
                           for x in range(MAX_BOARD_SIZE)]
             self.all_pieces = {
+                self.PIECE_WHITE: set(),
                 self.PIECE_BLACK: set(),
-                self.PIECE_WHITE: set()
+                self.PIECE_EMPTY: set([(x,y) for x in range(MAX_BOARD_SIZE) for y in range(MAX_BOARD_SIZE)]),
+                self.PIECE_CORNER: set(),
+                self.PIECE_INVALID: set()
             }
-
-            for x in range(MAX_BOARD_SIZE):
-                for y in range(MAX_BOARD_SIZE):
-                    self.set_p(x, y, self.PIECE_EMPTY)
             self._update_corners()
+            self.hash_value_cache = None            
 
     def _update_borders(self):
         self._min_xy = (MAX_BOARD_SIZE - self.boardSize) // 2
@@ -108,18 +111,15 @@ class LazyBoard(IBoard):
         ''' 
         Debugging utlity function to print board
         '''
-        board = self.board.getInverted()
         print(" ", end="")
         for i in range(MAX_BOARD_SIZE):
             print(i, end=" ")
         print()
 
-        j = 0
-        for line in board.cells:
-            print(j, end="")
-            j = j + 1
-            for piece in line:
-                print(piece, end=" ")
+        for y in range(MAX_BOARD_SIZE):
+            print(y, end="")
+            for x in range(MAX_BOARD_SIZE):
+                print(self.get(x,y), end=" ")
             print()
         print()
 
@@ -155,8 +155,21 @@ class LazyBoard(IBoard):
         '''
         if not self.masterCopy:
             self.board = copy.deepcopy(self.board)
+            old_all_pieces = self.all_pieces
+            self.all_pieces = {
+                "O": set(old_all_pieces['O']),
+                "@": set(old_all_pieces['@']),
+                "-": set(old_all_pieces['-']),
+                "X": set(old_all_pieces['X']),
+                "#": set(old_all_pieces['#'])
+            }
+            # copy.deepcopy(self.all_pieces)
             self.masterCopy = True
+        self.hash_value_cache = None
+        oldValue = self.get_mapping[self.board[x][y]]
         self.board[x][y] = self.set_mapping[value]
+        self.all_pieces[oldValue].remove((x,y))
+        self.all_pieces[value].add((x,y))
 
     def _apply_unapplied_actions(self):
         for action in self.unapplied_actions:
@@ -225,44 +238,27 @@ class LazyBoard(IBoard):
     def get_empty_cells(self):
         """
         """
-        result = []
-        for x in range(self._min_xy, self._max_xy+1):
-            for y in range(self._min_xy, self._max_xy+1):
-                if (self.isEmpty(x, y)):
-                    result.append((x, y))
-        return result
+        #result = []
+        #for x in range(self._min_xy, self._max_xy+1):
+        #    for y in range(self._min_xy, self._max_xy+1):
+        #        if (self.isEmpty(x, y)):
+        #            result.append((x, y))
+        self._apply_unapplied_actions()
+        return list(self.all_pieces[self.PIECE_EMPTY])
 
     def getHashValue(self):
         '''
         Computes a hash value for entire board.
-
-        reasoning for method:
-        use hash value to compare board states instead of 
-        iterating through each cell to check board states that have been seen
-
-        this is done by treating pieces as integers from 0 through 3
-        using a base-4 digit system (quaternary numeral system)
-        higher order represent higher significance of the bit
-        order is in the range of (1, 64) for 8x8 board
         '''
-        order = 1
-        total = 0
-        for x in range(0, self.boardSize):
-            for y in range(0, self.boardSize):
-                if (self.get(x, y) == self.PIECE_EMPTY):
-                    currentDigit = 0
-                elif (self.get(x, y) == self.PIECE_CORNER):
-                    currentDigit = 1
-                elif (self.get(x, y) == self.PIECE_WHITE):
-                    currentDigit = 2
-                elif (self.get(x, y) == self.PIECE_BLACK):
-                    currentDigit = 3
-                else:
-                    currentDigit = 4
-                total = total + currentDigit * (5 ** order)
-                order = order + 1
-        return total
-
+        if self.hash_value_cache != None:
+            return self.hash_value_cache
+        self._apply_unapplied_actions()
+        joined = b''
+        for arr in self.board:
+            joined = joined+arr.tostring() 
+        self.hash_value_cache = joined
+        return joined
+        
     def isWon(self, ourPiece, is_placing=False):
         '''
         Check if all opponent pieces are eliminated,
@@ -370,6 +366,8 @@ class LazyBoard(IBoard):
         Places a new piece. And check for elimination.
 
         Returns a new instance of `Board`.
+
+        Lazy action: we don't actually modify the board.
         """
 
         board = LazyBoard(self)
@@ -380,10 +378,18 @@ class LazyBoard(IBoard):
         return board
 
     def _do_place_piece(self, newX, newY, colour):
+        """
+        Realisation of lazy action.
+        """
         self.set_p(newX, newY, colour)
         self._check_elimination(newX, newY, colour)
 
     def apply_action(self, action, colour):
+        """
+        Apply oppponent's actions given by the referee.
+
+        Used for keeping the states up to date.
+        """
         if action is None:
             # forfeit turn
             return LazyBoard(self)
@@ -443,12 +449,14 @@ class LazyBoard(IBoard):
         '''
         get all the location of pieces of a specific colour
         '''
-        result = []
-        for x in range(self._min_xy, self._max_xy+1):
-            for y in range(self._min_xy, self._max_xy+1):
-                if self.get(x, y) == ourPiece:
-                    result.append((x, y))
-        return result
+        #result = []
+        #for x in range(self._min_xy, self._max_xy+1):
+        #    for y in range(self._min_xy, self._max_xy+1):
+        #        if self.get(x, y) == ourPiece:
+        #            result.append((x, y))
+        self._apply_unapplied_actions()
+        #print("get_all_pieces called", ourPiece, self.all_pieces[ourPiece])
+        return list(self.all_pieces[ourPiece])
 
     def count_moves(self, ourPiece):
         result = 0

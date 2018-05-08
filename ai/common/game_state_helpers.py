@@ -17,6 +17,15 @@ def get_successor_board_states(board, turnToPlay, side='@')-> Type[Board]:
         else:
             # Moving phase
             ourPieces = board.get_all_pieces(side)
+            #print(ourPieces)
+            #if (len(ourPieces)==0):
+            #    print("no pieces")
+            #    board.printBoard()
+            #    print(board.all_pieces)
+            #    print(board.all_pieces['O'])
+            #    print(board.all_pieces['@'])
+            #    print(board.all_pieces[side],'side',side, side=='O', side=='@')
+            #    print(list(board.all_pieces[side]))
             moves = []
             for (x, y) in ourPieces:
                 moves += board.getAvailableMoves(x, y)
