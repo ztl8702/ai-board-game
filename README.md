@@ -1,6 +1,6 @@
 # comp30024-ai-project
 
-> Radium's personal working branch for Part B
+> Part B Submission Branch
 
 ## Documentation
 
