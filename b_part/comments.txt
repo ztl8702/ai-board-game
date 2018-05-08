@@ -55,7 +55,7 @@ Going to do
 	7. optimising efficiency of search
 	8. only storing deltas/changes
 	9. monte carlo search
-	10. TDLeaf search
+	10. TDLeaf search [therrense ]
 	11. negamax (basically combining max and min function), negascout/principle variation search, SSS* (sorting game tree for faster discovery)
 	12. tweaking utility function
 	13. use transposition tables
@@ -71,6 +71,9 @@ const int evalPlacement = {
 	 X,  5, 10, 10, 10, 10,  5,  X
 }
 
+
+i. make pieces go in deeper when shrinking is going to occur
+ii. placing phase, place pieces in the middle area
 
 
 

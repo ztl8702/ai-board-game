@@ -17,16 +17,26 @@ class MiniMaxSolver:
 
         h(state) = ourPieces - opponentsPiece
         """
+
+        # h1
         ourPieces = board.getAllPieces(self.colour)
-        oppoPieces = board.getAllPieces(
+        oppPieces = board.getAllPieces(
             board._get_opponent_colour(self.colour))
-        return len(ourPieces) - 2*len(oppoPieces)
+        h1 = len(ourPieces) - 2 * len(oppPieces)
+
+        # h2
+        ourPiecesMoves = board.countMoves(self.colour)
+        oppPiecesMoves = board.countMoves(
+            board._get_opponent_colour(self.colour))
+        h2 = ourPiecesMoves - oppPiecesMoves
+
+        return h1 * h2
 
     def minimax(self, board, currentTurn):
         # first, find the max value
         # should be root node of tree
         self.visited = {}
-        (best_move, best_val) = self.max_value(board, currentTurn, 1)
+        (best_move, best_val) = self.get_max_value(board, currentTurn, 1)
         return best_move
 
     def _range_intersect(self, a, b):
@@ -40,14 +50,18 @@ class MiniMaxSolver:
         a_lower, a_upper = a
         return a_lower > a_upper
 
-    def max_value(self, board, currentTurn, depth, validRange=(-INFINITY, INFINITY)):
+    def get_max_value(self, board, currentTurn, depth, validRange=(-INFINITY, INFINITY)):
         """Max represents our turn
 
         validRange is used for alpha-beta pruning
         The boundaries are inclusive.
         """
+
+        # check if current board state is seen before
         if ((currentTurn, board.getHashValue()) in self.visited):
             return self.visited[(currentTurn, board.getHashValue())]
+        
+        # check if we are at a leaf node or max depth has been reached
         if self.isTerminal(board, depth, currentTurn):
             return (None, self.h(board))
 
@@ -57,7 +71,7 @@ class MiniMaxSolver:
         successors_states = self.getSuccessors(board, currentTurn, self.colour)
        # print(" "*(depth-1)+"max", "successor_states", len(successors_states))
         for (move, state) in successors_states:
-            tmp = self.min_value(state, currentTurn+1, depth+1,
+            tmp = self.get_min_value(state, currentTurn+1, depth+1,
                                  self._range_intersect((max_value, INFINITY), validRange))[1]
             if (tmp > max_value):
                 max_move = move
@@ -68,11 +82,14 @@ class MiniMaxSolver:
                      ] = (max_move, max_value)
         return (max_move, max_value)
 
-    def min_value(self, board, currentTurn, depth, validRange=(-INFINITY, INFINITY)):
+    def get_min_value(self, board, currentTurn, depth, validRange=(-INFINITY, INFINITY)):
         """Min represents opponent's turn
         """
+        # check if current board state is seen before
         if ((currentTurn, board.getHashValue()) in self.visited):
             return self.visited[(currentTurn, board.getHashValue())]
+        
+        # check if we are at a leaf node or max depth has been reached
         if self.isTerminal(board, depth, currentTurn):
             return (None, self.h(board))
 
@@ -83,7 +100,7 @@ class MiniMaxSolver:
             board, currentTurn, board._get_opponent_colour(self.colour))
         #print(" "*(depth-1)+"min", "successor_states", len(successors_states))
         for (move, state) in successors_states:
-            tmp = self.max_value(state, currentTurn+1, depth+1,
+            tmp = self.get_max_value(state, currentTurn+1, depth+1,
                                  self._range_intersect((-INFINITY, min_value), validRange))[1]
             if (tmp < min_value):
                 min_move = move
@@ -100,19 +117,23 @@ class MiniMaxSolver:
 
     # successor states in a game tree are the child nodes...
     def getSuccessors(self, board, currentTurn, side='@'):
-        if (currentTurn <= 24):
-            # placing phase
+        
+        if (currentTurn <= 24): # placing phase
             if side == Board.PIECE_BLACK:
-                validYZone = range(2, 8)
+                # validYZone = range(2, 8) # og
+                validYZone = range(2, 6)
+                validXZone = range(2, 6)
             else:
-                validYZone = range(0, 6)
+                # validYZone = range(0, 6) # og
+                validYZone = range(2, 6)
+                validXZone = range(2, 6)
             moves = [(x, y)
-                     for (x, y) in board.get_empty_cells() if y in validYZone]
+                     for (x, y) in board.get_empty_cells() if y in validYZone and x in validXZone]
 
             newStates = [((x, y), board.placePiece(x, y, side))
                          for (x, y) in moves]
-        else:
-            # Moving phase
+        
+        else: # Moving phase
             ourPieces = board.getAllPieces(side)
             moves = []
             for (x, y) in ourPieces:

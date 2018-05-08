@@ -16,9 +16,9 @@ class Player(PlayerBase):
         print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.")
 
     def on_request_action(self, isMoving, turn, board):
-        if (isMoving):
-            self.solver.MAX_DEPTH=3
+        if (isMoving): # is moving phase
+            self.solver.MAX_DEPTH = 4
             bestMove = self.solver.minimax(board, turn + 24)
-        else:
+        else: # is placing phase
             bestMove = self.solver.minimax(board, turn)
         return bestMove
