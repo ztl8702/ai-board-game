@@ -54,28 +54,23 @@ class Board(IBoard):
         initially the board size is set to the maximum
         '''
         self.boardSize = MAX_BOARD_SIZE
+        self._update_borders()
         self.board = CellsArray(self.boardSize)
         for x in range(MAX_BOARD_SIZE):
             for y in range(MAX_BOARD_SIZE):
                 self.set(x, y, Board.PIECE_EMPTY)
         self._update_corners()
 
-    def _max_xy(self):
-        """Max value of X or Y
-        """
-        return self._min_xy() + self.boardSize - 1
-
-    def _min_xy(self):
-        """Min value of X or Y
-        """
-        return (MAX_BOARD_SIZE - self.boardSize) // 2
+    def _update_borders(self):
+        self._min_xy = (MAX_BOARD_SIZE - self.boardSize) // 2
+        self._max_xy = self._min_xy + self.boardSize - 1
 
     def _corner_cells(self):
         return [
-            (self._min_xy(), self._min_xy()),
-            (self._min_xy(), self._max_xy()),
-            (self._max_xy(), self._min_xy()),
-            (self._max_xy(), self._max_xy())
+            (self._min_xy, self._min_xy),
+            (self._min_xy, self._max_xy),
+            (self._max_xy, self._min_xy),
+            (self._max_xy, self._max_xy)
         ]
 
     def _update_corners(self):
@@ -123,14 +118,14 @@ class Board(IBoard):
         '''
         check if coordinate (x, y) is empty
         '''
-        return self.board.get(x, y) == self.PIECE_EMPTY
+        return self.get(x, y) == self.PIECE_EMPTY
 
     def isWithinBoard(self, x, y):
         '''
         returns true if coordinate (x, y) is within the board
         '''
-        return (x in range(self._min_xy(), self._max_xy()+1)) and \
-            (y in range(self._min_xy(), self._max_xy()+1))
+        return (x in range(self._min_xy, self._max_xy+1)) and \
+            (y in range(self._min_xy, self._max_xy+1))
 
     def get(self, x, y):
         '''
@@ -145,8 +140,8 @@ class Board(IBoard):
         '''
         Change the piece at coordinate (x, y)
         '''
-        if self.isWithinBoard(x, y):
-            self.board.set(x, y, self.set_mapping[value])
+        #if self.isWithinBoard(x, y):
+        self.board.set(x, y, self.set_mapping[value])
 
     def getMoveType(self, x, y, direction):
         '''
@@ -205,8 +200,8 @@ class Board(IBoard):
         """
         """
         result = []
-        for x in range(self._min_xy(), self._max_xy()+1):
-            for y in range(self._min_xy(), self._max_xy()+1):
+        for x in range(self._min_xy, self._max_xy+1):
+            for y in range(self._min_xy, self._max_xy+1):
                 if (self.isEmpty(x, y)):
                     result.append((x, y))
         return result
@@ -249,8 +244,8 @@ class Board(IBoard):
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
         hasOurPiece = False
-        for x in range(self._min_xy(), self._max_xy()+1):
-            for y in range(self._min_xy(), self._max_xy()+1):
+        for x in range(self._min_xy, self._max_xy+1):
+            for y in range(self._min_xy, self._max_xy+1):
                 if self.get(x, y) == opponentPiece:
                     return False
                 if self.get(x, y) == ourPiece:
@@ -265,8 +260,8 @@ class Board(IBoard):
         elif (self.isWon(Board.PIECE_WHITE)):
             return BoardStatus.WHITE_WON
         else:
-            for x in range(self._min_xy(), self._max_xy()+1):
-                for y in range(self._min_xy(), self._max_xy()+1):
+            for x in range(self._min_xy, self._max_xy+1):
+                for y in range(self._min_xy, self._max_xy+1):
                     if self.get(x, y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]:
                         return BoardStatus.ON_GOING
             return BoardStatus.TIE
@@ -502,15 +497,16 @@ class Board(IBoard):
         board = copy.deepcopy(self)
         # clean the surrounding circle
 
-        for x in range(board._min_xy(), board._max_xy()+1):
-            board.set(x, board._min_xy(), Board.PIECE_INVALID)
-            board.set(x, board._max_xy(), Board.PIECE_INVALID)
+        for x in range(board._min_xy, board._max_xy+1):
+            board.set(x, board._min_xy, Board.PIECE_INVALID)
+            board.set(x, board._max_xy, Board.PIECE_INVALID)
 
-        for y in range(board._min_xy() + 1, board._max_xy()):
-            board.set(board._min_xy(), y, Board.PIECE_INVALID)
-            board.set(board._max_xy(), y, Board.PIECE_INVALID)
+        for y in range(board._min_xy + 1, board._max_xy):
+            board.set(board._min_xy, y, Board.PIECE_INVALID)
+            board.set(board._max_xy, y, Board.PIECE_INVALID)
 
         board.boardSize -= 2
+        board._update_borders()
         board._update_corners()
 
         # do the elimination caused by new corners
@@ -536,8 +532,8 @@ class Board(IBoard):
         get all the location of pieces of a specific colour
         '''
         result = []
-        for x in range(self._min_xy(), self._max_xy()+1):
-            for y in range(self._min_xy(), self._max_xy()+1):
+        for x in range(self._min_xy, self._max_xy+1):
+            for y in range(self._min_xy, self._max_xy+1):
                 if self.get(x, y) == ourPiece:
                     result.append((x, y))
         return result

@@ -23,3 +23,6 @@ def perf_test_board_io():
 
 
 perf_test_board_io()
+import cProfile
+
+#cProfile.run('perf_test_board_io()')

@@ -52,26 +52,26 @@ def test_min_max():
 
     board = Board()
 
-    assert board._min_xy() == 0
-    assert board._max_xy() == 7
+    assert board._min_xy == 0
+    assert board._max_xy == 7
 
     board2 = board.shrink()
 
     # old one should not have changed
-    assert board._min_xy() == 0
-    assert board._max_xy() == 7
+    assert board._min_xy == 0
+    assert board._max_xy == 7
     # new one should change
-    assert board2._min_xy() == 1
-    assert board2._max_xy() == 6
+    assert board2._min_xy == 1
+    assert board2._max_xy == 6
 
     board3 = board2.shrink()
 
     # old one should not have changed
-    assert board2._min_xy() == 1
-    assert board2._max_xy() == 6
+    assert board2._min_xy == 1
+    assert board2._max_xy == 6
     # new one should change
-    assert board3._min_xy() == 2
-    assert board3._max_xy() == 5
+    assert board3._min_xy == 2
+    assert board3._max_xy == 5
     assert board3.boardSize == 4
 
 def test_shrink_board():
