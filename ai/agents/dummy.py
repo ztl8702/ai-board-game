@@ -1,5 +1,5 @@
-from playerbase import PlayerBase
-from common import Board
+from .playerbase import PlayerBase
+from ..common import Board
 import random
 
 class Player(PlayerBase):

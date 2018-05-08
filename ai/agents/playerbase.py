@@ -1,4 +1,4 @@
-from common import Board
+from ..common import Board
 
 
 TURNS_BEFORE_SHRINK = [128, 192]

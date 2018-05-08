@@ -1,5 +1,5 @@
-from playerbase import PlayerBase
-from minimax import MiniMaxSolver
+from .playerbase import PlayerBase
+from ..algos.minimax import MiniMaxSolver
 
 
 class Player(PlayerBase):

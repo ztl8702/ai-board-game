@@ -1,4 +1,4 @@
-from common import Board
+from ..common import Board
 
 INFINITY = float('inf')
 
