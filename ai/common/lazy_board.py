@@ -77,15 +77,16 @@ class LazyBoard(IBoard):
             self.unapplied_actions = []
             self.board = [array.array('B', [2]*MAX_BOARD_SIZE)
                           for x in range(MAX_BOARD_SIZE)]
+            # optimization for get_all_pieces
             self.all_pieces = {
                 self.PIECE_WHITE: set(),
                 self.PIECE_BLACK: set(),
-                self.PIECE_EMPTY: set([(x,y) for x in range(MAX_BOARD_SIZE) for y in range(MAX_BOARD_SIZE)]),
+                self.PIECE_EMPTY: set([(x, y) for x in range(MAX_BOARD_SIZE) for y in range(MAX_BOARD_SIZE)]),
                 self.PIECE_CORNER: set(),
                 self.PIECE_INVALID: set()
             }
             self._update_corners()
-            self.hash_value_cache = None            
+            self.hash_value_cache = None
 
     def _update_borders(self):
         self._min_xy = (MAX_BOARD_SIZE - self.boardSize) // 2
@@ -119,7 +120,7 @@ class LazyBoard(IBoard):
         for y in range(MAX_BOARD_SIZE):
             print(y, end="")
             for x in range(MAX_BOARD_SIZE):
-                print(self.get(x,y), end=" ")
+                print(self.get(x, y), end=" ")
             print()
         print()
 
@@ -156,6 +157,8 @@ class LazyBoard(IBoard):
         if not self.masterCopy:
             self.board = copy.deepcopy(self.board)
             old_all_pieces = self.all_pieces
+            # manual "deepcopy" seems faster
+            # using string literals for performance
             self.all_pieces = {
                 "O": set(old_all_pieces['O']),
                 "@": set(old_all_pieces['@']),
@@ -168,8 +171,8 @@ class LazyBoard(IBoard):
         self.hash_value_cache = None
         oldValue = self.get_mapping[self.board[x][y]]
         self.board[x][y] = self.set_mapping[value]
-        self.all_pieces[oldValue].remove((x,y))
-        self.all_pieces[value].add((x,y))
+        self.all_pieces[oldValue].remove((x, y))
+        self.all_pieces[value].add((x, y))
 
     def _apply_unapplied_actions(self):
         for action in self.unapplied_actions:
@@ -239,7 +242,7 @@ class LazyBoard(IBoard):
         """
         """
         #result = []
-        #for x in range(self._min_xy, self._max_xy+1):
+        # for x in range(self._min_xy, self._max_xy+1):
         #    for y in range(self._min_xy, self._max_xy+1):
         #        if (self.isEmpty(x, y)):
         #            result.append((x, y))
@@ -255,10 +258,10 @@ class LazyBoard(IBoard):
         self._apply_unapplied_actions()
         joined = b''
         for arr in self.board:
-            joined = joined+arr.tostring() 
+            joined = joined+arr.tostring()
         self.hash_value_cache = joined
         return joined
-        
+
     def isWon(self, ourPiece, is_placing=False):
         '''
         Check if all opponent pieces are eliminated,
@@ -450,7 +453,7 @@ class LazyBoard(IBoard):
         get all the location of pieces of a specific colour
         '''
         #result = []
-        #for x in range(self._min_xy, self._max_xy+1):
+        # for x in range(self._min_xy, self._max_xy+1):
         #    for y in range(self._min_xy, self._max_xy+1):
         #        if self.get(x, y) == ourPiece:
         #            result.append((x, y))
