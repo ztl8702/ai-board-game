@@ -92,5 +92,5 @@ def perf_test_minimax_solver_moving():
 import cProfile
 
 #cProfile.run('perf_test_mc_solver()')
-cProfile.run('perf_test_minimax_solver_placing()')
-#cProfile.run('perf_test_minimax_solver_moving()')
+#cProfile.run('perf_test_minimax_solver_placing()')
+cProfile.run('perf_test_minimax_solver_moving()')
