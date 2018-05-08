@@ -1,4 +1,4 @@
-
+import copy
 class CellsArray:
     '''
     a 2d array representing all the cells

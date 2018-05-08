@@ -153,6 +153,23 @@ def test_is_won_on_shrinked_board():
     assert(board.isWon(Board.PIECE_BLACK) == False)
     assert(board.isWon(Board.PIECE_WHITE) == False)
 
+def test_get_all_pieces_should_find_pieces_after_shrink():
+    # This was a bug
+    # This testcase is for preventing regression
+
+    layout1 = p("########",
+                "#XO---X#",
+                "#---O--#",
+                "#O----@#",
+                "#-----O#",
+                "#------#",
+                "#X----X#",
+                "########")
+    board1 = Board.fromTokenString(layout1)
+    allBlackPieces = board1.getAllPieces('@')
+
+    assert(len(allBlackPieces) == 1)
+    assert((6,3) in allBlackPieces)
 
 def test_place_piece():
     pass

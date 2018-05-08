@@ -26,6 +26,7 @@ def test_board_state_white_won():
                 "X------X")
     board1 = Board.fromTokenString(layout1)
     assert(board1.get_status() == BoardStatus.WHITE_WON)
+    assert(board1.get_status(is_placing=True) == BoardStatus.ON_GOING)
 
 def test_board_state_on_going():
     layout1 = p("X------X",

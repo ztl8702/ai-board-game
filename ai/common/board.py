@@ -228,7 +228,7 @@ class Board:
                 order = order + 1
         return total
 
-    def isWon(self, ourPiece):
+    def isWon(self, ourPiece, is_placing = False):
         '''
         Check if all opponent pieces are eliminated,
         and we still have pieces left
@@ -244,6 +244,8 @@ class Board:
         return hasOurPiece
 
     def get_status(self, is_placing = False):
+        if (is_placing): # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
+                return BoardStatus.ON_GOING
         if (self.isWon(Board.PIECE_BLACK)):
             return BoardStatus.BLACK_WON
         elif (self.isWon(Board.PIECE_WHITE)):
@@ -253,10 +255,7 @@ class Board:
                 for y in range(self._min_xy(), self._max_xy()+1):
                     if self.get(x, y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]:
                         return BoardStatus.ON_GOING
-            if (is_placing): # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
-                return BoardStatus.ON_GOING
-            else:
-                return BoardStatus.TIE
+            return BoardStatus.TIE
             # TODO: LOW-PERF
 
 
@@ -523,8 +522,8 @@ class Board:
         get all the location of pieces of a specific colour
         '''
         result = []
-        for x in range(0, self.boardSize):
-            for y in range(0, self.boardSize):
+        for x in range(self._min_xy(), self._max_xy()+1):
+            for y in range(self._min_xy(), self._max_xy()+1):
                 if self.get(x, y) == ourPiece:
                     result.append((x, y))
         return result
