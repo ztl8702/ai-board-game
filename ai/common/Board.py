@@ -1,5 +1,6 @@
 from .CellsArray import CellsArray
 from .MoveType import MoveType
+from .BoardStatus import BoardStatus
 import copy
 
 
@@ -242,8 +243,22 @@ class Board:
                     hasOurPiece = True
         return hasOurPiece
 
-    def get_status(self):
-        pass
+    def get_status(self, is_placing = False):
+        if (self.isWon(Board.PIECE_BLACK)):
+            return BoardStatus.BLACK_WON
+        elif (self.isWon(Board.PIECE_WHITE)):
+            return BoardStatus.WHITE_WON
+        else:
+            for x in range(self._min_xy(), self._max_xy()+1):
+                for y in range(self._min_xy(), self._max_xy()+1):
+                    if self.get(x, y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]:
+                        return BoardStatus.ON_GOING
+            if (is_placing): # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
+                return BoardStatus.ON_GOING
+            else:
+                return BoardStatus.TIE
+            # TODO: LOW-PERF
+
 
     def _get_opponent_colour(self, ourColour):
         '''
