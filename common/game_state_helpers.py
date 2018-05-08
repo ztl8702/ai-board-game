@@ -1,4 +1,4 @@
-from . import Board
+from .Board import Board
 
 def get_successor_board_states(self, board, currentTurn, side='@')-> Type[Board]:
         if (currentTurn <= 24):
@@ -35,3 +35,13 @@ def get_successor_board_states(self, board, currentTurn, side='@')-> Type[Board]
                 ]
 
         return newStates
+
+
+def get_opponent_colour(ourColour):
+    '''
+    Returns the opponent piece type/colour
+    '''
+    if (ourColour == Board.PIECE_WHITE):
+        return Board.PIECE_BLACK
+    else:
+        return Board.PIECE_WHITE

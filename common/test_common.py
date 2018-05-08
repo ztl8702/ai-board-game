@@ -1,4 +1,4 @@
-from common import Board
+from .Board import Board
 """
 Unit tests for common.py
 """

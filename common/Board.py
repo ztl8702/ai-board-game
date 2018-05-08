@@ -1,6 +1,8 @@
-from . import CellsArray
-from . import MoveType
+from .CellsArray import CellsArray
+from .MoveType import MoveType
 import copy
+
+
 
 class Board:
     '''
@@ -239,6 +241,9 @@ class Board:
                 if self.get(x, y) == ourPiece:
                     hasOurPiece = True
         return hasOurPiece
+
+    def get_status(self):
+        pass
 
     def _get_opponent_colour(self, ourColour):
         '''
