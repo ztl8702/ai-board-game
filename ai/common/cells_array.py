@@ -21,7 +21,7 @@ class CellsArray:
         '''
         return self.cells[x][y]
 
-    def set(self, x, y, value):
+    def set_p(self, x, y, value):
         '''
         change cell type
         '''
@@ -34,5 +34,5 @@ class CellsArray:
         newCellsArray = copy.deepcopy(self)
         for x in range(0, self.size):
             for y in range(0, self.size):
-                newCellsArray.set(x, y, self.get(y, x))
+                newCellsArray.set_p(x, y, self.get(y, x))
         return newCellsArray

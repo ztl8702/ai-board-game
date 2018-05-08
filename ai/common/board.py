@@ -5,6 +5,7 @@ from .i_board import IBoard
 from .config import MAX_BOARD_SIZE
 import copy
 
+
 class Board(IBoard):
     '''
     Representation of the board
@@ -34,21 +35,23 @@ class Board(IBoard):
     PIECE_CORNER = 'X'  # corner piece
     PIECE_INVALID = '#'    # not a valid piece
 
+    # performance optimization
     set_mapping = {
         PIECE_WHITE: 0,
-        PIECE_BLACK:1,
-        PIECE_EMPTY :2,
-        PIECE_CORNER :3,
-        PIECE_INVALID :4
+        PIECE_BLACK: 1,
+        PIECE_EMPTY: 2,
+        PIECE_CORNER: 3,
+        PIECE_INVALID: 4
     }
 
     get_mapping = {
-        0:PIECE_WHITE,
-        1:PIECE_BLACK,
-        2:PIECE_EMPTY,
-        3:PIECE_CORNER,
-        4:PIECE_INVALID
+        0: PIECE_WHITE,
+        1: PIECE_BLACK,
+        2: PIECE_EMPTY,
+        3: PIECE_CORNER,
+        4: PIECE_INVALID
     }
+
     def __init__(self):
         '''
         initially the board size is set to the maximum
@@ -58,7 +61,7 @@ class Board(IBoard):
         self.board = CellsArray(self.boardSize)
         for x in range(MAX_BOARD_SIZE):
             for y in range(MAX_BOARD_SIZE):
-                self.set(x, y, Board.PIECE_EMPTY)
+                self.set_p(x, y, Board.PIECE_EMPTY)
         self._update_corners()
 
     def _update_borders(self):
@@ -79,7 +82,7 @@ class Board(IBoard):
         Called after a shrink and during the initialisation.
         """
         for (x, y) in self._corner_cells():
-            self.set(x, y, Board.PIECE_CORNER)
+            self.set_p(x, y, Board.PIECE_CORNER)
 
     def readInput(self):
         ''' 
@@ -91,7 +94,7 @@ class Board(IBoard):
         for x in range(0, MAX_BOARD_SIZE):
             row = input().strip().split(" ")
             for y in range(0, MAX_BOARD_SIZE):
-                tmpBoard.set(x, y, row[y])
+                tmpboard.set_p(x, y, row[y])
 
         self.board = tmpBoard.getInverted()
 
@@ -124,24 +127,25 @@ class Board(IBoard):
         '''
         returns true if coordinate (x, y) is within the board
         '''
-        return (x in range(self._min_xy, self._max_xy+1)) and \
-            (y in range(self._min_xy, self._max_xy+1))
+        return ((self._min_xy <= x <= self._max_xy) and (self._min_xy <= y <= self._max_xy))
 
     def get(self, x, y):
         '''
           Gets the piece at coordinate (x, y)
         '''
-        if (self.isWithinBoard(x, y)):
-            return self.get_mapping[self.board.get(x, y)]
-        else:
-            return self.PIECE_INVALID
+        # if (self.isWithinBoard(x, y)):
+        return self.get_mapping[self.board.get(x, y)]
+        # else:
+        #   return self.PIECE_INVALID
 
-    def set(self, x, y, value):
+    def set_p(self, x, y, value):
         '''
         Change the piece at coordinate (x, y)
+
+        Avoid name conflict with set (built-in type)
         '''
-        #if self.isWithinBoard(x, y):
-        self.board.set(x, y, self.set_mapping[value])
+        # if self.isWithinBoard(x, y):
+        self.board.set_p(x, y, self.set_mapping[value])
 
     def getMoveType(self, x, y, direction):
         '''
@@ -237,7 +241,7 @@ class Board(IBoard):
                 order = order + 1
         return total
 
-    def isWon(self, ourPiece, is_placing = False):
+    def isWon(self, ourPiece, is_placing=False):
         '''
         Check if all opponent pieces are eliminated,
         and we still have pieces left
@@ -252,9 +256,10 @@ class Board(IBoard):
                     hasOurPiece = True
         return hasOurPiece
 
-    def get_status(self, is_placing = False):
-        if (is_placing): # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
-                return BoardStatus.ON_GOING
+    def get_status(self, is_placing=False):
+        # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
+        if (is_placing):
+            return BoardStatus.ON_GOING
         if (self.isWon(Board.PIECE_BLACK)):
             return BoardStatus.BLACK_WON
         elif (self.isWon(Board.PIECE_WHITE)):
@@ -266,7 +271,6 @@ class Board(IBoard):
                         return BoardStatus.ON_GOING
             return BoardStatus.TIE
             # TODO: LOW-PERF
-
 
     def _get_opponent_colour(self, ourColour):
         '''
@@ -373,7 +377,7 @@ class Board(IBoard):
         mark cells around opponent pieces 
         and return the smaller search space
         '''
-        searchSpace = []
+        searchSpace = set()
 
         opponentPiece = self._get_opponent_colour(ourPiece)
         opponentPieces = self.get_all_pieces(opponentPiece)
@@ -382,7 +386,7 @@ class Board(IBoard):
             (x, y) = p
             # add coordinate of opponent
             if self.isWithinBoard(x, y) and ((x, y) not in searchSpace):
-                searchSpace.append((x, y))
+                searchSpace.add((x, y))
 
             # for direction in range(0, 4):
             for direction in range(0, 8):
@@ -395,9 +399,9 @@ class Board(IBoard):
                     newY = y + self.ANTICLOCKWISE[direction][1] * i
 
                     if self.isWithinBoard(newX, newY) and \
-                        ((newX, newY) not in searchSpace) and \
+                        ((newX, newY) not in set(searchSpace)) and \
                             self.get(newX, newY) != self.PIECE_CORNER:
-                        searchSpace.append((newX, newY))
+                        searchSpace.add((newX, newY))
 
         return searchSpace
 
@@ -422,7 +426,7 @@ class Board(IBoard):
                     self.isWithinBoard(adjPieceX2, adjPieceY2) and \
                     self.get(adjPieceX2, adjPieceY2) in \
                     [ourPiece, self.PIECE_CORNER]:
-                self.set(adjPieceX, adjPieceY, self.PIECE_EMPTY)
+                self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
 
         # step 2: check if any opponent pieces eliminated us
 
@@ -431,14 +435,14 @@ class Board(IBoard):
             self.get(x - 1, y) in [opponentPiece, self.PIECE_CORNER]) and \
             (self.isWithinBoard(x + 1, y) and
              self.get(x + 1, y) in [opponentPiece, self.PIECE_CORNER]):
-            self.set(x, y, self.PIECE_EMPTY)
+            self.set_p(x, y, self.PIECE_EMPTY)
 
         # case 2: above and below surround us
         if (self.isWithinBoard(x, y - 1) and
             self.get(x, y - 1) in [opponentPiece, self.PIECE_CORNER]) and \
             (self.isWithinBoard(x, y + 1) and
              self.get(x, y + 1) in [opponentPiece, self.PIECE_CORNER]):
-            self.set(x, y, self.PIECE_EMPTY)
+            self.set_p(x, y, self.PIECE_EMPTY)
 
     def makeMove(self, x, y, newX, newY, ourPiece):
         '''
@@ -450,8 +454,8 @@ class Board(IBoard):
         board = copy.deepcopy(self)
 
         # make the move
-        board.set(newX, newY, ourPiece)
-        board.set(x, y, self.PIECE_EMPTY)
+        board.set_p(newX, newY, ourPiece)
+        board.set_p(x, y, self.PIECE_EMPTY)
 
         board.checkElimination(newX, newY, ourPiece)
 
@@ -466,7 +470,7 @@ class Board(IBoard):
 
         board = copy.deepcopy(self)
 
-        board.set(newX, newY, ourPiece)
+        board.set_p(newX, newY, ourPiece)
         board.checkElimination(newX, newY, ourPiece)
 
         return board
@@ -498,12 +502,12 @@ class Board(IBoard):
         # clean the surrounding circle
 
         for x in range(board._min_xy, board._max_xy+1):
-            board.set(x, board._min_xy, Board.PIECE_INVALID)
-            board.set(x, board._max_xy, Board.PIECE_INVALID)
+            board.set_p(x, board._min_xy, Board.PIECE_INVALID)
+            board.set_p(x, board._max_xy, Board.PIECE_INVALID)
 
         for y in range(board._min_xy + 1, board._max_xy):
-            board.set(board._min_xy, y, Board.PIECE_INVALID)
-            board.set(board._max_xy, y, Board.PIECE_INVALID)
+            board.set_p(board._min_xy, y, Board.PIECE_INVALID)
+            board.set_p(board._max_xy, y, Board.PIECE_INVALID)
 
         board.boardSize -= 2
         board._update_borders()
@@ -523,7 +527,7 @@ class Board(IBoard):
                     board.isWithinBoard(adj2X, adj2Y) and
                         board.get(adj2X, adj2Y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]):
                     if (board.get(adjX, adjY) != board.get(adj2X, adj2Y)):
-                        board.set(adjX, adjY, Board.PIECE_EMPTY)
+                        board.set_p(adjX, adjY, Board.PIECE_EMPTY)
 
         return board
 
@@ -570,7 +574,7 @@ class Board(IBoard):
         board = cls()
         for y in range(MAX_BOARD_SIZE):
             for x in range(MAX_BOARD_SIZE):
-                board.set(x, y, rows[y][x])
+                board.set_p(x, y, rows[y][x])
 
         # determine board size
         if board.get(0, 0) == cls.PIECE_INVALID:

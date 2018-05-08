@@ -18,7 +18,7 @@ class IBoard(object):
         """
         raise NotImplementedError()
     
-    def set(self, x:int, y:int, value:str)-> str:
+    def set_p(self, x:int, y:int, value:str)-> str:
         """
         Change the piece at coordinate `(x, y)`
         """

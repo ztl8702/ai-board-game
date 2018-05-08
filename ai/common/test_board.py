@@ -13,7 +13,7 @@ def test_board_parsing():
     """
     board = Board()
 
-    board.set(5,4, Board.PIECE_BLACK)
+    board.set_p(5,4, Board.PIECE_BLACK)
 
     assert(p("X------X",
              "--------",

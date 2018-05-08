@@ -17,7 +17,7 @@ class MinimaxPlayer(PlayerBase):
 
     def on_request_action(self, isMoving, turn, board):
         if (isMoving):
-            self.solver.MAX_DEPTH=3
+            self.solver.MAX_DEPTH=4
             bestMove = self.solver.minimax(board, turn + 24)
         else:
             bestMove = self.solver.minimax(board, turn)
