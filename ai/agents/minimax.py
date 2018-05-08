@@ -2,7 +2,7 @@ from .playerbase import PlayerBase
 from ..algos.minimax import MiniMaxSolver
 
 
-class Player(PlayerBase):
+class MinimaxPlayer(PlayerBase):
     """Our naive minimax agent with alpha-beta pruning
     """
 

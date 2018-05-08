@@ -1,6 +1,6 @@
-from .CellsArray import CellsArray
+from .cells_array import CellsArray
 from .MoveType import MoveType
-from .BoardStatus import BoardStatus
+from .board_status import BoardStatus
 import copy
 
 

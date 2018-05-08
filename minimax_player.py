@@ -1,1 +1,6 @@
-from ai.agents.minimax import Player
+"""
+Wrapper file
+"""
+
+
+from ai.agents.minimax import MinimaxPlayer as Player

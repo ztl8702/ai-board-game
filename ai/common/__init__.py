@@ -1,2 +1,2 @@
-from .Board import Board
-from .BoardStatus import BoardStatus
+from .board import Board
+from .board_status import BoardStatus

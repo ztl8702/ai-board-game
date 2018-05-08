@@ -1,5 +1,6 @@
-from .Board import Board
+from .board import Board
 from .helpers import p
+
 """
 Unit tests for common.py
 """

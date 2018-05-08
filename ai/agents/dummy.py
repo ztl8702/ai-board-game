@@ -2,7 +2,7 @@ from .playerbase import PlayerBase
 from ..common import Board
 import random
 
-class Player(PlayerBase):
+class DummyPlayer(PlayerBase):
     """Dummy agent picks a random move each time.
 
     Used as the baseline.

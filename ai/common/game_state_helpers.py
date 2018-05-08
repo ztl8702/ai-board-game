@@ -1,4 +1,5 @@
 from .Board import Board
+from typing import Type
 
 def get_successor_board_states(self, board, currentTurn, side='@')-> Type[Board]:
         if (currentTurn <= 24):

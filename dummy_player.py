@@ -1,1 +1,5 @@
-from ai.agents.dummy import Player
+"""
+Wrapper file
+"""
+
+from ai.agents.dummy import DummyPlayer as Player
