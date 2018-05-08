@@ -11,7 +11,7 @@ def test_board_state_black_won():
                 "------@-",
                 "-------@",
                 "X------X")
-    board1 = Board.fromTokenString(layout1)
+    board1 = Board.from_token_string(layout1)
     assert(board1.get_status() == BoardStatus.BLACK_WON)
 
 
@@ -24,7 +24,7 @@ def test_board_state_white_won():
                 "--------",
                 "--------",
                 "X------X")
-    board1 = Board.fromTokenString(layout1)
+    board1 = Board.from_token_string(layout1)
     assert(board1.get_status() == BoardStatus.WHITE_WON)
     assert(board1.get_status(is_placing=True) == BoardStatus.ON_GOING)
 
@@ -37,7 +37,7 @@ def test_board_state_on_going():
                 "--------",
                 "--------",
                 "X------X")
-    board1 = Board.fromTokenString(layout1)
+    board1 = Board.from_token_string(layout1)
     assert(board1.get_status() == BoardStatus.ON_GOING)
 
 
@@ -51,6 +51,6 @@ def test_board_state_tie():
                 "--------",
                 "--------",
                 "X------X")
-    board1 = Board.fromTokenString(layout1)
+    board1 = Board.from_token_string(layout1)
     assert(board1.get_status() == BoardStatus.TIE)
     assert(board1.get_status(is_placing=True) == BoardStatus.ON_GOING)

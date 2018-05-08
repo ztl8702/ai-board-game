@@ -5,8 +5,6 @@ from .i_board import IBoard
 from .config import MAX_BOARD_SIZE
 import copy
 
-
-
 class Board(IBoard):
     '''
     Representation of the board
@@ -36,6 +34,21 @@ class Board(IBoard):
     PIECE_CORNER = 'X'  # corner piece
     PIECE_INVALID = '#'    # not a valid piece
 
+    set_mapping = {
+        PIECE_WHITE: 0,
+        PIECE_BLACK:1,
+        PIECE_EMPTY :2,
+        PIECE_CORNER :3,
+        PIECE_INVALID :4
+    }
+
+    get_mapping = {
+        0:PIECE_WHITE,
+        1:PIECE_BLACK,
+        2:PIECE_EMPTY,
+        3:PIECE_CORNER,
+        4:PIECE_INVALID
+    }
     def __init__(self):
         '''
         initially the board size is set to the maximum
@@ -124,7 +137,7 @@ class Board(IBoard):
           Gets the piece at coordinate (x, y)
         '''
         if (self.isWithinBoard(x, y)):
-            return self.board.get(x, y)
+            return self.get_mapping[self.board.get(x, y)]
         else:
             return self.PIECE_INVALID
 
@@ -132,8 +145,8 @@ class Board(IBoard):
         '''
         Change the piece at coordinate (x, y)
         '''
-        if (self.isWithinBoard(x, y)):
-            self.board.set(x, y, value)
+        if self.isWithinBoard(x, y):
+            self.board.set(x, y, self.set_mapping[value])
 
     def getMoveType(self, x, y, direction):
         '''
@@ -272,7 +285,7 @@ class Board(IBoard):
     def checkSquareFormation(self, ourPiece):
         # return True if square formation exist
         opponentPiece = self._get_opponent_colour(ourPiece)
-        opponentPieces = self.getAllPieces(opponentPiece)
+        opponentPieces = self.get_all_pieces(opponentPiece)
         for p in opponentPieces:
             (x, y) = p
             # square in the top left corner [N, NW, W]
@@ -316,10 +329,10 @@ class Board(IBoard):
     def checkCantWin(self, ourPiece):
         # check if only 1 white piece and black pieces beside a corner piece
         # return True if cannot win
-        ourPieces = self.getAllPieces(ourPiece)
+        ourPieces = self.get_all_pieces(ourPiece)
         if len(ourPieces) < 2:
             opponentPiece = self._get_opponent_colour(ourPiece)
-            opponentPieces = self.getAllPieces(opponentPiece)
+            opponentPieces = self.get_all_pieces(opponentPiece)
             for p in opponentPieces:
                 cornerExist = False
                 (x, y) = p
@@ -335,8 +348,8 @@ class Board(IBoard):
     def getMinMaxSearchSpace(self, ourPiece):
 
         opponentPiece = self._get_opponent_colour(ourPiece)
-        allPieces = self.getAllPieces(
-            ourPiece) + self.getAllPieces(opponentPiece)
+        allPieces = self.get_all_pieces(
+            ourPiece) + self.get_all_pieces(opponentPiece)
 
         allX = []
         allY = []
@@ -368,7 +381,7 @@ class Board(IBoard):
         searchSpace = []
 
         opponentPiece = self._get_opponent_colour(ourPiece)
-        opponentPieces = self.getAllPieces(opponentPiece)
+        opponentPieces = self.get_all_pieces(opponentPiece)
 
         for p in opponentPieces:
             (x, y) = p
@@ -518,7 +531,7 @@ class Board(IBoard):
 
         return board
 
-    def getAllPieces(self, ourPiece):
+    def get_all_pieces(self, ourPiece):
         '''
         get all the location of pieces of a specific colour
         '''
@@ -529,16 +542,16 @@ class Board(IBoard):
                     result.append((x, y))
         return result
 
-    def countMoves(self, ourPiece):
+    def count_moves(self, ourPiece):
         result = 0
-        pieces = self.getAllPieces(ourPiece)
+        pieces = self.get_all_pieces(ourPiece)
         for p in pieces:
             (x, y) = p
             availableMoves = self.getAvailableMoves(x, y)
             result = result + len(availableMoves)
         return result
 
-    def toTokenString(self):
+    def to_token_string(self):
         """
         Converts the board layout to one line string.
         Mainly used for unit tests.
@@ -547,12 +560,12 @@ class Board(IBoard):
         for y in range(MAX_BOARD_SIZE):
             for x in range(MAX_BOARD_SIZE):
                 result = result + self.get(x, y)
-            if (y != MAX_BOARD_SIZE-1):
+            if y != MAX_BOARD_SIZE-1:
                 result = result + "\\\\"
         return result
 
     @classmethod
-    def fromTokenString(cls, ts):
+    def from_token_string(cls, ts):
         """
         Creates a new `Board` instance from a tokenString.
         """
@@ -564,9 +577,9 @@ class Board(IBoard):
                 board.set(x, y, rows[y][x])
 
         # determine board size
-        if (board.get(0, 0) == cls.PIECE_INVALID):
+        if board.get(0, 0) == cls.PIECE_INVALID:
             board.boardSize -= 2
-            if (board.get(1, 1) == cls.PIECE_INVALID):
+            if board.get(1, 1) == cls.PIECE_INVALID:
                 board.boardSize -= 2
 
         return board

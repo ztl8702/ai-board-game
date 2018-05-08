@@ -3,3 +3,6 @@ __pycache__
 build
 .cache
 .ipynb_checkpoints
+venv
+.idea
+.pytest_cache

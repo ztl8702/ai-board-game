@@ -1,4 +1,7 @@
 import copy
+import array
+
+
 class CellsArray:
     '''
     a 2d array representing all the cells
@@ -9,10 +12,8 @@ class CellsArray:
         initialise a 2d array
         '''
         self.size = size
-        self.cells = [
-            [0 for x in range(0, size)]
-            for y in range(0, size)
-        ]
+        self.cells = [array.array('B', [ord(' ')]*size)
+                      for x in range(0, size)]
 
     def get(self, x, y):
         '''
@@ -22,7 +23,7 @@ class CellsArray:
 
     def set(self, x, y, value):
         '''
-        change cell type 
+        change cell type
         '''
         self.cells[x][y] = value
 

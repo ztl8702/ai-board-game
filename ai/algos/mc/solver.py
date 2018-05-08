@@ -110,6 +110,6 @@ def find_next_move(board: Type[Board], turn:int, colour) -> Union[Tuple[int, int
         simulationRounds+=1
         #print("tree root children", tree.root.children)
 
-    print(f"[MC] {simulationRounds} rounds of simulation run.")
+    print(f"\n\n\n[MC] {simulationRounds} rounds of simulation run.\n\n\n")
     winningNode = tree.root.get_child_with_max_score()
     return winningNode.last_action

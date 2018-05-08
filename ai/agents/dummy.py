@@ -28,7 +28,7 @@ class DummyPlayer(PlayerBase):
             
             return random.choice(moves)
         else:
-            ourPieces = board.getAllPieces(self.colour)
+            ourPieces = board.get_all_pieces(self.colour)
             moves = []
             for (x, y) in ourPieces:
                 moves += board.getAvailableMoves(x, y)

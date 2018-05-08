@@ -9,7 +9,7 @@ Unit tests for common.py
 
 
 def test_board_parsing():
-    """Ensures `toTokenString` and `fromTokenString` works properly. Basis for other unit tests.
+    """Ensures `to_token_string` and `from_token_string` works properly. Basis for other unit tests.
     """
     board = Board()
 
@@ -22,7 +22,7 @@ def test_board_parsing():
              "-----@--",
              "--------",
              "--------",
-             "X------X") == board.toTokenString())
+             "X------X") == board.to_token_string())
 
     layout1 = p("X------X",
                 "--------",
@@ -32,8 +32,8 @@ def test_board_parsing():
                 "-----O@-",
                 "-------@",
                 "X------X")
-    board1 = Board.fromTokenString(layout1)
-    assert(board1.toTokenString() == layout1)
+    board1 = Board.from_token_string(layout1)
+    assert(board1.to_token_string() == layout1)
 
     layout2 = p("########",
                "########",
@@ -43,7 +43,7 @@ def test_board_parsing():
                "##XO-X##",
                "########",
                "########")
-    board2 = Board.fromTokenString(layout2)
+    board2 = Board.from_token_string(layout2)
     assert board2.boardSize == 4
 
 def test_min_max():
@@ -84,7 +84,7 @@ def test_shrink_board():
                 "--------",
                 "X------X") 
 
-    board1 = Board.fromTokenString(layout1)
+    board1 = Board.from_token_string(layout1)
     board2 = board1.shrink()
 
     assert(board2.boardSize == 6)
@@ -97,7 +97,7 @@ def test_shrink_board():
               "#----@O#",
               "#------#",
               "#X----X#",
-              "########") == board2.toTokenString())
+              "########") == board2.to_token_string())
     
 def test_get_empty_cells():
     layout =p("X------X",
@@ -108,7 +108,7 @@ def test_get_empty_cells():
              "--------",
              "--------",
              "X------X")
-    assert len(Board.fromTokenString(layout).get_empty_cells()) == 60
+    assert len(Board.from_token_string(layout).get_empty_cells()) == 60
 
 
 def test_is_won():
@@ -120,7 +120,7 @@ def test_is_won():
              "--------",
              "--------",
              "X------X")
-    board = Board.fromTokenString(layout)
+    board = Board.from_token_string(layout)
     assert board.isWon(Board.PIECE_BLACK) == True
     assert board.isWon(Board.PIECE_WHITE) == False
 
@@ -132,7 +132,7 @@ def test_is_won():
              "--------",
              "--------",
              "X------X")
-    board = Board.fromTokenString(layout)
+    board = Board.from_token_string(layout)
     assert board.isWon(Board.PIECE_BLACK) == False
     assert board.isWon(Board.PIECE_WHITE) == False
 
@@ -149,7 +149,7 @@ def test_is_won_on_shrinked_board():
                "##XO-X##",
                "########",
                "########")
-    board = Board.fromTokenString(layout)
+    board = Board.from_token_string(layout)
     assert(board.isWon(Board.PIECE_BLACK) == False)
     assert(board.isWon(Board.PIECE_WHITE) == False)
 
@@ -165,8 +165,8 @@ def test_get_all_pieces_should_find_pieces_after_shrink():
                 "#------#",
                 "#X----X#",
                 "########")
-    board1 = Board.fromTokenString(layout1)
-    allBlackPieces = board1.getAllPieces('@')
+    board1 = Board.from_token_string(layout1)
+    allBlackPieces = board1.get_all_pieces('@')
 
     assert(len(allBlackPieces) == 1)
     assert((6,3) in allBlackPieces)

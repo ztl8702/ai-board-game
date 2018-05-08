@@ -18,8 +18,8 @@ class MiniMaxSolver:
 
         h(state) = ourPieces - opponentsPiece
         """
-        ourPieces = board.getAllPieces(self.colour)
-        oppoPieces = board.getAllPieces(
+        ourPieces = board.get_all_pieces(self.colour)
+        oppoPieces = board.get_all_pieces(
             board._get_opponent_colour(self.colour))
         return len(ourPieces) - 2*len(oppoPieces)
 
@@ -114,7 +114,7 @@ class MiniMaxSolver:
                          for (x, y) in moves]
         else:
             # Moving phase
-            ourPieces = board.getAllPieces(side)
+            ourPieces = board.get_all_pieces(side)
             moves = []
             for (x, y) in ourPieces:
                 moves += board.getAvailableMoves(x, y)
