@@ -84,20 +84,6 @@ class Board(IBoard):
         for (x, y) in self._corner_cells():
             self.set_p(x, y, Board.PIECE_CORNER)
 
-    def readInput(self):
-        ''' 
-        Read and parse the board layout from stdin
-        leaving aside last command line
-        '''
-        tmpBoard = CellsArray(MAX_BOARD_SIZE)
-
-        for x in range(0, MAX_BOARD_SIZE):
-            row = input().strip().split(" ")
-            for y in range(0, MAX_BOARD_SIZE):
-                tmpboard.set_p(x, y, row[y])
-
-        self.board = tmpBoard.getInverted()
-
     def printBoard(self):
         ''' 
         Debugging utlity function to print board
@@ -281,142 +267,20 @@ class Board(IBoard):
         else:
             return self.PIECE_WHITE
 
-    def checkSquareFormation(self, ourPiece):
-        # return True if square formation exist
-        opponentPiece = self._get_opponent_colour(ourPiece)
-        opponentPieces = self.get_all_pieces(opponentPiece)
-        for p in opponentPieces:
-            (x, y) = p
-            # square in the top left corner [N, NW, W]
-            # N  self.ANTICLOCKWISE[7]
-            # NW self.ANTICLOCKWISE[0]
-            # W  self.ANTICLOCKWISE[1]
-            if (self.ANTICLOCKWISE[7] in opponentPieces and
-                self.ANTICLOCKWISE[0] in opponentPieces and
-                    self.ANTICLOCKWISE[1] in opponentPieces):
-                return True
-
-            # square in the bottom left corner [W, SW, S]
-            # W  self.ANTICLOCKWISE[1]
-            # SW self.ANTICLOCKWISE[2]
-            # S  self.ANTICLOCKWISE[3]
-            if (self.ANTICLOCKWISE[1] in opponentPieces and
-                self.ANTICLOCKWISE[2] in opponentPieces and
-                    self.ANTICLOCKWISE[3] in opponentPieces):
-                return True
-
-            # square in the top right corner [N, NE, E]
-            # N  self.ANTICLOCKWISE[7]
-            # NE self.ANTICLOCKWISE[6]
-            # E  self.ANTICLOCKWISE[5]
-            if (self.ANTICLOCKWISE[7] in opponentPieces and
-                self.ANTICLOCKWISE[6] in opponentPieces and
-                    self.ANTICLOCKWISE[5] in opponentPieces):
-                return True
-
-            # square in the bottom right corner [E, SE, S]
-            # E  self.ANTICLOCKWISE[5]
-            # SE self.ANTICLOCKWISE[4]
-            # S  self.ANTICLOCKWISE[3]
-            if (self.ANTICLOCKWISE[5] in opponentPieces and
-                self.ANTICLOCKWISE[4] in opponentPieces and
-                    self.ANTICLOCKWISE[3] in opponentPieces):
-                return True
-
-        return False
-
-    def checkCantWin(self, ourPiece):
-        # check if only 1 white piece and black pieces beside a corner piece
-        # return True if cannot win
-        ourPieces = self.get_all_pieces(ourPiece)
-        if len(ourPieces) < 2:
-            opponentPiece = self._get_opponent_colour(ourPiece)
-            opponentPieces = self.get_all_pieces(opponentPiece)
-            for p in opponentPieces:
-                cornerExist = False
-                (x, y) = p
-                for direction in range(0, 4):
-                    newX = x + self.DIRECTION[direction][0]
-                    newY = y + self.DIRECTION[direction][1]
-                    if (self.get(newX, newY) == self.PIECE_CORNER):
-                        cornerExist = True
-                if (cornerExist == False):
-                    return True
-        return False
-
-    def getMinMaxSearchSpace(self, ourPiece):
-
-        opponentPiece = self._get_opponent_colour(ourPiece)
-        allPieces = self.get_all_pieces(
-            ourPiece) + self.get_all_pieces(opponentPiece)
-
-        allX = []
-        allY = []
-
-        for p in allPieces:
-            (x, y) = p
-            allX.append(x)
-            allY.append(y)
-
-        minX = min(allX)
-        maxX = max(allX)
-        minY = min(allY)
-        maxY = max(allY)
-
-        searchSpace = []
-        # include square space with a buffer
-        for x in range(minX - 1, maxX + 2):
-            for y in range(minY - 1, maxY + 2):
-                if (self.isWithinBoard(x, y)):
-                    searchSpace.append((x, y))
-
-        return searchSpace
-
-    def getSmallerSearchSpace(self, ourPiece, layers):
-        '''
-        mark cells around opponent pieces 
-        and return the smaller search space
-        '''
-        searchSpace = set()
-
-        opponentPiece = self._get_opponent_colour(ourPiece)
-        opponentPieces = self.get_all_pieces(opponentPiece)
-
-        for p in opponentPieces:
-            (x, y) = p
-            # add coordinate of opponent
-            if self.isWithinBoard(x, y) and ((x, y) not in searchSpace):
-                searchSpace.add((x, y))
-
-            # for direction in range(0, 4):
-            for direction in range(0, 8):
-
-                # add coordinate of cells around opponent
-                for i in range(1, layers + 1):
-                    # newX = x + self.DIRECTION[direction][0] * i
-                    # newY = y + self.DIRECTION[direction][1] * i
-                    newX = x + self.ANTICLOCKWISE[direction][0] * i
-                    newY = y + self.ANTICLOCKWISE[direction][1] * i
-
-                    if self.isWithinBoard(newX, newY) and \
-                        ((newX, newY) not in set(searchSpace)) and \
-                            self.get(newX, newY) != self.PIECE_CORNER:
-                        searchSpace.add((newX, newY))
-
-        return searchSpace
-
-    def checkElimination(self, x, y, ourPiece):
+    def _check_elimination(self, x, y, ourPiece):
         '''
         Check and perform elimination, typically called after a player action.
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
 
+        DIRECTION = self.DIRECTION
+
         # step 1: check if we eliminated any opponent pieces
         for direction in range(0, 4):
-            adjPieceX = x + self.DIRECTION[direction][0]
-            adjPieceY = y + self.DIRECTION[direction][1]
-            adjPieceX2 = adjPieceX + self.DIRECTION[direction][0]
-            adjPieceY2 = adjPieceY + self.DIRECTION[direction][1]
+            adjPieceX = x + DIRECTION[direction][0]
+            adjPieceY = y + DIRECTION[direction][1]
+            adjPieceX2 = adjPieceX + DIRECTION[direction][0]
+            adjPieceY2 = adjPieceY + DIRECTION[direction][1]
 
             # if adjacent piece is within the board and is the opponent and
             # the piece across is within board and is an ally or a corner
@@ -425,23 +289,24 @@ class Board(IBoard):
                     self.get(adjPieceX, adjPieceY) == opponentPiece and \
                     self.isWithinBoard(adjPieceX2, adjPieceY2) and \
                     self.get(adjPieceX2, adjPieceY2) in \
-                    [ourPiece, self.PIECE_CORNER]:
+                    set([ourPiece, self.PIECE_CORNER]):
                 self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
 
         # step 2: check if any opponent pieces eliminated us
 
+        opponentPieceOrCorner = set([opponentPiece, self.PIECE_CORNER])
         # case 1: left and right surround us
         if (self.isWithinBoard(x - 1, y) and
-            self.get(x - 1, y) in [opponentPiece, self.PIECE_CORNER]) and \
+            self.get(x - 1, y) in opponentPieceOrCorner) and \
             (self.isWithinBoard(x + 1, y) and
-             self.get(x + 1, y) in [opponentPiece, self.PIECE_CORNER]):
+             self.get(x + 1, y) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
         # case 2: above and below surround us
         if (self.isWithinBoard(x, y - 1) and
-            self.get(x, y - 1) in [opponentPiece, self.PIECE_CORNER]) and \
+            self.get(x, y - 1) in opponentPieceOrCorner) and \
             (self.isWithinBoard(x, y + 1) and
-             self.get(x, y + 1) in [opponentPiece, self.PIECE_CORNER]):
+             self.get(x, y + 1) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
     def makeMove(self, x, y, newX, newY, ourPiece):
@@ -457,7 +322,7 @@ class Board(IBoard):
         board.set_p(newX, newY, ourPiece)
         board.set_p(x, y, self.PIECE_EMPTY)
 
-        board.checkElimination(newX, newY, ourPiece)
+        board._check_elimination(newX, newY, ourPiece)
 
         return board
 
@@ -471,7 +336,7 @@ class Board(IBoard):
         board = copy.deepcopy(self)
 
         board.set_p(newX, newY, ourPiece)
-        board.checkElimination(newX, newY, ourPiece)
+        board._check_elimination(newX, newY, ourPiece)
 
         return board
 
