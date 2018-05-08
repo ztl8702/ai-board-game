@@ -156,6 +156,26 @@ def test_is_won():
     assert board.isWon(Board.PIECE_WHITE) == False
 
 
+def test_elimination_edge_cases():
+    layout = p("X------X",
+               "--------",
+               "---@----",
+               "--O-@O--",
+               "---@----",
+               "--------",
+               "--------",
+               "X------X")
+    board = Board.from_token_string(layout)
+    board = board.makeMove(2,3,3,3,'O')
+    assert p("X------X",
+               "--------",
+               "---@----",
+               "-----O--",
+               "---@----",
+               "--------",
+               "--------",
+               "X------X") == board.to_token_string()
+
 def test_is_won_on_shrinked_board():
 
     # This was a layout that caused a bug.
