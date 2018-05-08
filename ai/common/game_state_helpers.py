@@ -1,4 +1,4 @@
-from .board import Board
+from . import Board
 from typing import Type
 from .config import TURNS_BEFORE_SHRINK
 
