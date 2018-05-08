@@ -1,3 +1,8 @@
+"""
+Unit Test helpers
+"""
+
+
 def p(*args):
     """Test Helper function
     Converts a board layout line-by-line as 8 parameters

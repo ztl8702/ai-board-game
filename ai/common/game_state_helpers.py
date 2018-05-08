@@ -1,8 +1,9 @@
-from .Board import Board
+from .board import Board
 from typing import Type
+from .config import TURNS_BEFORE_SHRINK
 
-def get_successor_board_states(self, board, currentTurn, side='@')-> Type[Board]:
-        if (currentTurn <= 24):
+def get_successor_board_states(board, turnToPlay, side='@')-> Type[Board]:
+        if (turnToPlay <= 24):
             # placing phase
             if side == Board.PIECE_BLACK:
                 validYZone = range(2, 8)
@@ -20,7 +21,7 @@ def get_successor_board_states(self, board, currentTurn, side='@')-> Type[Board]
             for (x, y) in ourPieces:
                 moves += board.getAvailableMoves(x, y)
 
-            if currentTurn in self.TURNS_BEFORE_SHRINK:
+            if turnToPlay in TURNS_BEFORE_SHRINK:
                 newStates = [
                     (((fromX, fromY), (toX, toY)),
                      board.makeMove(fromX, fromY, toX, toY, side).shrink()

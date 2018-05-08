@@ -1,4 +1,5 @@
 from ..common import Board
+from ..common import config
 
 INFINITY = float('inf')
 
@@ -6,7 +7,7 @@ INFINITY = float('inf')
 class MiniMaxSolver:
 
     MAX_DEPTH = 3  # Maximum search depth
-    TURNS_BEFORE_SHRINK = [128 + 24, 192 + 24]
+    
 
     def __init__(self, colour):
         self.colour = colour
@@ -118,7 +119,7 @@ class MiniMaxSolver:
             for (x, y) in ourPieces:
                 moves += board.getAvailableMoves(x, y)
 
-            if currentTurn in self.TURNS_BEFORE_SHRINK:
+            if currentTurn in config.TURNS_BEFORE_SHRINK:
                 newStates = [
                     (((fromX, fromY), (toX, toY)),
                      board.makeMove(fromX, fromY, toX, toY, side).shrink()
