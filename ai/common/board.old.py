@@ -1,57 +1,15 @@
+from .cells_array import CellsArray
+from .MoveType import MoveType
+from .board_status import BoardStatus
+from .i_board import IBoard
+from .config import MAX_BOARD_SIZE
 import copy
-from enum import Enum
 
 
-class MoveType(Enum):
-    # enum to represent different type of moves
-    INVALID = 0
-    NORMAL = 1
-    JUMP = 2
-
-
-class CellsArray:
-    '''
-    a 2d array representing all the cells
-    '''
-
-    def __init__(self, size):
-        '''
-        initialise a 2d array
-        '''
-        self.size = size
-        self.cells = [
-            [0 for x in range(0, size)]
-            for y in range(0, size)
-        ]
-
-    def get(self, x, y):
-        '''
-        get piece type
-        '''
-        return self.cells[x][y]
-
-    def set(self, x, y, value):
-        '''
-        change cell type 
-        '''
-        self.cells[x][y] = value
-
-    def getInverted(self):
-        '''
-        utility function to invert the cells array 
-        '''
-        newCellsArray = copy.deepcopy(self)
-        for x in range(0, self.size):
-            for y in range(0, self.size):
-                newCellsArray.set(x, y, self.get(y, x))
-        return newCellsArray
-
-
-class Board:
+class Board(IBoard):
     '''
     Representation of the board
     '''
-    MAX_BOARD_SIZE = 8  # maximum board size
 
     DIRECTION = [
         [-1, 0],  # left
@@ -77,33 +35,45 @@ class Board:
     PIECE_CORNER = 'X'  # corner piece
     PIECE_INVALID = '#'    # not a valid piece
 
+    # performance optimization
+    set_mapping = {
+        PIECE_WHITE: 0,
+        PIECE_BLACK: 1,
+        PIECE_EMPTY: 2,
+        PIECE_CORNER: 3,
+        PIECE_INVALID: 4
+    }
+
+    get_mapping = {
+        0: PIECE_WHITE,
+        1: PIECE_BLACK,
+        2: PIECE_EMPTY,
+        3: PIECE_CORNER,
+        4: PIECE_INVALID
+    }
+
     def __init__(self):
         '''
         initially the board size is set to the maximum
         '''
-        self.boardSize = self.MAX_BOARD_SIZE
+        self.boardSize = MAX_BOARD_SIZE
+        self._update_borders()
         self.board = CellsArray(self.boardSize)
-        for x in range(Board.MAX_BOARD_SIZE):
-            for y in range(Board.MAX_BOARD_SIZE):
-                self.set(x, y, Board.PIECE_EMPTY)
+        for x in range(MAX_BOARD_SIZE):
+            for y in range(MAX_BOARD_SIZE):
+                self.set_p(x, y, Board.PIECE_EMPTY)
         self._update_corners()
 
-    def _max_xy(self):
-        """Max value of X or Y
-        """
-        return self._min_xy() + self.boardSize - 1
-
-    def _min_xy(self):
-        """Min value of X or Y
-        """
-        return (Board.MAX_BOARD_SIZE - self.boardSize) // 2
+    def _update_borders(self):
+        self._min_xy = (MAX_BOARD_SIZE - self.boardSize) // 2
+        self._max_xy = self._min_xy + self.boardSize - 1
 
     def _corner_cells(self):
         return [
-            (self._min_xy(), self._min_xy()),
-            (self._min_xy(), self._max_xy()),
-            (self._max_xy(), self._min_xy()),
-            (self._max_xy(), self._max_xy())
+            (self._min_xy, self._min_xy),
+            (self._min_xy, self._max_xy),
+            (self._max_xy, self._min_xy),
+            (self._max_xy, self._max_xy)
         ]
 
     def _update_corners(self):
@@ -112,21 +82,7 @@ class Board:
         Called after a shrink and during the initialisation.
         """
         for (x, y) in self._corner_cells():
-            self.set(x, y, Board.PIECE_CORNER)
-
-    def readInput(self):
-        ''' 
-        Read and parse the board layout from stdin
-        leaving aside last command line
-        '''
-        tmpBoard = CellsArray(self.MAX_BOARD_SIZE)
-
-        for x in range(0, self.MAX_BOARD_SIZE):
-            row = input().strip().split(" ")
-            for y in range(0, self.MAX_BOARD_SIZE):
-                tmpBoard.set(x, y, row[y])
-
-        self.board = tmpBoard.getInverted()
+            self.set_p(x, y, Board.PIECE_CORNER)
 
     def printBoard(self):
         ''' 
@@ -134,7 +90,7 @@ class Board:
         '''
         board = self.board.getInverted()
         print(" ", end="")
-        for i in range(self.MAX_BOARD_SIZE):
+        for i in range(MAX_BOARD_SIZE):
             print(i, end=" ")
         print()
 
@@ -151,30 +107,31 @@ class Board:
         '''
         check if coordinate (x, y) is empty
         '''
-        return self.board.get(x, y) == self.PIECE_EMPTY
+        return self.get(x, y) == self.PIECE_EMPTY
 
     def isWithinBoard(self, x, y):
         '''
         returns true if coordinate (x, y) is within the board
         '''
-        return (x in range(self._min_xy(), self._max_xy()+1)) and \
-            (y in range(self._min_xy(), self._max_xy()+1))
+        return ((self._min_xy <= x <= self._max_xy) and (self._min_xy <= y <= self._max_xy))
 
     def get(self, x, y):
         '''
           Gets the piece at coordinate (x, y)
         '''
-        if (self.isWithinBoard(x, y)):
-            return self.board.get(x, y)
-        else:
-            return self.PIECE_INVALID
+        # if (self.isWithinBoard(x, y)):
+        return self.get_mapping[self.board.get(x, y)]
+        # else:
+        #   return self.PIECE_INVALID
 
-    def set(self, x, y, value):
+    def set_p(self, x, y, value):
         '''
         Change the piece at coordinate (x, y)
+
+        Avoid name conflict with set (built-in type)
         '''
-        if (self.isWithinBoard(x, y)):
-            self.board.set(x, y, value)
+        # if self.isWithinBoard(x, y):
+        self.board.set_p(x, y, self.set_mapping[value])
 
     def getMoveType(self, x, y, direction):
         '''
@@ -233,8 +190,8 @@ class Board:
         """
         """
         result = []
-        for x in range(self._min_xy(), self._max_xy()+1):
-            for y in range(self._min_xy(), self._max_xy()+1):
+        for x in range(self._min_xy, self._max_xy+1):
+            for y in range(self._min_xy, self._max_xy+1):
                 if (self.isEmpty(x, y)):
                     result.append((x, y))
         return result
@@ -270,20 +227,36 @@ class Board:
                 order = order + 1
         return total
 
-    def isWon(self, ourPiece):
+    def isWon(self, ourPiece, is_placing=False):
         '''
         Check if all opponent pieces are eliminated,
         and we still have pieces left
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
         hasOurPiece = False
-        for x in range(self._min_xy(), self._max_xy()+1):
-            for y in range(self._min_xy(), self._max_xy()+1):
+        for x in range(self._min_xy, self._max_xy+1):
+            for y in range(self._min_xy, self._max_xy+1):
                 if self.get(x, y) == opponentPiece:
                     return False
                 if self.get(x, y) == ourPiece:
                     hasOurPiece = True
         return hasOurPiece
+
+    def get_status(self, is_placing=False):
+        # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
+        if (is_placing):
+            return BoardStatus.ON_GOING
+        if (self.isWon(Board.PIECE_BLACK)):
+            return BoardStatus.BLACK_WON
+        elif (self.isWon(Board.PIECE_WHITE)):
+            return BoardStatus.WHITE_WON
+        else:
+            for x in range(self._min_xy, self._max_xy+1):
+                for y in range(self._min_xy, self._max_xy+1):
+                    if self.get(x, y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]:
+                        return BoardStatus.ON_GOING
+            return BoardStatus.TIE
+            # TODO: LOW-PERF
 
     def _get_opponent_colour(self, ourColour):
         '''
@@ -294,142 +267,20 @@ class Board:
         else:
             return self.PIECE_WHITE
 
-    def checkSquareFormation(self, ourPiece):
-        # return True if square formation exist
-        opponentPiece = self._get_opponent_colour(ourPiece)
-        opponentPieces = self.getAllPieces(opponentPiece)
-        for p in opponentPieces:
-            (x, y) = p
-            # square in the top left corner [N, NW, W]
-            # N  self.ANTICLOCKWISE[7]
-            # NW self.ANTICLOCKWISE[0]
-            # W  self.ANTICLOCKWISE[1]
-            if (self.ANTICLOCKWISE[7] in opponentPieces and
-                self.ANTICLOCKWISE[0] in opponentPieces and
-                    self.ANTICLOCKWISE[1] in opponentPieces):
-                return True
-
-            # square in the bottom left corner [W, SW, S]
-            # W  self.ANTICLOCKWISE[1]
-            # SW self.ANTICLOCKWISE[2]
-            # S  self.ANTICLOCKWISE[3]
-            if (self.ANTICLOCKWISE[1] in opponentPieces and
-                self.ANTICLOCKWISE[2] in opponentPieces and
-                    self.ANTICLOCKWISE[3] in opponentPieces):
-                return True
-
-            # square in the top right corner [N, NE, E]
-            # N  self.ANTICLOCKWISE[7]
-            # NE self.ANTICLOCKWISE[6]
-            # E  self.ANTICLOCKWISE[5]
-            if (self.ANTICLOCKWISE[7] in opponentPieces and
-                self.ANTICLOCKWISE[6] in opponentPieces and
-                    self.ANTICLOCKWISE[5] in opponentPieces):
-                return True
-
-            # square in the bottom right corner [E, SE, S]
-            # E  self.ANTICLOCKWISE[5]
-            # SE self.ANTICLOCKWISE[4]
-            # S  self.ANTICLOCKWISE[3]
-            if (self.ANTICLOCKWISE[5] in opponentPieces and
-                self.ANTICLOCKWISE[4] in opponentPieces and
-                    self.ANTICLOCKWISE[3] in opponentPieces):
-                return True
-
-        return False
-
-    def checkCantWin(self, ourPiece):
-        # check if only 1 white piece and black pieces beside a corner piece
-        # return True if cannot win
-        ourPieces = self.getAllPieces(ourPiece)
-        if len(ourPieces) < 2:
-            opponentPiece = self._get_opponent_colour(ourPiece)
-            opponentPieces = self.getAllPieces(opponentPiece)
-            for p in opponentPieces:
-                cornerExist = False
-                (x, y) = p
-                for direction in range(0, 4):
-                    newX = x + self.DIRECTION[direction][0]
-                    newY = y + self.DIRECTION[direction][1]
-                    if (self.get(newX, newY) == self.PIECE_CORNER):
-                        cornerExist = True
-                if (cornerExist == False):
-                    return True
-        return False
-
-    def getMinMaxSearchSpace(self, ourPiece):
-
-        opponentPiece = self._get_opponent_colour(ourPiece)
-        allPieces = self.getAllPieces(
-            ourPiece) + self.getAllPieces(opponentPiece)
-
-        allX = []
-        allY = []
-
-        for p in allPieces:
-            (x, y) = p
-            allX.append(x)
-            allY.append(y)
-
-        minX = min(allX)
-        maxX = max(allX)
-        minY = min(allY)
-        maxY = max(allY)
-
-        searchSpace = []
-        # include square space with a buffer
-        for x in range(minX - 1, maxX + 2):
-            for y in range(minY - 1, maxY + 2):
-                if (self.isWithinBoard(x, y)):
-                    searchSpace.append((x, y))
-
-        return searchSpace
-
-    def getSmallerSearchSpace(self, ourPiece, layers):
-        '''
-        mark cells around opponent pieces 
-        and return the smaller search space
-        '''
-        searchSpace = []
-
-        opponentPiece = self._get_opponent_colour(ourPiece)
-        opponentPieces = self.getAllPieces(opponentPiece)
-
-        for p in opponentPieces:
-            (x, y) = p
-            # add coordinate of opponent
-            if self.isWithinBoard(x, y) and ((x, y) not in searchSpace):
-                searchSpace.append((x, y))
-
-            # for direction in range(0, 4):
-            for direction in range(0, 8):
-
-                # add coordinate of cells around opponent
-                for i in range(1, layers + 1):
-                    # newX = x + self.DIRECTION[direction][0] * i
-                    # newY = y + self.DIRECTION[direction][1] * i
-                    newX = x + self.ANTICLOCKWISE[direction][0] * i
-                    newY = y + self.ANTICLOCKWISE[direction][1] * i
-
-                    if self.isWithinBoard(newX, newY) and \
-                        ((newX, newY) not in searchSpace) and \
-                            self.get(newX, newY) != self.PIECE_CORNER:
-                        searchSpace.append((newX, newY))
-
-        return searchSpace
-
-    def checkElimination(self, x, y, ourPiece):
+    def _check_elimination(self, x, y, ourPiece):
         '''
         Check and perform elimination, typically called after a player action.
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
 
+        DIRECTION = self.DIRECTION
+
         # step 1: check if we eliminated any opponent pieces
         for direction in range(0, 4):
-            adjPieceX = x + self.DIRECTION[direction][0]
-            adjPieceY = y + self.DIRECTION[direction][1]
-            adjPieceX2 = adjPieceX + self.DIRECTION[direction][0]
-            adjPieceY2 = adjPieceY + self.DIRECTION[direction][1]
+            adjPieceX = x + DIRECTION[direction][0]
+            adjPieceY = y + DIRECTION[direction][1]
+            adjPieceX2 = adjPieceX + DIRECTION[direction][0]
+            adjPieceY2 = adjPieceY + DIRECTION[direction][1]
 
             # if adjacent piece is within the board and is the opponent and
             # the piece across is within board and is an ally or a corner
@@ -438,24 +289,25 @@ class Board:
                     self.get(adjPieceX, adjPieceY) == opponentPiece and \
                     self.isWithinBoard(adjPieceX2, adjPieceY2) and \
                     self.get(adjPieceX2, adjPieceY2) in \
-                    [ourPiece, self.PIECE_CORNER]:
-                self.set(adjPieceX, adjPieceY, self.PIECE_EMPTY)
+                    set([ourPiece, self.PIECE_CORNER]):
+                self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
 
         # step 2: check if any opponent pieces eliminated us
 
+        opponentPieceOrCorner = set([opponentPiece, self.PIECE_CORNER])
         # case 1: left and right surround us
         if (self.isWithinBoard(x - 1, y) and
-            self.get(x - 1, y) in [opponentPiece, self.PIECE_CORNER]) and \
+            self.get(x - 1, y) in opponentPieceOrCorner) and \
             (self.isWithinBoard(x + 1, y) and
-             self.get(x + 1, y) in [opponentPiece, self.PIECE_CORNER]):
-            self.set(x, y, self.PIECE_EMPTY)
+             self.get(x + 1, y) in opponentPieceOrCorner):
+            self.set_p(x, y, self.PIECE_EMPTY)
 
         # case 2: above and below surround us
         if (self.isWithinBoard(x, y - 1) and
-            self.get(x, y - 1) in [opponentPiece, self.PIECE_CORNER]) and \
+            self.get(x, y - 1) in opponentPieceOrCorner) and \
             (self.isWithinBoard(x, y + 1) and
-             self.get(x, y + 1) in [opponentPiece, self.PIECE_CORNER]):
-            self.set(x, y, self.PIECE_EMPTY)
+             self.get(x, y + 1) in opponentPieceOrCorner):
+            self.set_p(x, y, self.PIECE_EMPTY)
 
     def makeMove(self, x, y, newX, newY, ourPiece):
         '''
@@ -467,10 +319,10 @@ class Board:
         board = copy.deepcopy(self)
 
         # make the move
-        board.set(newX, newY, ourPiece)
-        board.set(x, y, self.PIECE_EMPTY)
+        board.set_p(newX, newY, ourPiece)
+        board.set_p(x, y, self.PIECE_EMPTY)
 
-        board.checkElimination(newX, newY, ourPiece)
+        board._check_elimination(newX, newY, ourPiece)
 
         return board
 
@@ -483,8 +335,8 @@ class Board:
 
         board = copy.deepcopy(self)
 
-        board.set(newX, newY, ourPiece)
-        board.checkElimination(newX, newY, ourPiece)
+        board.set_p(newX, newY, ourPiece)
+        board._check_elimination(newX, newY, ourPiece)
 
         return board
 
@@ -514,15 +366,16 @@ class Board:
         board = copy.deepcopy(self)
         # clean the surrounding circle
 
-        for x in range(board._min_xy(), board._max_xy()+1):
-            board.set(x, board._min_xy(), Board.PIECE_INVALID)
-            board.set(x, board._max_xy(), Board.PIECE_INVALID)
+        for x in range(board._min_xy, board._max_xy+1):
+            board.set_p(x, board._min_xy, Board.PIECE_INVALID)
+            board.set_p(x, board._max_xy, Board.PIECE_INVALID)
 
-        for y in range(board._min_xy() + 1, board._max_xy()):
-            board.set(board._min_xy(), y, Board.PIECE_INVALID)
-            board.set(board._max_xy(), y, Board.PIECE_INVALID)
+        for y in range(board._min_xy + 1, board._max_xy):
+            board.set_p(board._min_xy, y, Board.PIECE_INVALID)
+            board.set_p(board._max_xy, y, Board.PIECE_INVALID)
 
         board.boardSize -= 2
+        board._update_borders()
         board._update_corners()
 
         # do the elimination caused by new corners
@@ -539,59 +392,59 @@ class Board:
                     board.isWithinBoard(adj2X, adj2Y) and
                         board.get(adj2X, adj2Y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]):
                     if (board.get(adjX, adjY) != board.get(adj2X, adj2Y)):
-                        board.set(adjX, adjY, Board.PIECE_EMPTY)
+                        board.set_p(adjX, adjY, Board.PIECE_EMPTY)
 
         return board
 
-    def getAllPieces(self, ourPiece):
+    def get_all_pieces(self, ourPiece):
         '''
         get all the location of pieces of a specific colour
         '''
         result = []
-        for x in range(0, self.boardSize):
-            for y in range(0, self.boardSize):
+        for x in range(self._min_xy, self._max_xy+1):
+            for y in range(self._min_xy, self._max_xy+1):
                 if self.get(x, y) == ourPiece:
                     result.append((x, y))
         return result
 
-    def countMoves(self, ourPiece):
+    def count_moves(self, ourPiece):
         result = 0
-        pieces = self.getAllPieces(ourPiece)
+        pieces = self.get_all_pieces(ourPiece)
         for p in pieces:
             (x, y) = p
             availableMoves = self.getAvailableMoves(x, y)
             result = result + len(availableMoves)
         return result
 
-    def toTokenString(self):
+    def to_token_string(self):
         """
         Converts the board layout to one line string.
         Mainly used for unit tests.
         """
         result = ""
-        for y in range(Board.MAX_BOARD_SIZE):
-            for x in range(Board.MAX_BOARD_SIZE):
+        for y in range(MAX_BOARD_SIZE):
+            for x in range(MAX_BOARD_SIZE):
                 result = result + self.get(x, y)
-            if (y != Board.MAX_BOARD_SIZE-1):
+            if y != MAX_BOARD_SIZE-1:
                 result = result + "\\\\"
         return result
 
     @classmethod
-    def fromTokenString(cls, ts):
+    def from_token_string(cls, ts):
         """
         Creates a new `Board` instance from a tokenString.
         """
         rows = ts.strip().split("\\\\")
-        assert len(rows) == cls.MAX_BOARD_SIZE
+        assert len(rows) == MAX_BOARD_SIZE
         board = cls()
-        for y in range(Board.MAX_BOARD_SIZE):
-            for x in range(Board.MAX_BOARD_SIZE):
-                board.set(x, y, rows[y][x])
+        for y in range(MAX_BOARD_SIZE):
+            for x in range(MAX_BOARD_SIZE):
+                board.set_p(x, y, rows[y][x])
 
         # determine board size
-        if (board.get(0, 0) == cls.PIECE_INVALID):
+        if board.get(0, 0) == cls.PIECE_INVALID:
             board.boardSize -= 2
-            if (board.get(1, 1) == cls.PIECE_INVALID):
+            if board.get(1, 1) == cls.PIECE_INVALID:
                 board.boardSize -= 2
 
         return board

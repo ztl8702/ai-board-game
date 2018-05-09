@@ -1,8 +1,8 @@
-from playerbase import PlayerBase
-from minimax import MiniMaxSolver
+from .playerbase import PlayerBase
+from ..algos.minimax import MiniMaxSolver
 
 
-class Player(PlayerBase):
+class MinimaxPlayer(PlayerBase):
     """Our naive minimax agent with alpha-beta pruning
     """
 
@@ -16,9 +16,9 @@ class Player(PlayerBase):
         print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.")
 
     def on_request_action(self, isMoving, turn, board):
-        if (isMoving): # is moving phase
-            self.solver.MAX_DEPTH = 4
+        if (isMoving):
+            self.solver.MAX_DEPTH=4
             bestMove = self.solver.minimax(board, turn + 24)
-        else: # is placing phase
+        else:
             bestMove = self.solver.minimax(board, turn)
         return bestMove
