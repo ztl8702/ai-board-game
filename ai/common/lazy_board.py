@@ -438,6 +438,7 @@ class LazyBoard(IBoard):
             return self
 
         board = LazyBoard(self)
+        board._apply_unapplied_actions()
         # clean the surrounding circle
 
         for x in range(board._min_xy, board._max_xy+1):

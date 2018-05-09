@@ -6,6 +6,8 @@ from ..common import config
 
 INFINITY = float('inf')
 
+PLACING_PHASE = 24
+
 PLACEMENT_VALUE = [
     [  0,-10,-10,-10,-10,-10,-10,  0],
     [-10,  0, 10, 10, 10, 10,  0,-10],
@@ -26,7 +28,7 @@ class MiniMaxSolver:
         self.colour = colour
         return
 
-    def h(self, board):
+    def h(self, board, currentTurn):
         """Utility function
 
         h(state) = ourPieces - opponentsPiece
@@ -45,7 +47,11 @@ class MiniMaxSolver:
         for opp in ourPieces:
             (x, y) = opp
             oppTotal += PLACEMENT_VALUE[x][y]
-        h1 = ourTotal
+        
+        if (currentTurn <= PLACING_PHASE):
+            h1 = ourTotal
+        else:
+            h1 = ourTotal - oppTotal
 
         return h1
 
@@ -76,7 +82,7 @@ class MiniMaxSolver:
         if ((currentTurn, board.getHashValue()) in self.visited):
             return self.visited[(currentTurn, board.getHashValue())]
         if self.isTerminal(board, depth, currentTurn):
-            return (None, self.h(board))
+            return (None, self.h(board, currentTurn))
 
         max_value = -INFINITY
         max_move = None
@@ -106,7 +112,7 @@ class MiniMaxSolver:
         if ((currentTurn, board.getHashValue()) in self.visited):
             return self.visited[(currentTurn, board.getHashValue())]
         if self.isTerminal(board, depth, currentTurn):
-            return (None, self.h(board))
+            return (None, self.h(board, currentTurn))
 
         min_value = INFINITY
         min_move = None
@@ -137,7 +143,7 @@ class MiniMaxSolver:
 
     # successor states in a game tree are the child nodes...
     def getSuccessors(self, board, currentTurn, side='@'):
-        if (currentTurn <= 24):
+        if (currentTurn <= PLACING_PHASE):
             # placing phase
             if side == Board.PIECE_BLACK:
                 validYZone = range(2, 8)
