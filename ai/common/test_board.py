@@ -166,15 +166,16 @@ def test_elimination_edge_cases():
                "--------",
                "X------X")
     board = Board.from_token_string(layout)
-    board = board.makeMove(2,3,3,3,'O')
+    board = board.makeMove(2, 3, 3, 3, 'O')
     assert p("X------X",
-               "--------",
-               "---@----",
-               "-----O--",
-               "---@----",
-               "--------",
-               "--------",
-               "X------X") == board.to_token_string()
+             "--------",
+             "---@----",
+             "-----O--",
+             "---@----",
+             "--------",
+             "--------",
+             "X------X") == board.to_token_string()
+
 
 def test_is_won_on_shrinked_board():
 
@@ -311,9 +312,9 @@ def test_hash_value():
     assert(hash1 == hash3)
     assert(hash2 != hash3)
 
-    board1.set_p(1,1,'@')
+    board1.set_p(1, 1, '@')
     hash4 = board1.getHashValue()
-    assert(hash4!=hash3)
+    assert(hash4 != hash3)
 
 
 def test_move_piece():
@@ -384,3 +385,32 @@ def test_multiple_moves():
                 "########")
     assert(boardAfter.to_token_string() == layout2)
     pass
+
+
+def test_lazy_board():
+    """
+    Some edge classes for LazyBoard implementation
+    """
+
+    # regression
+    layout = p("X------X",
+               "--------",
+               "--@O----",
+               "--@--O--",
+               "--@O-@--",
+               "--OO@@--",
+               "--------",
+               "X------X")
+
+    board = Board.from_token_string(layout)
+    board.unapplied_actions.append(('placePiece', (4, 3, '@')))
+    board.unapplied_actions.append(('placePiece', (3, 3, 'O')))
+    board.has_unapplied_actions = True
+    assert p("X------X",
+             "--------",
+             "--@O----",
+             "--@O-O--",
+             "--@O-@--",
+             "--OO@@--",
+             "--------",
+             "X------X") == board.to_token_string()
