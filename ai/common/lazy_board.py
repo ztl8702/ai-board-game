@@ -88,6 +88,9 @@ class LazyBoard(IBoard):
             self._update_corners()
             self.hash_value_cache = None
 
+        self._reentrant_counter_do_place_piece = 0
+        self._reentrant_counter_do_make_move = 0
+
     def _update_borders(self):
         self._min_xy = (MAX_BOARD_SIZE - self.boardSize) // 2
         self._max_xy = self._min_xy + self.boardSize - 1
@@ -95,9 +98,9 @@ class LazyBoard(IBoard):
     def _corner_cells(self):
         return [
             (self._min_xy, self._min_xy),
-            (self._min_xy, self._max_xy),
             (self._max_xy, self._min_xy),
-            (self._max_xy, self._max_xy)
+            (self._max_xy, self._max_xy),
+            (self._min_xy, self._max_xy)
         ]
 
     def _update_corners(self):
@@ -147,6 +150,14 @@ class LazyBoard(IBoard):
         return self.get_mapping[self.board[x][y]]
         # else:
         #   return self.PIECE_INVALID
+    
+    def raw_get(self, x, y):
+        """
+        get() without the laziness checking.
+
+        This is for preventing reentrant into _apply_unapplied_actions
+        """
+        return self.get_mapping[self.board[x][y]]
 
     def set_p(self, x, y, value):
         '''
@@ -305,6 +316,9 @@ class LazyBoard(IBoard):
     def _check_elimination(self, x, y, ourPiece):
         '''
         Check and perform elimination, typically called after a player action.
+
+        WARNING: to prevent reentrant, _check_elimination should only be called
+        in _do_make_move and _do_place_piece
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
 
@@ -321,9 +335,9 @@ class LazyBoard(IBoard):
             # the piece across is within board and is an ally or a corner
             # then we remove the eliminated piece
             if self.isWithinBoard(adjPieceX, adjPieceY) and \
-                    self.get(adjPieceX, adjPieceY) == opponentPiece and \
+                    self.raw_get(adjPieceX, adjPieceY) == opponentPiece and \
                     self.isWithinBoard(adjPieceX2, adjPieceY2) and \
-                    self.get(adjPieceX2, adjPieceY2) in \
+                    self.raw_get(adjPieceX2, adjPieceY2) in \
                     set([ourPiece, self.PIECE_CORNER]):
                 self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
 
@@ -332,16 +346,16 @@ class LazyBoard(IBoard):
         opponentPieceOrCorner = set([opponentPiece, self.PIECE_CORNER])
         # case 1: left and right surround us
         if (self.isWithinBoard(x - 1, y) and
-            self.get(x - 1, y) in opponentPieceOrCorner) and \
+            self.raw_get(x - 1, y) in opponentPieceOrCorner) and \
             (self.isWithinBoard(x + 1, y) and
-             self.get(x + 1, y) in opponentPieceOrCorner):
+             self.raw_get(x + 1, y) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
         # case 2: above and below surround us
         if (self.isWithinBoard(x, y - 1) and
-            self.get(x, y - 1) in opponentPieceOrCorner) and \
+            self.raw_get(x, y - 1) in opponentPieceOrCorner) and \
             (self.isWithinBoard(x, y + 1) and
-             self.get(x, y + 1) in opponentPieceOrCorner):
+             self.raw_get(x, y + 1) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
     def makeMove(self, x, y, newX, newY, ourPiece):
@@ -358,11 +372,15 @@ class LazyBoard(IBoard):
         return board
 
     def _do_make_move(self, x, y, newX, newY, ourPiece):
-
+        if (self._reentrant_counter_do_make_move > 0):
+            raise Exception("Reentrant: _do_make_move")
+        self._reentrant_counter_do_make_move+=1
         self.set_p(newX, newY, ourPiece)
         self.set_p(x, y, self.PIECE_EMPTY)
 
         self._check_elimination(newX, newY, ourPiece)
+        self._reentrant_counter_do_make_move-=1
+        
 
     def placePiece(self, newX, newY, ourPiece):
         """
@@ -384,8 +402,12 @@ class LazyBoard(IBoard):
         """
         Realisation of lazy action.
         """
+        if (self._reentrant_counter_do_place_piece > 0):
+            raise Exception("Reentrant: _do_place_piece")
+        self._reentrant_counter_do_place_piece+=1
         self.set_p(newX, newY, colour)
         self._check_elimination(newX, newY, colour)
+        self._reentrant_counter_do_place_piece -= 1
 
     def apply_action(self, action, colour):
         """

@@ -16,6 +16,7 @@ class MinimaxPlayer(PlayerBase):
         print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.")
 
     def on_request_action(self, isMoving, turn, board):
+        board.printBoard()
         if (isMoving):
             self.solver.MAX_DEPTH=4
             bestMove = self.solver.minimax(board, turn + 24)
