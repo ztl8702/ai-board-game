@@ -39,42 +39,53 @@ Notes about assessment criteria:
 			- techniques used not taught in lectures
 
 
-What have we done so far?
+## What have we done so far?
+**well first of all, TianLei the "wizard" here implemented and released WYB-online (Human vs Human) in a matter of days [definitely deserve some credit for pro-activeness]**
+
 - placing phase
+	1. placing pieces to kill (currently not explicit, just done by using miniMax)
+	2. placing pieces at strategic positions (eg. in the middle area first because board will shrink)
 - moving phase
-	1. alpha-beta minimax with depth limiting 
-	2. reducing search space
-	3. detecting mirroring & symmetry
+	3. alpha-beta minimax with depth limiting 
+	4. reducing search space
+	5. detecting mirroring & symmetry
 
-Going to do
+	6. using byte arrays (eg. ad arrays.arrays)
+	7. optimising efficiency of search (eg. by limiting search space to shrinked board size during placing phase)
+	8. only storing deltas/changes (eg. and applying them when need to know current state of board)
+	9. use transposition tables/storing of seen states so that dont need to re-search branch (eg. used in miniMax get_min & get_max)
+
+## Going to do
 - placing phase
-	4. placing pieces to kill
-	5. placing pieces at strategic positions
+	[currently empty]
 - moving phase
-	6. using byte arrays
-	7. optimising efficiency of search
-	8. only storing deltas/changes
-	9. monte carlo search
-	10. TDLeaf search
-	11. negamax (basically combining max and min function), negascout/principle variation search, SSS* (sorting game tree for faster discovery)
-	12. tweaking utility function
-	13. use transposition tables
+	10. monte carlo search (attempted, currently WIP to make better)
+	11. TDLeaf search
+	12. negamax (basically combining max and min function), negascout/principle variation search, SSS* (sorting game tree for faster discovery)
+	13. tweaking utility/heuristic function (WIP)
+	14. 	- having weightage of cells at different position
+	15. 	- keeping a square or rectangle formation in centre and not moving them if possible (only move if no other pieces can be moved and cant forfeit turn, move piece that is not accessible by other piece)
+	16. changing the MAX_DEPTH when board shrinks (change is twice, once when first shrink and another when second shrink)
+	17. having a sustained
+		STATE = {
+			strong_hand 	# just need to keep moving piece that is not accessible until end of game
+			offensive		# change heuristic to be aggresive
+		}
+- before submission clean up
+	i.   no violation of memory constraints (100MB entire game)
+	ii.  no violation of time constraints (120s entire game) [or 60s -@TODO email Matt]
+	iii. correctness of program (unit test)
+			- no runtime errors
+			- no illegal moves
+	iv.  readability
+	v.   consistency of function names variables names etc
+	vi.  comments & docstrings
+	vii. removal of magic numbers
 
-14. use this
-const int evalPlacement = {
-	 X,  5, 10, 10, 10, 10,  5,  X,
-	 5,  5,  0,  0,  0,  0,  5,  5,
-	10,  0,  5,  0,  0,  5,  0, 10,
-	10,  0,  0,  5,  5,  0,  0, 10,
-	10,  0,  0,  5,  5,  0,  0, 10,
-	10,  0,  5,  0,  0,  5,  0, 10,
-	 5,  5,  0,  0,  0,  0,  5,  5,
-	 X,  5, 10, 10, 10, 10,  5,  X
-}
 
 
-i. make pieces go in deeper when shrinking is going to occur
-ii. placing phase, place pieces in the middle area
+QUESTION: how is end game determined? (if pieces keep repeating)
+	- the colour with the most pieces will win after a certain number of turns
 
 
 

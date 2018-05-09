@@ -18,7 +18,6 @@ F = -10
 G = -10
 N = 0
 
-
 # Ver. 2
 # A = +1000  # inner square
 # B = +800   # 1 cell out from inner square
@@ -40,11 +39,21 @@ PLACEMENT_VALUE = [
     [ G, E, D, D, D, D, E, G],
     [ N, G, F, F, F, F, G, N]
 ]
-'''
 
+MOVEMENT_VALUE = [
+    [ N, G, F, F, F, F, G, N],
+    [ G, E, D, D, D, D, E, G],
+    [ F, D, A, A, A, A, D, F],
+    [ F, D, A, A, A, A, D, F],
+    [ F, D, A, A, A, A, D, F],
+    [ F, D, A, A, A, A, D, F],
+    [ G, E, D, D, D, D, E, G],
+    [ N, G, F, F, F, F, G, N]
+]
+'''
 class MiniMaxSolver:
 
-    MAX_DEPTH = 3  # Maximum search depth
+    MAX_DEPTH = 4  # Maximum search depth
     
 
     def __init__(self, colour):
@@ -55,30 +64,32 @@ class MiniMaxSolver:
         return 1
         # """Utility function
         # """
-
-        # ourPieces = board.get_all_pieces(self.colour)
-        # oppoPieces = board.get_all_pieces(
-        #     board._get_opponent_colour(self.colour))
-
         # # h1 = len(ourPieces) - 2*len(oppoPieces)
 
-        # ourTotal = 0
-        # oppTotal = 0
-        # for our in ourPieces:
-        #     (x, y) = our
-        #     ourTotal += PLACEMENT_VALUE[x][y]
-        # for opp in ourPieces:
-        #     (x, y) = opp
-        #     oppTotal += PLACEMENT_VALUE[x][y]
-        
         # if (currentTurn <= PLACING_PHASE):
+        #     ourPieces = board.get_all_pieces(self.colour)
+
+        #     ourTotal = 0
+        #     for our in ourPieces:
+        #         (x, y) = our
+        #         ourTotal += PLACEMENT_VALUE[x][y]
         #     h1 = ourTotal
         # else:
+        #     ourPieces = board.get_all_pieces(self.colour)
+        #     oppoPieces = board.get_all_pieces(
+        #         board._get_opponent_colour(self.colour))
+
+        #     ourTotal = 0
+        #     oppTotal = 0
+        #     for our in ourPieces:
+        #         (x, y) = our
+        #         ourTotal += MOVEMENT_VALUE[x][y]
+        #     for opp in ourPieces:
+        #         (x, y) = opp
+        #         oppTotal += MOVEMENT_VALUE[x][y]
         #     h1 = ourTotal - oppTotal
 
         # return h1
-
-        
 
     def minimax(self, board, currentTurn):
         # first, find the max value
