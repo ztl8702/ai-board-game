@@ -3,7 +3,7 @@ from ..algos.minimax import MiniMaxSolver
 
 
 class MinimaxPlayer(PlayerBase):
-    """Our naive minimax agent with alpha-beta pruning
+    """Our minimax agent with alpha-beta pruning
     """
 
     def __init__(self, colour):

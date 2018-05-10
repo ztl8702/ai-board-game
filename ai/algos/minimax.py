@@ -110,7 +110,7 @@ class MiniMaxSolver:
             moves = [(x, y)
                      for (x, y) in board.get_empty_cells() if y in validYZone]
 
-            newStates = [((x, y), board.placePiece(x, y, side))
+            newStates = [((x, y), board.place_piece(x, y, side))
                          for (x, y) in moves]
         else:
             # Moving phase
@@ -122,14 +122,14 @@ class MiniMaxSolver:
             if currentTurn in config.TURNS_BEFORE_SHRINK:
                 newStates = [
                     (((fromX, fromY), (toX, toY)),
-                     board.makeMove(fromX, fromY, toX, toY, side).shrink()
+                     board.make_move(fromX, fromY, toX, toY, side).shrink()
                      )
                     for ((fromX, fromY), (toX, toY)) in moves
                 ]
             else:
                 newStates = [
                     (((fromX, fromY), (toX, toY)),
-                     board.makeMove(fromX, fromY, toX, toY, side)
+                     board.make_move(fromX, fromY, toX, toY, side)
                      )
                     for ((fromX, fromY), (toX, toY)) in moves
                 ]

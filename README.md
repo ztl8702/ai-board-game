@@ -1,6 +1,6 @@
 # comp30024-ai-project
 
-> Radium's personal working branch for Part B
+> Part B Submission Branch
 
 ## Documentation
 
@@ -22,6 +22,33 @@ python ./referee.py player player
 ```
 python ./referee.py player dummpy_player
 ```
+
+## Play againt mirror player
+```
+python ./referee.py player mirror_player
+```
+
+MirrorPlayer should always be the black (second) player
+
+## "Bake-off" (playing different agents against each other)
+
+For example:
+```
+python ./bakeoff.py test_output dummy_player minimax_player 50
+```
+
+Will play DummyPlayer against MiniMaxPlayer for 50 rounds, 
+and store the output in `test_output/`.
+
+`test_output/` will look like this:
+
+![](.doc/bakeoff.png)
+
+Each folder corresponds one outcome (White wins/Black wins/Draw), and contains the output of the playout in which that player has won.
+
+By counting the number of files in each folder, we can tell how well each player is against each other.
+
+The file names also show how many turns it took for one player to kill the other.
 
 ## Notes about assessment criteria:
 	Total: 22 marks

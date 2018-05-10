@@ -1,5 +1,5 @@
 """
-Wrapper file
+Wrapper file for MiniMaxPlayer
 """
 
 
