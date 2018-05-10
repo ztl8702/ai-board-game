@@ -314,6 +314,33 @@ class LazyBoard(IBoard):
         else:
             return self.PIECE_WHITE
 
+    def getSmallerSearchSpace(self, ourPiece, layers):
+        '''
+        mark cells around opponent pieces 
+        and return the smaller search space
+        '''
+        searchSpace = []
+
+        opponentPieces = self.get_all_pieces( \
+            self._get_opponent_colour(ourPiece))
+        
+        for p in opponentPieces:
+            (x, y) = p
+            # add coordinate of opponent
+            searchSpace.append((x,y))
+
+            for direction in range(0, 4):
+
+                # add coordinate of cells around opponent
+                for i in range(1, layers + 1):
+                    newX = x + self.DIRECTION[direction][0] * i
+                    newY = y + self.DIRECTION[direction][1] * i
+                    
+                    if (self.isWithinBoard(newX, newY)):
+                        searchSpace.append((newX, newY))
+
+        return searchSpace
+
     def _check_elimination(self, x, y, ourPiece):
         '''
         Check and perform elimination, typically called after a player action.

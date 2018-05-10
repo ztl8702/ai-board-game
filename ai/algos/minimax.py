@@ -3,6 +3,8 @@ import random
 from ..common import Board
 from ..common import config
 
+from .parta import faster_DFS
+
 
 INFINITY = float('inf')
 
@@ -77,9 +79,9 @@ class MiniMaxSolver:
 
         for i in range(2, 5): # y value
             for j in range(2, 5): # x value
-                if (board.get(j, i) == self.colour and 
-                    board.get(j+1, i) == self.colour and 
-                        board.get(j+1, i+1) == self.colour and 
+                if (board.get(j, i) == self.colour and \
+                    board.get(j+1, i) == self.colour and \
+                        board.get(j+1, i+1) == self.colour and \
                             board.get(j, i+1) == self.colour):
                     
                     squares.append(tuple((j, i)))
@@ -107,9 +109,9 @@ class MiniMaxSolver:
         square_quantity = 0
         for i in range(2, 5): # y value
             for j in range(2, 5): # x value
-                if (board.get(j, i) == self.colour and 
-                    board.get(j+1, i) == self.colour and 
-                        board.get(j+1, i+1) == self.colour and 
+                if (board.get(j, i) == self.colour and \
+                    board.get(j+1, i) == self.colour and \
+                        board.get(j+1, i+1) == self.colour and \
                             board.get(j, i+1) == self.colour):
                     square_quantity += 1
 
@@ -140,7 +142,16 @@ class MiniMaxSolver:
         # h2, give higher weightage to square formation in the inner part of board
         # h2 = self.get_square_quantity(board) * 10
 
-
+        # @TODO: currently too slow to use
+        # h3, find number of moves needed to kill all enemy if enemy is static
+        # h3 = 1
+        # layers = 2
+        # for i in range(1, 1000):
+        #     (found, totalMoves) = faster_DFS(board, self.colour, layers, i)
+        #     if (found):
+        #         h3 = totalMoves
+        #         break
+                
         return h1
         
 

@@ -90,22 +90,16 @@ DFShashedBoardStates = {}
 # search for winning solution
 # return True if found
 def faster_DFS(board, ourPiece, layers, depth):
-        
-    def printMoves():
-        # print all the moves made
-        for move in moves:
-            print(move[0], '->', move[1])
-
+    
     if depth == 0:
-        return False
+        return (False, 0)
     if board.isWon(ourPiece):
-        printMoves()
-        return True
+        return (True, len(moves))
 
     #  get limited/interesting search space
     searchSpace = board.getSmallerSearchSpace(ourPiece, layers)
 
-    ourPieces = board.getAllPieces(ourPiece)
+    ourPieces = board.get_all_pieces(ourPiece)
 
     for p in ourPieces:
         (x, y) = p
@@ -132,5 +126,5 @@ def faster_DFS(board, ourPiece, layers, depth):
                     # backtrack
                     moves.pop()
                     if (isFound):
-                        return True
-    return False
+                        return (True, 0)
+    return (False, 0)
