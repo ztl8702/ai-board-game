@@ -6,30 +6,15 @@ from ..common import config
 
 INFINITY = float('inf')
 
-
-
-
 # Ver. 1
-# A = +99
-# B = +30
-# C = +20
-# D = +10
-# E = 0
-# F = -10
-# G = -10
-# N = 0
-
-
-# Ver. 2
-A = +1000  # inner square
-B = +800   # 1 cell out from inner square
-C = +900   # corner of 1 cell out
-D = +10    # 2 cell out from inner square
-E = +5     # corner of 2 cell out
-F = -10    # side edges
-G = -50    # adjacent to dead corner
-N = 0      # dead corner
-
+A = +99
+B = +70
+C = +60
+D = +10
+E = 0
+F = -10
+G = -10
+N = 0
 
 PLACEMENT_VALUE = [
     [ N, G, F, F, F, F, G, N],
@@ -42,16 +27,16 @@ PLACEMENT_VALUE = [
     [ N, G, F, F, F, F, G, N]
 ]
 
-MOVEMENT_VALUE = [
-    [ N, G, F, F, F, F, G, N],
-    [ G, E, D, D, D, D, E, G],
-    [ F, D, A, A, A, A, D, F],
-    [ F, D, A, A, A, A, D, F],
-    [ F, D, A, A, A, A, D, F],
-    [ F, D, A, A, A, A, D, F],
-    [ G, E, D, D, D, D, E, G],
-    [ N, G, F, F, F, F, G, N]
-]
+# MOVEMENT_VALUE = [
+#     [ N, G, F, F, F, F, G, N],
+#     [ G, E, D, D, D, D, E, G],
+#     [ F, D, A, A, A, A, D, F],
+#     [ F, D, A, A, A, A, D, F],
+#     [ F, D, A, A, A, A, D, F],
+#     [ F, D, A, A, A, A, D, F],
+#     [ G, E, D, D, D, D, E, G],
+#     [ N, G, F, F, F, F, G, N]
+# ]
 
 
 class MiniMaxSolver:
@@ -72,7 +57,7 @@ class MiniMaxSolver:
         # elif (currentTurn > config.TURNS_BEFORE_SHRINK[1]): # after second shrink
         #     return 6
 
-
+        # @TODO: need to check if default of depth 4 will be under time constraint
         if (currentTurn > config.TURNS_BEFORE_SHRINK[1]): # after second shrink
             return 6
 
@@ -122,7 +107,10 @@ class MiniMaxSolver:
         square_quantity = 0
         for i in range(2, 5): # y value
             for j in range(2, 5): # x value
-                if (board.get(j, i) == self.colour and board.get(j+1, i) == self.colour and board.get(j+1, i+1) == self.colour and board.get(j, i+1) == self.colour):
+                if (board.get(j, i) == self.colour and 
+                    board.get(j+1, i) == self.colour and 
+                        board.get(j+1, i+1) == self.colour and 
+                            board.get(j, i+1) == self.colour):
                     square_quantity += 1
 
 
@@ -132,34 +120,25 @@ class MiniMaxSolver:
         """Utility function
         """
 
-        # h1
-        ourPieces = board.get_all_pieces(self.colour)
-        oppoPieces = board.get_all_pieces(
-            board._get_opponent_colour(self.colour))
-
-        ourTotal = 0
-        oppTotal = 0
+        # h1, based on location of pieces on the board
+        # 1. from my extensive experimentation,
+        # seems that if we consider opponent pieces, we will make worst moves
+        # 2. from my extensive experimentation, 
+        # the coefficient on the board should remain the same through out the phases, 
+        # changing the coefficients depending on the phase doesn't seem to yield better results
         
-        if (currentTurn <= config.PLACING_PHASE):
-            for our in ourPieces:
-                (x, y) = our
-                ourTotal += PLACEMENT_VALUE[x][y]
+        ourPieces = board.get_all_pieces(self.colour)
+        ourTotal = 0
+        
+        for our in ourPieces:
+            (x, y) = our
+            ourTotal += PLACEMENT_VALUE[x][y]
 
-            h1 = ourTotal
-            # h2 = 1
-        else:
-
-            for our in ourPieces:
-                (x, y) = our
-                ourTotal += PLACEMENT_VALUE[x][y]
-            for opp in ourPieces:
-                (x, y) = opp
-                oppTotal += PLACEMENT_VALUE[x][y]
-
-            h1 = ourTotal - oppTotal
-
-            # h2, give higher weightage to square formation in the inner part of board
-            # h2 = self.get_square_quantity(board) * 10
+        h1 = ourTotal
+        
+        # @TODO: figure out a way to use this heuristic, currently make worst moves
+        # h2, give higher weightage to square formation in the inner part of board
+        # h2 = self.get_square_quantity(board) * 10
 
 
         return h1
@@ -265,6 +244,9 @@ class MiniMaxSolver:
             newStates = [((x, y), board.placePiece(x, y, side))
                          for (x, y) in moves]
         else:
+            # IMPORTANT NOTE: i decided to limit the movement of pieces 
+            # that form squares, as it is more advantagous to hold a square formation
+            
             # Moving phase
             ourPieces = board.get_all_pieces(side)
             # EDIT: Therrense
@@ -275,6 +257,14 @@ class MiniMaxSolver:
                 if ((x, y) not in squares):
                     # EDIT: Therrense
                     moves += board.getAvailableMoves(x, y)
+
+            # EDIT: Therrense
+            # @TODO: get my furthest piece away from opponent
+            # prevent forfeiting when still have moves but all form squares
+            if (not moves and ourPieces):
+                (x, y) = ourPieces[0]
+                moves += board.getAvailableMoves(x, y)
+
 
             if currentTurn in config.TURNS_BEFORE_SHRINK:
                 newStates = [

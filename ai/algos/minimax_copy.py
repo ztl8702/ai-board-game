@@ -52,7 +52,7 @@ MOVEMENT_VALUE = [
 
 class MiniMaxSolver:
 
-    MAX_DEPTH = 2  # Maximum search depth
+    MAX_DEPTH = 4  # Maximum search depth
     
 
     def __init__(self, colour):
@@ -79,10 +79,10 @@ class MiniMaxSolver:
 
             for our in ourPieces:
                 (x, y) = our
-                ourTotal += MOVEMENT_VALUE[x][y]
+                ourTotal += PLACEMENT_VALUE[x][y]
             for opp in ourPieces:
                 (x, y) = opp
-                oppTotal += MOVEMENT_VALUE[x][y]
+                oppTotal += PLACEMENT_VALUE[x][y]
 
             h1 = ourTotal - oppTotal
 

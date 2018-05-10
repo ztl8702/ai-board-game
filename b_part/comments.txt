@@ -57,7 +57,7 @@ Notes about assessment criteria:
 
 ## Going to do
 - placing phase
-	[currently empty]
+	[currently nothing to do]
 - moving phase
 	10. monte carlo search (attempted, currently WIP to make better)
 	11. TDLeaf search
