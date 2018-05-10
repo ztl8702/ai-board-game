@@ -6,8 +6,6 @@ from ..common import config
 
 INFINITY = float('inf')
 
-PLACING_PHASE = 24
-'''
 # Ver. 1
 A = +99
 B = +30
@@ -50,10 +48,11 @@ MOVEMENT_VALUE = [
     [ G, E, D, D, D, D, E, G],
     [ N, G, F, F, F, F, G, N]
 ]
-'''
+
+
 class MiniMaxSolver:
 
-    MAX_DEPTH = 4  # Maximum search depth
+    MAX_DEPTH = 2  # Maximum search depth
     
 
     def __init__(self, colour):
@@ -61,35 +60,34 @@ class MiniMaxSolver:
         return
 
     def h(self, board, currentTurn):
-        return 1
-        # """Utility function
-        # """
-        # # h1 = len(ourPieces) - 2*len(oppoPieces)
+        """Utility function
+        """
+        ourPieces = board.get_all_pieces(self.colour)
+        oppoPieces = board.get_all_pieces(
+            board._get_opponent_colour(self.colour))
 
-        # if (currentTurn <= PLACING_PHASE):
-        #     ourPieces = board.get_all_pieces(self.colour)
+        ourTotal = 0
+        oppTotal = 0
+        
+        if (currentTurn <= config.PLACING_PHASE):
+            for our in ourPieces:
+                (x, y) = our
+                ourTotal += PLACEMENT_VALUE[x][y]
 
-        #     ourTotal = 0
-        #     for our in ourPieces:
-        #         (x, y) = our
-        #         ourTotal += PLACEMENT_VALUE[x][y]
-        #     h1 = ourTotal
-        # else:
-        #     ourPieces = board.get_all_pieces(self.colour)
-        #     oppoPieces = board.get_all_pieces(
-        #         board._get_opponent_colour(self.colour))
+            h1 = ourTotal
+        else:
 
-        #     ourTotal = 0
-        #     oppTotal = 0
-        #     for our in ourPieces:
-        #         (x, y) = our
-        #         ourTotal += MOVEMENT_VALUE[x][y]
-        #     for opp in ourPieces:
-        #         (x, y) = opp
-        #         oppTotal += MOVEMENT_VALUE[x][y]
-        #     h1 = ourTotal - oppTotal
+            for our in ourPieces:
+                (x, y) = our
+                ourTotal += MOVEMENT_VALUE[x][y]
+            for opp in ourPieces:
+                (x, y) = opp
+                oppTotal += MOVEMENT_VALUE[x][y]
 
-        # return h1
+            h1 = ourTotal - oppTotal
+
+        return h1
+
 
     def minimax(self, board, currentTurn):
         # first, find the max value
@@ -179,7 +177,7 @@ class MiniMaxSolver:
 
     # successor states in a game tree are the child nodes...
     def getSuccessors(self, board, currentTurn, side='@'):
-        if (currentTurn <= PLACING_PHASE):
+        if (currentTurn <= config.PLACING_PHASE):
             # placing phase
             if side == Board.PIECE_BLACK:
                 validYZone = range(2, 8)

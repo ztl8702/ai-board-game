@@ -6,28 +6,29 @@ from ..common import config
 
 INFINITY = float('inf')
 
-PLACING_PHASE = 24
-'''
+
+
+
 # Ver. 1
-A = +99
-B = +30
-C = +20
-D = +10
-E = 0
-F = -10
-G = -10
-N = 0
+# A = +99
+# B = +30
+# C = +20
+# D = +10
+# E = 0
+# F = -10
+# G = -10
+# N = 0
 
 
 # Ver. 2
-# A = +1000  # inner square
-# B = +800   # 1 cell out from inner square
-# C = +900   # corner of 1 cell out
-# D = +10    # 2 cell out from inner square
-# E = +5     # corner of 2 cell out
-# F = -10    # side edges
-# G = -50    # adjacent to dead corner
-# N = 0      # dead corner
+A = +1000  # inner square
+B = +800   # 1 cell out from inner square
+C = +900   # corner of 1 cell out
+D = +10    # 2 cell out from inner square
+E = +5     # corner of 2 cell out
+F = -10    # side edges
+G = -50    # adjacent to dead corner
+N = 0      # dead corner
 
 
 PLACEMENT_VALUE = [
@@ -40,44 +41,128 @@ PLACEMENT_VALUE = [
     [ G, E, D, D, D, D, E, G],
     [ N, G, F, F, F, F, G, N]
 ]
-'''
+
+MOVEMENT_VALUE = [
+    [ N, G, F, F, F, F, G, N],
+    [ G, E, D, D, D, D, E, G],
+    [ F, D, A, A, A, A, D, F],
+    [ F, D, A, A, A, A, D, F],
+    [ F, D, A, A, A, A, D, F],
+    [ F, D, A, A, A, A, D, F],
+    [ G, E, D, D, D, D, E, G],
+    [ N, G, F, F, F, F, G, N]
+]
+
 
 class MiniMaxSolver:
 
-    MAX_DEPTH = 3  # Maximum search depth
+    MAKE_RANDOM = True # choose random max_values when there are multiple
+
+    def get_max_depth(self, currentTurn):
+
+        # # in Placing Phase
+        # if (currentTurn <= config.PLACING_PHASE):
+        #     return 4
+        
+        # # in Moving Phase
+        # elif (currentTurn <= config.TURNS_BEFORE_SHRINK[0]): # before first shrink
+        #     return 2
+        # elif (currentTurn <= config.TURNS_BEFORE_SHRINK[1]): # before second shrink
+        #     return 4
+        # elif (currentTurn > config.TURNS_BEFORE_SHRINK[1]): # after second shrink
+        #     return 6
+
+
+        if (currentTurn > config.TURNS_BEFORE_SHRINK[1]): # after second shrink
+            return 6
+
+        # max depth of 4 by default
+        return 4
     
 
     def __init__(self, colour):
         self.colour = colour
         return
 
-    def h(self, board, currentTurn):
-        return 1
-        # """Utility function
-        # """
+    def get_squares(self, board):
+        """
+        return array of coordinates containing squares
+        """
+        squares = []
 
-        # ourPieces = board.get_all_pieces(self.colour)
-        # oppoPieces = board.get_all_pieces(
-        #     board._get_opponent_colour(self.colour))
+        for i in range(2, 5): # y value
+            for j in range(2, 5): # x value
+                if (board.get(j, i) == self.colour and 
+                    board.get(j+1, i) == self.colour and 
+                        board.get(j+1, i+1) == self.colour and 
+                            board.get(j, i+1) == self.colour):
+                    
+                    squares.append(tuple((j, i)))
+                    squares.append(tuple((j+1, i)))
+                    squares.append(tuple((j+1, i+1)))
+                    squares.append(tuple((j, i+1)))
 
-        # # h1 = len(ourPieces) - 2*len(oppoPieces)
+        return squares
 
-        # ourTotal = 0
-        # oppTotal = 0
-        # for our in ourPieces:
-        #     (x, y) = our
-        #     ourTotal += PLACEMENT_VALUE[x][y]
-        # for opp in ourPieces:
-        #     (x, y) = opp
-        #     oppTotal += PLACEMENT_VALUE[x][y]
+    def get_square_quantity(self, board):
+        """
+        heuristic to find square formation
+        """
+
+        '''
+        1. based on square in origin or 1 layer out
+            -> inner square = range(3, 5)
+            -> one layer out = range(2, 6)
+        2. find square formation
+        '''
+        # look in the inner square and
+            # check if it is out piece
+                # then look for surrounding pieces
         
-        # if (currentTurn <= PLACING_PHASE):
-        #     h1 = ourTotal
-        # else:
-        #     h1 = ourTotal - oppTotal
+        square_quantity = 0
+        for i in range(2, 5): # y value
+            for j in range(2, 5): # x value
+                if (board.get(j, i) == self.colour and board.get(j+1, i) == self.colour and board.get(j+1, i+1) == self.colour and board.get(j, i+1) == self.colour):
+                    square_quantity += 1
 
-        # return h1
 
+        return square_quantity
+
+    def h(self, board, currentTurn):
+        """Utility function
+        """
+
+        # h1
+        ourPieces = board.get_all_pieces(self.colour)
+        oppoPieces = board.get_all_pieces(
+            board._get_opponent_colour(self.colour))
+
+        ourTotal = 0
+        oppTotal = 0
+        
+        if (currentTurn <= config.PLACING_PHASE):
+            for our in ourPieces:
+                (x, y) = our
+                ourTotal += PLACEMENT_VALUE[x][y]
+
+            h1 = ourTotal
+            # h2 = 1
+        else:
+
+            for our in ourPieces:
+                (x, y) = our
+                ourTotal += PLACEMENT_VALUE[x][y]
+            for opp in ourPieces:
+                (x, y) = opp
+                oppTotal += PLACEMENT_VALUE[x][y]
+
+            h1 = ourTotal - oppTotal
+
+            # h2, give higher weightage to square formation in the inner part of board
+            # h2 = self.get_square_quantity(board) * 10
+
+
+        return h1
         
 
     def minimax(self, board, currentTurn):
@@ -122,7 +207,7 @@ class MiniMaxSolver:
                 max_value = tmp
                 if (self._is_empty_set(self._range_intersect(validRange, (max_value, INFINITY)))):
                     break
-            elif (tmp == max_value and random.randrange(0,2) == 1): # occasionally uses another max_value
+            elif (tmp == max_value and random.randrange(0,2) == 1 and self.MAKE_RANDOM): # occasionally uses another max_value
                 max_move = move
                 max_value = tmp
                 if (self._is_empty_set(self._range_intersect(validRange, (max_value, INFINITY)))):
@@ -153,7 +238,7 @@ class MiniMaxSolver:
                 min_value = tmp
                 if (self._is_empty_set(self._range_intersect(validRange, (-INFINITY, min_value)))):
                     break
-            elif (tmp == min_value and random.randrange(0,2) == 1): # occasionally uses another min_value
+            elif (tmp == min_value and random.randrange(0,2) == 1 and self.MAKE_RANDOM): # occasionally uses another min_value
                 min_move = move
                 min_value = tmp
                 if (self._is_empty_set(self._range_intersect(validRange, (-INFINITY, min_value)))):
@@ -168,7 +253,7 @@ class MiniMaxSolver:
 
     # successor states in a game tree are the child nodes...
     def getSuccessors(self, board, currentTurn, side='@'):
-        if (currentTurn <= PLACING_PHASE):
+        if (currentTurn <= config.PLACING_PHASE):
             # placing phase
             if side == Board.PIECE_BLACK:
                 validYZone = range(2, 8)
@@ -182,9 +267,14 @@ class MiniMaxSolver:
         else:
             # Moving phase
             ourPieces = board.get_all_pieces(side)
+            # EDIT: Therrense
+            squares = self.get_squares(board)
             moves = []
             for (x, y) in ourPieces:
-                moves += board.getAvailableMoves(x, y)
+                # EDIT: Therrense
+                if ((x, y) not in squares):
+                    # EDIT: Therrense
+                    moves += board.getAvailableMoves(x, y)
 
             if currentTurn in config.TURNS_BEFORE_SHRINK:
                 newStates = [
@@ -207,7 +297,7 @@ class MiniMaxSolver:
         """Terminate if either side wins;
         or if we reached maximum search depth.
         """
-        return ((depth >= self.MAX_DEPTH) or
-                (currentTurn > 24 and
+        return ((depth >= self.get_max_depth(currentTurn)) or
+                (currentTurn > config.PLACING_PHASE and
                  (board.isWon(Board.PIECE_BLACK) or board.isWon(Board.PIECE_WHITE))
                  ))

@@ -142,6 +142,7 @@ class LazyBoard(IBoard):
     def get(self, x, y):
         '''
           Gets the piece at coordinate (x, y)
+          return the piece type
         '''
         if self.has_unapplied_actions:
             self.has_unapplied_actions = False

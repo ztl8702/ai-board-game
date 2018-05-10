@@ -88,5 +88,9 @@ QUESTION: how is end game determined? (if pieces keep repeating)
 	- the colour with the most pieces will win after a certain number of turns
 
 
+Therrense todo:
+- miniMax
+	- disable moving square formation inside of range(2, 5)
+	- 
 
 
