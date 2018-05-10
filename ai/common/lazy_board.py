@@ -188,13 +188,13 @@ class LazyBoard(IBoard):
 
     def _apply_unapplied_actions(self):
         for action in self.unapplied_actions:
-            actionType, args = action
-            if actionType == 'makeMove':
-                x, y, newX, newY, ourPiece = args
-                self._do_make_move(x, y, newX, newY, ourPiece)
-            elif actionType == 'placePiece':
-                newX, newY, ourPiece = args
-                self._do_place_piece(newX, newY, ourPiece)
+            action_type, args = action
+            if action_type == 'makeMove':
+                x, y, newX, newY, our_piece = args
+                self._do_make_move(x, y, newX, newY, our_piece)
+            elif action_type == 'place_piece':
+                newX, newY, our_piece = args
+                self._do_place_piece(newX, newY, our_piece)
         self.unapplied_actions.clear()
 
     def getMoveType(self, x, y, direction):
@@ -219,7 +219,7 @@ class LazyBoard(IBoard):
         # not a valid move, so can't move
         return MoveType.INVALID
 
-    def getAvailableMoves(self, x, y):
+    def get_available_moves(self, x, y):
         '''
         Returns a list of available moves that are valid 
         for the piece at (x, y) as a nested tuple in the form
@@ -261,7 +261,7 @@ class LazyBoard(IBoard):
         self._apply_unapplied_actions()
         return list(self.all_pieces[self.PIECE_EMPTY])
 
-    def getHashValue(self):
+    def get_hash_value(self):
         '''
         Computes a hash value for entire board.
         '''
@@ -274,18 +274,18 @@ class LazyBoard(IBoard):
         self.hash_value_cache = hash(joined)
         return hash(joined)
 
-    def isWon(self, ourPiece, is_placing=False):
+    def is_won(self, our_piece, is_placing=False):
         '''
         Check if all opponent pieces are eliminated,
         and we still have pieces left
         '''
-        opponentPiece = self._get_opponent_colour(ourPiece)
+        opponentPiece = self._get_opponent_colour(our_piece)
         hasOurPiece = False
         for x in range(self._min_xy, self._max_xy+1):
             for y in range(self._min_xy, self._max_xy+1):
                 if self.get(x, y) == opponentPiece:
                     return False
-                if self.get(x, y) == ourPiece:
+                if self.get(x, y) == our_piece:
                     hasOurPiece = True
         return hasOurPiece
 
@@ -293,9 +293,9 @@ class LazyBoard(IBoard):
         # placing phase: it is okay to have no piece, game is not ended yet because we can place more.
         if (is_placing):
             return BoardStatus.ON_GOING
-        if (self.isWon(self.PIECE_BLACK)):
+        if (self.is_won(self.PIECE_BLACK)):
             return BoardStatus.BLACK_WON
-        elif (self.isWon(self.PIECE_WHITE)):
+        elif (self.is_won(self.PIECE_WHITE)):
             return BoardStatus.WHITE_WON
         else:
             for x in range(self._min_xy, self._max_xy+1):
@@ -314,41 +314,14 @@ class LazyBoard(IBoard):
         else:
             return self.PIECE_WHITE
 
-    def getSmallerSearchSpace(self, ourPiece, layers):
-        '''
-        mark cells around opponent pieces 
-        and return the smaller search space
-        '''
-        searchSpace = []
-
-        opponentPieces = self.get_all_pieces( \
-            self._get_opponent_colour(ourPiece))
-        
-        for p in opponentPieces:
-            (x, y) = p
-            # add coordinate of opponent
-            searchSpace.append((x,y))
-
-            for direction in range(0, 4):
-
-                # add coordinate of cells around opponent
-                for i in range(1, layers + 1):
-                    newX = x + self.DIRECTION[direction][0] * i
-                    newY = y + self.DIRECTION[direction][1] * i
-                    
-                    if (self.isWithinBoard(newX, newY)):
-                        searchSpace.append((newX, newY))
-
-        return searchSpace
-
-    def _check_elimination(self, x, y, ourPiece):
+    def _check_elimination(self, x, y, our_piece):
         '''
         Check and perform elimination, typically called after a player action.
 
         WARNING: to prevent reentrant, _check_elimination should only be called
         in _do_make_move and _do_place_piece
         '''
-        opponentPiece = self._get_opponent_colour(ourPiece)
+        opponentPiece = self._get_opponent_colour(our_piece)
 
         DIRECTION = self.DIRECTION
 
@@ -366,7 +339,7 @@ class LazyBoard(IBoard):
                     self.raw_get(adjPieceX, adjPieceY) == opponentPiece and \
                     self.isWithinBoard(adjPieceX2, adjPieceY2) and \
                     self.raw_get(adjPieceX2, adjPieceY2) in \
-                    set([ourPiece, self.PIECE_CORNER]):
+                    set([our_piece, self.PIECE_CORNER]):
                 self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
 
         # step 2: check if any opponent pieces eliminated us
@@ -386,7 +359,7 @@ class LazyBoard(IBoard):
              self.raw_get(x, y + 1) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
-    def makeMove(self, x, y, newX, newY, ourPiece):
+    def make_move(self, x, y, newX, newY, our_piece):
         '''
         Make the piece move (valid move) to new location
         and check for elimination.
@@ -395,22 +368,22 @@ class LazyBoard(IBoard):
         '''
         board = LazyBoard(self)
         board.unapplied_actions.append(
-            ('makeMove', (x, y, newX, newY, ourPiece))
+            ('makeMove', (x, y, newX, newY, our_piece))
         )
         return board
 
-    def _do_make_move(self, x, y, newX, newY, ourPiece):
+    def _do_make_move(self, x, y, newX, newY, our_piece):
         if (self._reentrant_counter_do_make_move > 0):
             raise Exception("Reentrant: _do_make_move")
         self._reentrant_counter_do_make_move+=1
-        self.set_p(newX, newY, ourPiece)
+        self.set_p(newX, newY, our_piece)
         self.set_p(x, y, self.PIECE_EMPTY)
 
-        self._check_elimination(newX, newY, ourPiece)
+        self._check_elimination(newX, newY, our_piece)
         self._reentrant_counter_do_make_move-=1
         
 
-    def placePiece(self, newX, newY, ourPiece):
+    def place_piece(self, newX, newY, our_piece):
         """
         Places a new piece. And check for elimination.
 
@@ -421,7 +394,7 @@ class LazyBoard(IBoard):
 
         board = LazyBoard(self)
         board.unapplied_actions.append(
-            ('placePiece', (newX, newY, ourPiece))
+            ('place_piece', (newX, newY, our_piece))
         )
 
         return board
@@ -451,10 +424,10 @@ class LazyBoard(IBoard):
             if (isinstance(x, tuple) and isinstance(y, tuple)):
                 (a, b) = x
                 (c, d) = y
-                return self.makeMove(a, b, c, d, colour)
+                return self.make_move(a, b, c, d, colour)
             else:
                 # place piece
-                return self.placePiece(x, y, colour)
+                return self.place_piece(x, y, colour)
 
     def shrink(self):
         """
@@ -499,25 +472,25 @@ class LazyBoard(IBoard):
 
         return board
 
-    def get_all_pieces(self, ourPiece):
+    def get_all_pieces(self, our_piece):
         '''
         get all the location of pieces of a specific colour
         '''
         #result = []
         # for x in range(self._min_xy, self._max_xy+1):
         #    for y in range(self._min_xy, self._max_xy+1):
-        #        if self.get(x, y) == ourPiece:
+        #        if self.get(x, y) == our_piece:
         #            result.append((x, y))
         self._apply_unapplied_actions()
-        #print("get_all_pieces called", ourPiece, self.all_pieces[ourPiece])
-        return list(self.all_pieces[ourPiece])
+        #print("get_all_pieces called", our_piece, self.all_pieces[our_piece])
+        return list(self.all_pieces[our_piece])
 
-    def count_moves(self, ourPiece):
+    def count_moves(self, our_piece):
         result = 0
-        pieces = self.get_all_pieces(ourPiece)
+        pieces = self.get_all_pieces(our_piece)
         for p in pieces:
             (x, y) = p
-            availableMoves = self.getAvailableMoves(x, y)
+            availableMoves = self.get_available_moves(x, y)
             result = result + len(availableMoves)
         return result
 
