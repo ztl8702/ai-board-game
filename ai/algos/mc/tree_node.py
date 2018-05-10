@@ -40,7 +40,8 @@ class TreeNode(object):
         if (len(sucessors)==0):
             print(f"no successor, side={self.side} turn={self.currentTurn}")
             self.board.print_board()
-        self.board = random.choice(sucessors)[1]
+        if (len(sucessors)>0):
+            self.board = random.choice(sucessors)[1]
         
     def get_random_child(self):
         return random.choice(self.children)
@@ -50,9 +51,11 @@ class TreeNode(object):
         maxValue = -INFINITY
         maxNode = None
         for node in self.children:
+            print(f"{node.last_action}({node.score()}) ",end=" ")
             if (node.score() > maxValue):
                 maxValue = node.score()
                 maxNode = node
+        print("")
         return maxNode
 
     def ucb_upperbound(self, totalVisits):

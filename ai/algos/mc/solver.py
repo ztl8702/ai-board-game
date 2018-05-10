@@ -39,7 +39,6 @@ def expand_node(node: TreeNode):
     possibleState = get_successor_board_states(
         node.board, node.currentTurn+1, get_opponent_colour(node.side))
 
-
     for state in possibleState:
         newNode = TreeNode(state[1],
                            node.currentTurn+1,
@@ -58,13 +57,15 @@ def random_playout(node: TreeNode)->BoardStatus:
 
     # This node is not worth simulation,
     # and should not be selected at all!
-    if (tempNode.board.get_status(is_placing=tempNode.currentTurn<=24) == get_opponent_colour(tempNode.side)):
+    if (tempNode.board.get_status(is_placing=tempNode.currentTurn <= 24) == get_opponent_colour(tempNode.side)):
         tempNode.parent.winning = -INFINITY
         print("opponent won, bad state")
         return get_opponent_colour(tempNode.side)
 
-    while (tempNode.board.get_status(is_placing=tempNode.currentTurn<=24) == BoardStatus.ON_GOING):
+    while (tempNode.board.get_status(is_placing=tempNode.currentTurn <= 24) == BoardStatus.ON_GOING):
         tempNode.random_play()
+
+    #print(tempNode.board.get_status())
 
     return tempNode.board.get_status()
 
@@ -72,13 +73,16 @@ def random_playout(node: TreeNode)->BoardStatus:
 def back_prop(nodeToExplore, playoutResult):
     tempNode = nodeToExplore
     while (tempNode != None):
+        #print("backprop update",id(tempNode))
         tempNode.visited += 1
-        if playoutResult == tempNode.side:
+        #print(playoutResult, tempNode.side, str(playoutResult)==str(tempNode.side))
+        if str(playoutResult)==str(tempNode.side):
             tempNode.winning += 1
         tempNode = tempNode.parent
+    #print("\t\t reached root")
 
 
-def find_next_move(board: Type[Board], turn:int, colour) -> Union[Tuple[int, int], Tuple[Tuple[int, int], Tuple[int, int]]]:
+def find_next_move(board: Type[Board], turn: int, colour) -> Union[Tuple[int, int], Tuple[Tuple[int, int], Tuple[int, int]]]:
     """
     Main function of Monte Carlo search
     """
@@ -86,15 +90,15 @@ def find_next_move(board: Type[Board], turn:int, colour) -> Union[Tuple[int, int
     # not sure if we can persist the tree
 
     tree = Tree(board, turn-1, get_opponent_colour(colour))
-
+    print("root is ", id(tree.root))
     startTime = datetime.datetime.now()
 
     elapsed = datetime.timedelta(0)
     simulationRounds = 0
-    while (elapsed <= config.MC_TIME_LIMIT): 
+    while (elapsed <= config.MC_TIME_LIMIT):
         promisingNode = select(tree.root)
 
-        if (promisingNode.board.get_status(is_placing = promisingNode.currentTurn<=24) == BoardStatus.ON_GOING):
+        if (promisingNode.board.get_status(is_placing=promisingNode.currentTurn <= 24) == BoardStatus.ON_GOING):
             expand_node(promisingNode)
 
         nodeToExplore = promisingNode
@@ -105,9 +109,10 @@ def find_next_move(board: Type[Board], turn:int, colour) -> Union[Tuple[int, int
         playoutResult = random_playout(nodeToExplore)
 
         back_prop(nodeToExplore, playoutResult)
-        
+        #print("after backprop, root:",tree.root.winning,'/',tree.root.visited)
+
         elapsed = datetime.datetime.now() - startTime
-        simulationRounds+=1
+        simulationRounds += 1
         #print("tree root children", tree.root.children)
 
     print(f"\n\n\n[MC] {simulationRounds} rounds of simulation run.\n\n\n")
