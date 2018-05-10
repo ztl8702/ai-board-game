@@ -88,7 +88,7 @@ class Board(IBoard):
         ''' 
         Debugging utlity function to print board
         '''
-        board = self.board.getInverted()
+        board = self.board.get_inverted()
         print(" ", end="")
         for i in range(MAX_BOARD_SIZE):
             print(i, end=" ")

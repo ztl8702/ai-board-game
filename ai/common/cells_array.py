@@ -27,12 +27,12 @@ class CellsArray:
         '''
         self.cells[x][y] = value
 
-    def getInverted(self):
+    def get_inverted(self):
         '''
         utility function to invert the cells array 
         '''
-        newCellsArray = copy.deepcopy(self)
+        new_cells_array = copy.deepcopy(self)
         for x in range(0, self.size):
             for y in range(0, self.size):
-                newCellsArray.set_p(x, y, self.get(y, x))
-        return newCellsArray
+                new_cells_array.set_p(x, y, self.get(y, x))
+        return new_cells_array
