@@ -414,3 +414,27 @@ def test_lazy_board():
              "--OO@@--",
              "--------",
              "X------X") == board.to_token_string()
+
+
+def test_lazy_board_should_shrink_properly():
+    layout1 = p("X------X",
+                "--------",
+                "--@-@---",
+                "O-O-----",
+                "--OO----",
+                "--O--@--",
+                "---O----",
+                "X------X")
+    board1 = Board.from_token_string(layout1)
+    board1.unapplied_actions.append(('makeMove', (0, 3,1, 3,'O')))
+    board1.has_unapplied_actions = True
+
+    board2 = board1.shrink()
+    assert p("########",
+             "#X----X#",
+             "#-@-@--#",
+             "#OO----#",
+             "#-OO---#",
+             "#-O--@-#",
+             "#X-O--X#",
+             "########") == board2.to_token_string()
