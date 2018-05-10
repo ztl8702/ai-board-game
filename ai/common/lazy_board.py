@@ -111,7 +111,7 @@ class LazyBoard(IBoard):
         for (x, y) in self._corner_cells():
             self.set_p(x, y, self.PIECE_CORNER)
 
-    def printBoard(self):
+    def print_board(self):
         ''' 
         Debugging utlity function to print board
         '''

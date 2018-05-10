@@ -3,7 +3,7 @@ from ..algos.minimax import MiniMaxSolver
 
 
 class MinimaxPlayer(PlayerBase):
-    """Our naive minimax agent with alpha-beta pruning
+    """Our minimax agent with alpha-beta pruning
     """
 
     def __init__(self, colour):
@@ -15,10 +15,9 @@ class MinimaxPlayer(PlayerBase):
         # We aren't going to do anything about opponent's action
         print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.")
 
-    def on_request_action(self, isMoving, turn, board):
-        board.printBoard()
-        if (isMoving):
-            self.solver.MAX_DEPTH=4
+    def on_request_action(self, is_moving, turn, board):
+        # board.print_board() #DEBUG
+        if (is_moving):
             bestMove = self.solver.minimax(board, turn + 24)
         else:
             bestMove = self.solver.minimax(board, turn)

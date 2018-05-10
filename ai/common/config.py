@@ -1,5 +1,5 @@
-PLACING_PHASE = 24
-TURNS_BEFORE_SHRINK = [128 + 24, 192 + 24]
+PLACING_PHASE = 24	# total turns in placing phase
+TURNS_BEFORE_SHRINK = [128 + PLACING_PHASE, 192 + PLACING_PHASE]
 MAX_BOARD_SIZE = 8  # maximum board size
 
 import datetime
