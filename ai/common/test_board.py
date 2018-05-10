@@ -426,7 +426,7 @@ def test_lazy_board_should_shrink_properly():
                 "---O----",
                 "X------X")
     board1 = Board.from_token_string(layout1)
-    board1.unapplied_actions.append(('makeMove', (0, 3,1, 3,'O')))
+    board1.unapplied_actions.append(('makeMove', (0, 3, 1, 3, 'O')))
     board1.has_unapplied_actions = True
 
     board2 = board1.shrink()
@@ -438,3 +438,48 @@ def test_lazy_board_should_shrink_properly():
              "#-O--@-#",
              "#X-O--X#",
              "########") == board2.to_token_string()
+
+
+def test_board_shrink_should_eliminate_in_anti_clockwise():
+    """
+    Order matters.
+    """
+    layout1 = p("########",
+                "#X----X#",
+                "#--O@--#",
+                "#-OO@@-#",
+                "#-OO@@-#",
+                "#--O@--#",
+                "#X----X#",
+                "########")
+    board1 = Board.from_token_string(layout1)
+
+    board2 = board1.shrink()
+
+    assert p("########",
+             "########",
+             "##X-@X##",
+             "##OO@@##",
+             "##OO@@##",
+             "##X-@X##",
+             "########",
+             "########") == board2.to_token_string()
+
+    layout2 = p("########",
+                "#X----X#",
+                "#-OOOO-#",
+                "#-OOOO-#",
+                "#-@@@@-#",
+                "#-@@@@-#",
+                "#X----X#",
+                "########")
+    board3 = Board.from_token_string(layout2)
+    board4 = board3.shrink()
+    assert p("########",
+             "########",
+             "##XOOX##",
+             "##-OOO##",
+             "##@@@-##",
+             "##X@@X##",
+             "########",
+             "########") == board4.to_token_string()
