@@ -249,22 +249,18 @@ class MiniMaxSolver:
             
             # Moving phase
             ourPieces = board.get_all_pieces(side)
-            # EDIT: Therrense
+            
             squares = self.get_squares(board)
             moves = []
             for (x, y) in ourPieces:
-                # EDIT: Therrense
                 if ((x, y) not in squares):
-                    # EDIT: Therrense
                     moves += board.getAvailableMoves(x, y)
 
-            # EDIT: Therrense
             # @TODO: get my furthest piece away from opponent
             # prevent forfeiting when still have moves but all form squares
             if (not moves and ourPieces):
-                (x, y) = ourPieces[0]
-                moves += board.getAvailableMoves(x, y)
-
+                for (x, y) in ourPieces:
+                    moves += board.getAvailableMoves(x, y)
 
             if currentTurn in config.TURNS_BEFORE_SHRINK:
                 newStates = [
