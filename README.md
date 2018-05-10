@@ -23,6 +23,13 @@ python ./referee.py player player
 python ./referee.py player dummpy_player
 ```
 
+## Play againt mirror player
+```
+python ./referee.py player mirror_player
+```
+
+MirrorPlayer should always be the black (second) player
+
 ## "Bake-off" (playing different agents against each other)
 
 For example:
