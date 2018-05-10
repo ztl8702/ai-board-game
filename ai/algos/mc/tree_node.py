@@ -39,7 +39,7 @@ class TreeNode(object):
         #print(f"random_play selected from {len(sucessors)} substates")
         if (len(sucessors)==0):
             print(f"no successor, side={self.side} turn={self.currentTurn}")
-            self.board.printBoard()
+            self.board.print_board()
         self.board = random.choice(sucessors)[1]
         
     def get_random_child(self):
