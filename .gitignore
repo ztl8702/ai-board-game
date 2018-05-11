@@ -6,3 +6,5 @@ build
 venv
 .idea
 .pytest_cache
+
+test_output/
