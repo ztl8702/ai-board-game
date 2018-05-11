@@ -1,5 +1,22 @@
-Draft AI
+AI Project B Submission
 
+`Therrense Lua (student number: 782578)`  
+`Tianlei Zheng (student number: 773109)`
+
+Note: Player module to test: minimax_player
+	- minimax_player.py
+
+Note: Classess to mark:
+	- minimax_player.py
+	- mc_player.py
+	- 
+
+## Explaination of file structure:
+- ai/agents/playerbase.py is where the Player class resides
+	- contains:
+		- __init__(self, colour)
+		- action(self, action)
+		- update(self, action)
 
 - search strategy
 - evaluation function
@@ -37,6 +54,8 @@ Notes about assessment criteria:
 		- 7 marks
 			- pro-active points
 			- techniques used not taught in lectures
+
+
 
 
 ## What have we done so far?
