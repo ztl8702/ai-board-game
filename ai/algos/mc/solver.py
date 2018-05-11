@@ -22,42 +22,42 @@ visited = set()
 treenodes = {}
 
 
-def _new_tree_node(board, currentTurn, side):
+def _new_tree_node(board, current_turn, side):
     """
     Create a new search tree node.
 
     If a node with the same state already exists, just return it.
     """
     global visited
-    nodeKey = (board.get_hash_value(), currentTurn)
-    if (nodeKey not in visited):
-        visited.add(nodeKey)
-        treenodes[nodeKey] = TreeNode(board, currentTurn, side)
-    return treenodes[nodeKey]
+    node_key = (board.get_hash_value(), current_turn)
+    if (node_key not in visited):
+        visited.add(node_key)
+        treenodes[node_key] = TreeNode(board, current_turn, side)
+    return treenodes[node_key]
 
 
 def _get_children_nodes(node: TreeNode):
     """
     Get Children nodes based on the current game state.
     """
-    possibleStates = get_successor_board_states(
-        node.board, node.currentTurn+1, get_opponent_colour(node.side))
+    possible_states = get_successor_board_states(
+        node.board, node.current_turn+1, get_opponent_colour(node.side))
     possibleNodes = [_new_tree_node(state[1],
-                                    node.currentTurn+1,
-                                    get_opponent_colour(node.side)) for state in possibleStates]
+                                    node.current_turn+1,
+                                    get_opponent_colour(node.side)) for state in possible_states]
     # Return value is in the form of [(action, node)]
-    return [(possibleStates[i][0], possibleNodes[i]) for i in range(len(possibleStates))]
+    return [(possible_states[i][0], possibleNodes[i]) for i in range(len(possible_states))]
 
 
 def _select_child_node_with_best_UCB(children, total)->TreeNode:
-    maxValue = -INFINITY
-    maxNode = None
+    max_value = -INFINITY
+    max_node = None
     for child in children:
         ucb = child.ucb_upperbound(total)
-        if (ucb > maxValue):
-            maxValue = ucb
-            maxNode = child
-    return maxNode
+        if (ucb > max_value):
+            max_value = ucb
+            max_node = child
+    return max_node
 
 
 def select(node: TreeNode)->TreeNode:
@@ -87,53 +87,53 @@ def random_playout(node: TreeNode)->BoardStatus:
     """
     max_depth = 20
 
-    tempNode = TreeNode(
+    temp_node = TreeNode(
         board=node.board,
-        currentTurn=node.currentTurn-1,
+        current_turn=node.current_turn-1,
         side=node.side)
 
     # This node is not worth simulation,
     # and should not be selected at all!
-    if (tempNode.board.get_status(is_placing=tempNode.currentTurn <= 24) \
-        == get_opponent_colour(tempNode.side)):
+    if (temp_node.board.get_status(is_placing=temp_node.current_turn <= 24) \
+        == get_opponent_colour(temp_node.side)):
         node.parent.winning = -INFINITY
         print("opponent won, bad state")
-        return get_opponent_colour(tempNode.side)
+        return get_opponent_colour(temp_node.side)
 
     depth = 0
-    while (tempNode.board.get_status(is_placing=tempNode.currentTurn <= 24) \
+    while (temp_node.board.get_status(is_placing=temp_node.current_turn <= 24) \
         == BoardStatus.ON_GOING):
         if (depth >= max_depth):
-            fs = fake_status(tempNode.board)
+            fs = fake_status(temp_node.board)
             return fs
-        tempNode.random_play()
+        temp_node.random_play()
         depth += 1
 
-    return tempNode.board.get_status()
+    return temp_node.board.get_status()
 
 
-def back_prop(nodesInPath, playoutResult):
+def back_prop(nodes_in_path, playout_result):
     """
     The Back-propagation Phase of MCTS
     """
-    for tempNode in nodesInPath:
-        tempNode.visited += 1
-        if str(playoutResult) == str(tempNode.side):
-            tempNode.winning += 1
+    for temp_node in nodes_in_path:
+        temp_node.visited += 1
+        if str(playout_result) == str(temp_node.side):
+            temp_node.winning += 1
 
 
-def _get_child_with_max_score(rootNode: TreeNode)->'TreeNode':
-    maxValue = -INFINITY
-    maxNode = None
-    maxAction = None
-    for action, node in _get_children_nodes(rootNode):
+def _get_child_with_max_score(root_node: TreeNode)->'TreeNode':
+    max_value = -INFINITY
+    max_node = None
+    max_action = None
+    for action, node in _get_children_nodes(root_node):
         print(f"{action}({node.score()}) ", end=" ")
-        if (node.score() > maxValue):
-            maxValue = node.score()
-            maxNode = node
-            maxAction = action
+        if (node.score() > max_value):
+            max_value = node.score()
+            max_node = node
+            max_action = action
     print("")
-    return maxAction, maxNode
+    return max_action, max_node
 
 
 def find_next_move(board: Type[Board], turn: int, colour) -> Union[Tuple[int, int], Tuple[Tuple[int, int], Tuple[int, int]]]:
@@ -142,30 +142,30 @@ def find_next_move(board: Type[Board], turn: int, colour) -> Union[Tuple[int, in
     """
     # for this version, restart search for each turn
     # not sure if we can persist the tree
-    rootNode = _new_tree_node(board, turn-1, get_opponent_colour(colour))
-    print("rootNode already has ", rootNode.winning, '/', rootNode.visited) # DEBUG
+    root_node = _new_tree_node(board, turn-1, get_opponent_colour(colour))
+    print("root_node already has ", root_node.winning, '/', root_node.visited) # DEBUG
     
-    startTime = datetime.datetime.now()
+    start_time = datetime.datetime.now()
     elapsed = datetime.timedelta(0)
-    simulationRounds = 0
+    simulation_rounds = 0
     while (elapsed <= config.MC_TIME_LIMIT):
-        promisingNode, path = select(rootNode)
-        nodeToExplore = promisingNode
+        promising_node, path = select(root_node)
+        node_to_explore = promising_node
 
-        if promisingNode.board.get_status(is_placing=promisingNode.currentTurn <= 24) \
+        if promising_node.board.get_status(is_placing=promising_node.current_turn <= 24) \
             == BoardStatus.ON_GOING:
-            childrenNodes = _get_children_nodes(nodeToExplore)
-            if (len(childrenNodes) > 0):
-                action, nodeToExplore = random.choice(childrenNodes)
-                path.append(nodeToExplore)
+            children_nodes = _get_children_nodes(node_to_explore)
+            if (len(children_nodes) > 0):
+                action, node_to_explore = random.choice(children_nodes)
+                path.append(node_to_explore)
 
-        playoutResult = random_playout(nodeToExplore)
+        playout_result = random_playout(node_to_explore)
 
-        back_prop(path, playoutResult)
+        back_prop(path, playout_result)
 
-        elapsed = datetime.datetime.now() - startTime
-        simulationRounds += 1
+        elapsed = datetime.datetime.now() - start_time
+        simulation_rounds += 1
 
-    print(f"\n\n\n[MC] {simulationRounds} rounds of simulation run.\n\n\n")
-    winningAction, winningNode = _get_child_with_max_score(rootNode)
-    return winningAction
+    print(f"\n\n\n[MC] {simulation_rounds} rounds of simulation run.\n\n\n")
+    winning_action, winning_node = _get_child_with_max_score(root_node)
+    return winning_action
