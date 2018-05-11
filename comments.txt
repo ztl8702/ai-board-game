@@ -30,7 +30,7 @@ This file is just a wrapper, the actual implementation is located at
         |-- mc  -> Monte Carlo Tree Search algorithm
             ...
         |-- minimax.py  -> minimax algorithm with alpha-beta pruning
-    |-- commons	-> This module `ai.commons` contains the shared logic and utilities
+    |-- commons	-> This module `ai.common` contains the shared logic and utilities
         |-- lazy_board.py   -> board and game logic 
         |-- test_*.py       -> unit tests
         |-- ...
@@ -39,33 +39,32 @@ This file is just a wrapper, the actual implementation is located at
 |-- ...
 
 
-## What have we done so far?
+## What we have done.
 
 1. First of all, we implemented and released WYB-online (A Human vs Human playground) at http://wyb.radiumz.org/
-This allowed us to familarised with the game rules and test out a couple of strategies manually.
- [definitely deserve some credit for pro-activeness, more details below]
+    - This allowed us to familarised with the game rules and test out a couple of strategies manually.
+    - hopefully, deserve some credit for pro-activeness, more details below
 
 2. Optimisations made to our minimax algorithm
     i. our evaluation/heuristic function valued different positions on the board by their importance/weightage
         - we valued the inner part of the board at a higher weightage 
     ii. we also utilised different search depths depending on the phase of the game
         - by searching deeper when the board shrinked twice
-    iii. we reduce our search space by avoiding moving pieces that form squares in the middle of the board as it was more advantagous to hold those positions to the late game
+    iii. we reduce our search space by avoiding moving pieces that form squares in the middle of the board as it was more advantageous to hold those positions to the late game
         - this enabled us to search deeper into the tree
 
     iv. our miniMax made use of alpha-beta pruning to not search into redundant branches
     v. we also stored and check game states that are similar to avoid re-searching
 
 3. Implementation techniques
-    3.1 in our board logic implementation (lazy_board.py)
+    - in our board logic implementation (lazy_board.py)
         i. we use compact byte arrays to reduce memory usage (eg. as arrays.arrays)
         ii. we store deltas/changes, and only lazily apply them when need (hence the name "LazyBoard")
-        iii. we use hash value (LazyBoard.get_hash_value) to provide a way of keeping track of 
-            existing states efficiently (O(1) lookup)
+        iii. we use hash value (LazyBoard.get_hash_value) to provide a way of keeping track of existing states efficiently (O(1) lookup)
 
 4. search algorithms not taught in class
     i. We implemented a basic Monte Carlo Tree Search, but it wasn't performing as good as minimax.
-    We did not have time to push the performance further.
+        - We did not have time to push the performance further.
 
 5. unit testing
     i. We wrote Unit tests to ensure our game logic is correct and consistent while we refactor the code
@@ -79,7 +78,7 @@ misc. did not have time to do
     ii. SSS* (sorting game tree for faster discovery)
 
 
-## Addtional Tools we built and used
+## Additional Tools we built and used
 
 1. wyb-online (Source code in wyb-online.zip): 
     The online human-vs-human gaming platform for Watch Your Back! 
@@ -87,7 +86,7 @@ misc. did not have time to do
 
     It took us over a week to built the server-side logic and the UI, we basically 
     re-implemented the game logic in JavaScript and take into account of multiple
-    simutanous players.
+    simultaneous players.
     
     This tool has benefited not only us but other teams as well. 
 
