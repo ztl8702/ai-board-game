@@ -193,9 +193,9 @@ class MiniMaxSolver:
                          for (x, y) in moves]
         
         else: # Moving phase
+
             # reduce the movement of pieces that form squares
-            # as it is more advantagous to hold a square formation
-            
+            # as it is more advantagous to hold a square formation    
             our_pieces = board.get_all_pieces(side)
             
             squares = self.get_squares(board)

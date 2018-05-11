@@ -7,11 +7,11 @@ import array
 
 
 class LazyBoard(IBoard):
-    '''
+    """
     Representation of the board
 
     With "lazy actions" to improve performance
-    '''
+    """
 
     DIRECTION = [
         [-1, 0],  # left
@@ -57,9 +57,9 @@ class LazyBoard(IBoard):
     }
 
     def __init__(self, clone_from=None):
-        '''
+        """
         initially the board size is set to the maximum
-        '''
+        """
         if (clone_from != None):
             self.board_size = clone_from.board_size
             self._update_borders()
@@ -112,9 +112,9 @@ class LazyBoard(IBoard):
             self.set_p(x, y, self.PIECE_CORNER)
 
     def print_board(self):
-        ''' 
+        """ 
         Debugging utlity function to print board
-        '''
+        """
         print(" ", end="")
         for i in range(MAX_BOARD_SIZE):
             print(i, end=" ")
@@ -128,22 +128,22 @@ class LazyBoard(IBoard):
         print()
 
     def is_empty(self, x, y):
-        '''
+        """
         check if coordinate (x, y) is empty
-        '''
+        """
         return self.get(x, y) == self.PIECE_EMPTY
 
     def is_within_board(self, x, y):
-        '''
+        """
         returns true if coordinate (x, y) is within the board
-        '''
+        """
         return ((self._min_xy <= x <= self._max_xy) and (self._min_xy <= y <= self._max_xy))
 
     def get(self, x, y):
-        '''
+        """
           Gets the piece at coordinate (x, y)
           return the piece type
-        '''
+        """
         if self.has_unapplied_actions:
             self.has_unapplied_actions = False
             self._apply_unapplied_actions()
@@ -161,11 +161,11 @@ class LazyBoard(IBoard):
         return self.get_mapping[self.board[x][y]]
 
     def set_p(self, x, y, value):
-        '''
+        """
         Change the piece at coordinate (x, y)
 
         Avoid name conflict with set (built-in type)
-        '''
+        """
         if not self.master_copy:
             self.board = copy.deepcopy(self.board)
             old_all_pieces = self.all_pieces
@@ -198,10 +198,10 @@ class LazyBoard(IBoard):
         self.unapplied_actions.clear()
 
     def _get_move_type(self, x, y, direction):
-        '''
+        """
         Check what type of move it is
         and return its type
-        '''
+        """
         new_x = x + self.DIRECTION[direction][0]
         new_y = y + self.DIRECTION[direction][1]
         # if the cell is not occupied, its a normal move
@@ -220,11 +220,11 @@ class LazyBoard(IBoard):
         return MoveType.INVALID
 
     def get_available_moves(self, x, y):
-        '''
+        """
         Returns a list of available moves that are valid 
         for the piece at (x, y) as a nested tuple in the form
         ((from), (to)) because we need to print moves from and to 
-        '''
+        """
 
         # return no moves available if piece is not playable
         if not (self.get(x, y) in self.PLAYER_PIECES):
@@ -253,18 +253,13 @@ class LazyBoard(IBoard):
     def get_empty_cells(self):
         """
         """
-        #result = []
-        # for x in range(self._min_xy, self._max_xy+1):
-        #    for y in range(self._min_xy, self._max_xy+1):
-        #        if (self.is_empty(x, y)):
-        #            result.append((x, y))
         self._apply_unapplied_actions()
         return list(self.all_pieces[self.PIECE_EMPTY])
 
     def get_hash_value(self):
-        '''
+        """
         Computes a hash value for entire board.
-        '''
+        """
         if self.hash_value_cache != None:
             return self.hash_value_cache
         self._apply_unapplied_actions()
@@ -275,10 +270,10 @@ class LazyBoard(IBoard):
         return hash(joined)
 
     def is_won(self, our_piece, is_placing=False):
-        '''
+        """
         Check if all opponent pieces are eliminated,
         and we still have pieces left
-        '''
+        """
         opponent_piece = self._get_opponent_colour(our_piece)
         has_our_piece = False
         for x in range(self._min_xy, self._max_xy+1):
@@ -307,21 +302,21 @@ class LazyBoard(IBoard):
             # TODO: LOW-PERF
 
     def _get_opponent_colour(self, our_colour):
-        '''
+        """
         Returns the opponent piece type/colour
-        '''
+        """
         if (our_colour == self.PIECE_WHITE):
             return self.PIECE_BLACK
         else:
             return self.PIECE_WHITE
 
     def _check_elimination(self, x, y, our_piece):
-        '''
+        """
         Check and perform elimination, typically called after a player action.
 
         WARNING: to prevent reentrant, _check_elimination should only be called
         in _do_make_move and _do_place_piece
-        '''
+        """
 
         opponent_piece = self._get_opponent_colour(our_piece)
         DIRECTION = self.DIRECTION
@@ -362,12 +357,12 @@ class LazyBoard(IBoard):
             self.set_p(x, y, self.PIECE_EMPTY)
 
     def make_move(self, x, y, new_x, new_y, our_piece):
-        '''
+        """
         Make the piece move (valid move) to new location
         and check for elimination.
 
         Returns a new instance of `Board`.
-        '''
+        """
         board = LazyBoard(self)
         board.unapplied_actions.append(
             ('make_move', (x, y, new_x, new_y, our_piece))
@@ -475,14 +470,9 @@ class LazyBoard(IBoard):
         return board
 
     def get_all_pieces(self, our_piece):
-        '''
+        """
         get all the location of pieces of a specific colour
-        '''
-        #result = []
-        # for x in range(self._min_xy, self._max_xy+1):
-        #    for y in range(self._min_xy, self._max_xy+1):
-        #        if self.get(x, y) == our_piece:
-        #            result.append((x, y))
+        """
         self._apply_unapplied_actions()
         #print("get_all_pieces called", our_piece, self.all_pieces[our_piece])
         return list(self.all_pieces[our_piece])

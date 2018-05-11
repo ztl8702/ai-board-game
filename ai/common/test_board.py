@@ -41,7 +41,7 @@ def test_board_parsing():
                 "########",
                 "########")
     board2 = Board.from_token_string(layout2)
-    assert board2.boardSize == 4
+    assert board2.board_size == 4
 
 
 def test_min_max():
@@ -70,7 +70,7 @@ def test_min_max():
     # new one should change
     assert board3._min_xy == 2
     assert board3._max_xy == 5
-    assert board3.boardSize == 4
+    assert board3.board_size == 4
 
 
 def test_shrink_board():
@@ -86,7 +86,7 @@ def test_shrink_board():
     board1 = Board.from_token_string(layout1)
     board2 = board1.shrink()
 
-    assert(board2.boardSize == 6)
+    assert(board2.board_size == 6)
     assert(board2.is_within_board(0, 0) == False)
 
     assert (p("########",
@@ -99,7 +99,7 @@ def test_shrink_board():
               "########") == board2.to_token_string())
 
     board3 = board2.shrink()
-    assert(board3.boardSize == 4)
+    assert(board3.board_size == 4)
     assert(board3.is_within_board(1, 1) == False)
     assert(board3.get(1, 1) == Board.PIECE_INVALID)
 
@@ -305,7 +305,7 @@ def test_hash_value():
                 "--------",
                 "X------X")
     board1 = Board.from_token_string(layout1)
-    hash1 = board1.getHashValue()
+    hash1 = board1.get_hash_value()
     hash2 = board1.make_move(6, 0, 5, 0, 'O').get_hash_value()
     hash3 = board1.make_move(6, 0, 5, 0, 'O').make_move(
         5, 0, 6, 0, 'O').get_hash_value()
@@ -313,7 +313,7 @@ def test_hash_value():
     assert(hash2 != hash3)
 
     board1.set_p(1, 1, '@')
-    hash4 = board1.getHashValue()
+    hash4 = board1.get_hash_value()
     assert(hash4 != hash3)
 
 

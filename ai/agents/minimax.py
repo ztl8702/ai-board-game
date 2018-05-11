@@ -13,13 +13,12 @@ class MinimaxPlayer(PlayerBase):
     def on_opponent_action(self, action):
         # For this agent
         # We aren't going to do anything about opponent's action
-        print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.")
+        print("Player "+ self.colour, ": Oh opponent did", action, ", good to know.") #DEBUG
 
 
     def on_request_action(self, is_moving, turn, board):
         # board.print_board() #DEBUG
         if (is_moving):
-            # self.solver.MAX_DEPTH=4
             bestMove = self.solver.minimax(board, turn + 24)
         else:
             bestMove = self.solver.minimax(board, turn)
