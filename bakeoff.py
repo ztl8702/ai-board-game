@@ -7,7 +7,7 @@ import re
 import sys
 import os
 from datetime import datetime
-PYTHON = "python3"
+PYTHON = "python"
 
 def get_winner(outputStr):
     matches = re.findall(r'winner: ([A-Za-z]+)!',outputStr)

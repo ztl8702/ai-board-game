@@ -29,3 +29,14 @@ TODO before submitting
 	- ai.algos.minimax_player_copy.py
 
 7. include TianLei's online wyb src files
+
+8. - before submission clean up
+	i.   no violation of memory constraints (100MB entire game)
+	ii.  no violation of time constraints (120s entire game) [or 60s -@TODO email Matt]
+	iii. correctness of program (unit test)
+			- no runtime errors
+			- no illegal moves
+	iv.  readability
+	v.   consistency of function names variables names etc
+	vi.  comments & docstrings
+	vii. removal of magic numbers
