@@ -1,5 +1,7 @@
 """
 Wrapper file for MiniMaxPlayer
+
+THIS ONE IS TO BE GRADED!
 """
 
 
