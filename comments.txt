@@ -1,4 +1,10 @@
-Draft AI
+# Comments for COMP30024 AI Project B 
+
+> By Therrense Lua and Tianlei Zheng
+
+
+## Module structures
+
 
 
 - search strategy
@@ -93,4 +99,21 @@ Therrense todo:
 	- disable moving square formation inside of range(2, 5)
 	- 
 
+### Monte Carlo Tree Search
 
+## Addtional Tools we built and used
+
+1. wyb-online (Source code in wyb-online.zip): 
+	The online human-vs-human gaming platform for Watch Your Back! 
+	Built in JavaScript with Socket.io & Vue.js and deployed at http://wyb.radiumz.org
+
+	It took us a week to built the server side logic and the UI. This tool has benefited not 
+	only us but other teams as well. (From our backend, we can see ?? games played.)
+
+2. bakeoff.py: 
+	Allows us to run bake-offs (basically rounds of play-outs) between different versions of our AI,
+	get an idea of how they perform (in terms of winning rates) against each other.
+
+3. perf.py:
+	We used cProfile to find bottlenecks in our code, and verify that our modifications do improve
+	the performance.
