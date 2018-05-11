@@ -14,10 +14,10 @@ class TreeNode(object):
     Contains Monte Carlo stats
     """
 
-    def __init__(self, board: Board, currentTurn:int, side="@"):
-        # States
+    def __init__(self, board: Board, current_turn:int, side="@"):
+        # State
         self.board = board
-        self.currentTurn = currentTurn # the turn is finished
+        self.current_turn = current_turn 
         self.side = side
         # Monte Carlo counters
         self.visited = 0
@@ -28,11 +28,11 @@ class TreeNode(object):
 
     def random_play(self):
         self.toggle_player()
-        self.currentTurn+=1
-        sucessors = get_successor_board_states(self.board, self.currentTurn, self.side)
+        self.current_turn+=1
+        sucessors = get_successor_board_states(self.board, self.current_turn, self.side)
         #print(f"random_play selected from {len(sucessors)} substates")
         if (len(sucessors)==0):
-            print(f"no successor, side={self.side} turn={self.currentTurn}")
+            print(f"no successor, side={self.side} turn={self.current_turn}")
             self.board.print_board()
         if (len(sucessors)>0):
             self.board = random.choice(sucessors)[1]
