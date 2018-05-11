@@ -79,7 +79,7 @@ class MirrorPlayer(PlayerBase):
             ourPieces = board.get_all_pieces(self.colour)
             moves = []
             for (x, y) in ourPieces:
-                moves += board.getAvailableMoves(x, y)
+                moves += board.get_available_moves(x, y)
 
             if (not moves):
                 return None

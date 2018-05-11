@@ -20,7 +20,7 @@ def get_successor_board_states(board, turnToPlay, side='@')-> Type[Board]:
         ourPieces = board.get_all_pieces(side)
         moves = []
         for (x, y) in ourPieces:
-            moves += board.getAvailableMoves(x, y)
+            moves += board.get_available_moves(x, y)
 
         if turnToPlay in TURNS_BEFORE_SHRINK:
             newStates = [
@@ -43,12 +43,12 @@ def get_successor_board_states(board, turnToPlay, side='@')-> Type[Board]:
 opponents_mapping = {'@': 'O', 'O': '@'}
 
 
-def get_opponent_colour(ourColour):
+def get_opponent_colour(our_colour):
     '''
     Returns the opponent piece type/colour
     '''
     # using dict is about 10% faster than if-else statement
-    return opponents_mapping[ourColour]
+    return opponents_mapping[our_colour]
 
 
 def fake_status(board):

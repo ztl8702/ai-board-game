@@ -1,5 +1,5 @@
 from .cells_array import CellsArray
-from .MoveType import MoveType
+from .move_type import MoveType
 from .board_status import BoardStatus
 from .i_board import IBoard
 from .config import MAX_BOARD_SIZE
@@ -8,7 +8,6 @@ import copy
 
 class Board(IBoard):
     '''
-    (Deprecated)
     Representation of the board
     '''
 
@@ -85,11 +84,11 @@ class Board(IBoard):
         for (x, y) in self._corner_cells():
             self.set_p(x, y, Board.PIECE_CORNER)
 
-    def print_board(self):
+    def printBoard(self):
         ''' 
         Debugging utlity function to print board
         '''
-        board = self.board.getInverted()
+        board = self.board.get_inverted()
         print(" ", end="")
         for i in range(MAX_BOARD_SIZE):
             print(i, end=" ")
@@ -110,7 +109,7 @@ class Board(IBoard):
         '''
         return self.get(x, y) == self.PIECE_EMPTY
 
-    def is_within_board(self, x, y):
+    def isWithinBoard(self, x, y):
         '''
         returns true if coordinate (x, y) is within the board
         '''
@@ -120,7 +119,7 @@ class Board(IBoard):
         '''
           Gets the piece at coordinate (x, y)
         '''
-        # if (self.is_within_board(x, y)):
+        # if (self.isWithinBoard(x, y)):
         return self.get_mapping[self.board.get(x, y)]
         # else:
         #   return self.PIECE_INVALID
@@ -131,10 +130,10 @@ class Board(IBoard):
 
         Avoid name conflict with set (built-in type)
         '''
-        # if self.is_within_board(x, y):
+        # if self.isWithinBoard(x, y):
         self.board.set_p(x, y, self.set_mapping[value])
 
-    def _get_move_type(self, x, y, direction):
+    def getMoveType(self, x, y, direction):
         '''
         Check what type of move it is
         and return its type
@@ -142,13 +141,13 @@ class Board(IBoard):
         newX = x + self.DIRECTION[direction][0]
         newY = y + self.DIRECTION[direction][1]
         # if the cell is not occupied, its a normal move
-        if self.is_within_board(newX, newY) and self.isEmpty(newX, newY):
+        if self.isWithinBoard(newX, newY) and self.isEmpty(newX, newY):
             return MoveType.NORMAL
 
         # its a jump move
         newX2 = newX + self.DIRECTION[direction][0]
         newY2 = newY + self.DIRECTION[direction][1]
-        if self.is_within_board(newX2, newY2) and \
+        if self.isWithinBoard(newX2, newY2) and \
                 self.isEmpty(newX2, newY2) and \
                 self.get(newX, newY) in [self.PIECE_WHITE, self.PIECE_BLACK]:
             return MoveType.JUMP
@@ -156,7 +155,7 @@ class Board(IBoard):
         # not a valid move, so can't move
         return MoveType.INVALID
 
-    def get_available_moves(self, x, y):
+    def getAvailableMoves(self, x, y):
         '''
         Returns a list of available moves that are valid 
         for the piece at (x, y) as a nested tuple in the form
@@ -169,7 +168,7 @@ class Board(IBoard):
 
         possibleMoves = []
         for direction in range(0, 4):
-            result = self._get_move_type(x, y, direction)
+            result = self.getMoveType(x, y, direction)
 
             # check if move is valid
             if result != MoveType.INVALID:
@@ -286,9 +285,9 @@ class Board(IBoard):
             # if adjacent piece is within the board and is the opponent and
             # the piece across is within board and is an ally or a corner
             # then we remove the eliminated piece
-            if self.is_within_board(adjPieceX, adjPieceY) and \
+            if self.isWithinBoard(adjPieceX, adjPieceY) and \
                     self.get(adjPieceX, adjPieceY) == opponentPiece and \
-                    self.is_within_board(adjPieceX2, adjPieceY2) and \
+                    self.isWithinBoard(adjPieceX2, adjPieceY2) and \
                     self.get(adjPieceX2, adjPieceY2) in \
                     set([ourPiece, self.PIECE_CORNER]):
                 self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
@@ -297,20 +296,20 @@ class Board(IBoard):
 
         opponentPieceOrCorner = set([opponentPiece, self.PIECE_CORNER])
         # case 1: left and right surround us
-        if (self.is_within_board(x - 1, y) and
+        if (self.isWithinBoard(x - 1, y) and
             self.get(x - 1, y) in opponentPieceOrCorner) and \
-            (self.is_within_board(x + 1, y) and
+            (self.isWithinBoard(x + 1, y) and
              self.get(x + 1, y) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
         # case 2: above and below surround us
-        if (self.is_within_board(x, y - 1) and
+        if (self.isWithinBoard(x, y - 1) and
             self.get(x, y - 1) in opponentPieceOrCorner) and \
-            (self.is_within_board(x, y + 1) and
+            (self.isWithinBoard(x, y + 1) and
              self.get(x, y + 1) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
-    def make_move(self, x, y, newX, newY, ourPiece):
+    def makeMove(self, x, y, newX, newY, ourPiece):
         '''
         Make the piece move (valid move) to new location
         and check for elimination.
@@ -327,7 +326,7 @@ class Board(IBoard):
 
         return board
 
-    def place_piece(self, newX, newY, ourPiece):
+    def placePiece(self, newX, newY, ourPiece):
         """
         Places a new piece. And check for elimination.
 
@@ -350,10 +349,10 @@ class Board(IBoard):
             if (isinstance(x, tuple) and isinstance(y, tuple)):
                 (a, b) = x
                 (c, d) = y
-                return self.make_move(a, b, c, d, colour)
+                return self.makeMove(a, b, c, d, colour)
             else:
                 # place piece
-                return self.place_piece(x, y, colour)
+                return self.placePiece(x, y, colour)
 
     def shrink(self):
         """
@@ -388,9 +387,9 @@ class Board(IBoard):
                 adj2X = adjX + direction[0]
                 adj2Y = adjY + direction[1]
 
-                if (board.is_within_board(adjX, adjY) and
+                if (board.isWithinBoard(adjX, adjY) and
                     board.get(adjX, adjY) in [Board.PIECE_BLACK, Board.PIECE_WHITE] and
-                    board.is_within_board(adj2X, adj2Y) and
+                    board.isWithinBoard(adj2X, adj2Y) and
                         board.get(adj2X, adj2Y) in [Board.PIECE_BLACK, Board.PIECE_WHITE]):
                     if (board.get(adjX, adjY) != board.get(adj2X, adj2Y)):
                         board.set_p(adjX, adjY, Board.PIECE_EMPTY)

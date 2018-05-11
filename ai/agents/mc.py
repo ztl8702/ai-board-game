@@ -19,8 +19,8 @@ class MCPlayer(PlayerBase):
     def on_opponent_action(self, action):
         pass
 
-    def on_request_action(self, isMoving, turn, board):
-        if (isMoving):
+    def on_request_action(self, is_moving, turn, board):
+        if (is_moving):
             return solver.find_next_move(board, turn+24, self.colour)
         else:
             return solver.find_next_move(board, turn, self.colour)

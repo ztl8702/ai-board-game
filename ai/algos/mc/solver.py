@@ -29,7 +29,7 @@ def _new_tree_node(board, currentTurn, side):
     If a node with the same state already exists, just return it.
     """
     global visited
-    nodeKey = (board.getHashValue(), currentTurn)
+    nodeKey = (board.get_hash_value(), currentTurn)
     if (nodeKey not in visited):
         visited.add(nodeKey)
         treenodes[nodeKey] = TreeNode(board, currentTurn, side)
