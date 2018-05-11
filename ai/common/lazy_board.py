@@ -150,7 +150,7 @@ class LazyBoard(IBoard):
         return self.get_mapping[self.board[x][y]]
         # else:
         #   return self.PIECE_INVALID
-    
+
     def raw_get(self, x, y):
         """
         get() without the laziness checking.
@@ -271,7 +271,7 @@ class LazyBoard(IBoard):
         for arr in self.board:
             joined = joined+arr.tobytes()
         self.hash_value_cache = hash(joined)
-        return hash(joined)
+        return self.hash_value_cache
 
     def isWon(self, ourPiece, is_placing=False):
         '''
@@ -374,13 +374,12 @@ class LazyBoard(IBoard):
     def _do_make_move(self, x, y, newX, newY, ourPiece):
         if (self._reentrant_counter_do_make_move > 0):
             raise Exception("Reentrant: _do_make_move")
-        self._reentrant_counter_do_make_move+=1
+        self._reentrant_counter_do_make_move += 1
         self.set_p(newX, newY, ourPiece)
         self.set_p(x, y, self.PIECE_EMPTY)
 
         self._check_elimination(newX, newY, ourPiece)
-        self._reentrant_counter_do_make_move-=1
-        
+        self._reentrant_counter_do_make_move -= 1
 
     def place_piece(self, newX, newY, ourPiece):
         """
@@ -404,7 +403,7 @@ class LazyBoard(IBoard):
         """
         if (self._reentrant_counter_do_place_piece > 0):
             raise Exception("Reentrant: _do_place_piece")
-        self._reentrant_counter_do_place_piece+=1
+        self._reentrant_counter_do_place_piece += 1
         self.set_p(newX, newY, colour)
         self._check_elimination(newX, newY, colour)
         self._reentrant_counter_do_place_piece -= 1
