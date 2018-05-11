@@ -3,167 +3,98 @@
 `Therrense Lua (student number: 782578)`  
 `Tianlei Zheng (student number: 773109)`
 
+>>>>>>>>>>>>>>>>>>>>>>> IMPORTANT <<<<<<<<<<<<<<<<<<<<<<<
+Python module minimax_player (in `minimax_player.py` located 
+at the root of our submitted files) should be used for grading. 
 
-Note: Player module to test: minimax_player
-	- minimax_player.py.
+e.g. 
+```
+python referee.py minimax_player some_other_ai
+```
 
-Note: Classess to mark:
-	- minimax_player.py
-	- mc_player.py
-	- 
+This file is just a wrapper, the actual implementation is located at 
+`ai/agents/minimax.py`, as explained below.
 
 ## Explaination of file structure:
 
 ```
-|-- ai	-> our main module `ai`, most of the AI code is located here
-	|-- agents	-> This module `ai.agents` contains our actual AI agents.These are basically just wrapper around AI algorithms, but also handle the details like keeping track of states in between turns.
-		|-- minimax.py
-		|-- mc.py
-		|-- playerbase.py -> A shared base class for our different players, handles keeping track of state and communication with `referee.py`
-		...
-	|-- algos	-> This module `ai.algos` contains our implementations of AI algorithms. They are decoupled (mostly) from the game-specific concerns
-		|-- mc
-			...
-		|-- minimax.py
-	|-- commons	-> This module `ai.commons` contains the shared logic and utilities
-		|-- lazy_board.py
-		|-- test_*.py
-		|-- ...
-|-- minimax_player.py 	-> a wrapper file that re-export our Player class 
-|-- dummy_player.py		
+|-- ai	-> Our main module `ai`, most of the AI code is located here
+    |-- agents	-> Module `ai.agents` contains our actual AI agents. Mostly wrappers around AI algorithms + handles the details like keeping track of states in between turns.
+        |-- minimax.py  -> player based on minimax with alpha-beta pruning (the one we choose for submission)
+        |-- mc.py       -> player based on Monte Carlo Tree search (not used)
+        |-- dummy.py    -> a random-moves player (for testing; not used)
+        |-- mirror.py   -> a player that mirrors the opponent's moves (for testing; not used)
+        |-- playerbase.py -> A shared base class for our different players, handles keeping track of state and communication with `referee.py`
+        ...
+    |-- algos	-> This module `ai.algos` contains our implementations of AI algorithms. They are decoupled (mostly) from the game-specific concerns
+        |-- mc  -> Monte Carlo Tree Search algorithm
+            ...
+        |-- minimax.py  -> minimax algorithm with alpha-beta pruning
+    |-- commons	-> This module `ai.commons` contains the shared logic and utilities
+        |-- lazy_board.py   -> board and game logic 
+        |-- test_*.py       -> unit tests
+        |-- ...
+|-- minimax_player.py  -> a wrapper file that re-exports our Player class, to work around strange Python relative module resolution issues
+|-- *_player.py	        -> wrapper files, similar to above
 |-- ...
 
 
-- minimax_player.py
-- mc_player.py
-- mirror_player.py
-- dummy_player.py
-- bakeoff.py
-- test_output/
-- docs/
-- make.bat ???
-
-- perf.py
-
-- ai/
-	- agents/
-		- ...
-	- algos/
-		- ...
-	- common/
-		- lazy_board.py - where our game logic resides, only store action delta's and apply when neccessary to save space
-		- ...
-		- test_board.py - unit test
-
-- search strategy
-- evaluation function
-- creative techniques
-	- machine learning
-	- search strategy optimisation
-	- specialised data structures
-	- other optimisation
-	- search algorithm not discussed in lectures
-
-
-Additional Stuff
-- alternative Player class
-- modified referee
-- additional programs to test player strategy
-- programs to create training data for ML
-- programs for other purpose not directly related to Player class
-
-
-Notes about assessment criteria:
-	Total: 22 marks
-		- 4 marks
-			- quality of code
-			- OOP
-			- readability
-			- comments & docstrings
-		- 4 marks
-			- correctness of program
-			- no runtime errors
-			- no illegal moves
-			- no violation of memory constraints (100MB entire game)
-			- no violation of time constraints (60s entire game)
-		- 7 marks
-			- performance of our Player againts smart AI
-		- 7 marks
-			- pro-active points
-			- techniques used not taught in lectures
-
-
-
-
 ## What have we done so far?
-**well first of all, TianLei the "wizard" here implemented and released WYB-online (Human vs Human) in a matter of days [definitely deserve some credit for pro-activeness]**
 
-- placing phase
-	1. placing pieces to kill (currently not explicit, just done by using miniMax)
-	2. placing pieces at strategic positions (eg. in the middle area first because board will shrink)
-- moving phase
-	3. alpha-beta minimax with depth limiting 
-	4. reducing search space
-	5. detecting mirroring & symmetry
+1. First of all, we implemented and released WYB-online (A Human vs Human playground) at http://wyb.radiumz.org/
+This allowed us to familarised with the game rules and test out a couple of strategies manually.
+ [definitely deserve some credit for pro-activeness, more details below]
 
-	6. using byte arrays (eg. ad arrays.arrays)
-	7. optimising efficiency of search (eg. by limiting search space to shrinked board size during placing phase)
-	8. only storing deltas/changes (eg. and applying them when need to know current state of board)
-	9. use transposition tables/storing of seen states so that dont need to re-search branch (eg. used in miniMax get_min & get_max)
+2. Optimisations made to our minimax algorithm
+    i. our evaluation/heuristic function valued different positions on the board by their importance/weightage
+        - we valued the inner part of the board at a higher weightage 
+    ii. we also utilised different search depths depending on the phase of the game
+        - by searching deeper when the board shrinked twice
+    iii. we reduce our search space by avoiding moving pieces that form squares in the middle of the board as it was more advantagous to hold those positions to the late game
+        - this enabled us to search deeper into the tree
 
-## Going to do
-- placing phase
-	[currently nothing to do]
-- moving phase
-	10. monte carlo search (attempted, currently WIP to make better)
-	11. TDLeaf search
-	12. negamax (basically combining max and min function), negascout/principle variation search, SSS* (sorting game tree for faster discovery)
-	13. tweaking utility/heuristic function (WIP)
-	14. 	- having weightage of cells at different position
-	15. 	- keeping a square or rectangle formation in centre and not moving them if possible (only move if no other pieces can be moved and cant forfeit turn, move piece that is not accessible by other piece)
-	16. changing the MAX_DEPTH when board shrinks (change is twice, once when first shrink and another when second shrink)
-	17. having a sustained
-		STATE = {
-			strong_hand 	# just need to keep moving piece that is not accessible until end of game
-			offensive		# change heuristic to be aggresive
-		}
-- before submission clean up
-	i.   no violation of memory constraints (100MB entire game)
-	ii.  no violation of time constraints (120s entire game) [or 60s -@TODO email Matt]
-	iii. correctness of program (unit test)
-			- no runtime errors
-			- no illegal moves
-	iv.  readability
-	v.   consistency of function names variables names etc
-	vi.  comments & docstrings
-	vii. removal of magic numbers
+    iv. our miniMax made use of alpha-beta pruning to not search into redundant branches
+    v. we also stored and check game states that are similar to avoid re-searching
 
+3. Implementation techniques
+    3.1 in our board logic implementation (lazy_board.py)
+        i. we use compact byte arrays to reduce memory usage (eg. as arrays.arrays)
+        ii. we store deltas/changes, and only lazily apply them when need (hence the name "LazyBoard")
+        iii. we use hash value (LazyBoard.get_hash_value) to provide a way of keeping track of 
+            existing states efficiently (O(1) lookup)
 
+4. search algorithms not taught in class
+    i. We implemented a basic Monte Carlo Tree Search, but it wasn't performing as good as minimax.
+    We did not have time to push the performance further.
 
-QUESTION: how is end game determined? (if pieces keep repeating)
-	- the colour with the most pieces will win after a certain number of turns
+5. unit testing
+    i. We wrote Unit tests to ensure our game logic is correct and consistent while we refactor the code
 
+6. special classes used to compete/optimise minimax_player
+    i. dummy_player - makes random moves
+    ii. mirror_player - mirrors opponent's moves
 
-Therrense todo:
-- miniMax
-	- disable moving square formation inside of range(2, 5)
-	- 
+misc. did not have time to do
+    i. TDLeaf search
+    ii. SSS* (sorting game tree for faster discovery)
 
-### Monte Carlo Tree Search
 
 ## Addtional Tools we built and used
 
 1. wyb-online (Source code in wyb-online.zip): 
-	The online human-vs-human gaming platform for Watch Your Back! 
-	Built in JavaScript with Socket.io & Vue.js and deployed at http://wyb.radiumz.org
+    The online human-vs-human gaming platform for Watch Your Back! 
+    Built in JavaScript with Socket.io & Vue.js and deployed at http://wyb.radiumz.org
 
-	It took us a week to built the server side logic and the UI. This tool has benefited not 
-	only us but other teams as well. (From our backend, we can see ?? games played.)
+    It took us over a week to built the server-side logic and the UI, we basically 
+    re-implemented the game logic in JavaScript and take into account of multiple
+    simutanous players.
+    
+    This tool has benefited not only us but other teams as well. 
 
 2. bakeoff.py: 
-	Allows us to run bake-offs (basically rounds of play-outs) between different versions of our AI,
-	get an idea of how they perform (in terms of winning rates) against each other.
+    Allows us to run bake-offs (basically rounds of play-outs) between different versions of our AI,
+    get an idea of how they perform (in terms of winning rates) against each other.
 
 3. perf.py:
-	We used cProfile to find bottlenecks in our code, and verify that our modifications do improve
-	the performance.
+    We used cProfile to find bottlenecks in our code, and verify that our modifications do improve
+    the performance.

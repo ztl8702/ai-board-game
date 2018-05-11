@@ -20,9 +20,9 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 clean:
-	rm -rf ./**/__pycache__/ && \
+	rm -rf ./**/__pycache__ && \
 	rm -rf ./submission
-	
+
 submit:
 	mkdir ./submission && \
 	cp -r ./ai ./submission/ && \
