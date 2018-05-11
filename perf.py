@@ -1,5 +1,7 @@
 """
-Performance tests
+Utility for code performance tests
+
+We use it to find out the bottlenecks in our code
 """
 
 from datetime import datetime, timedelta

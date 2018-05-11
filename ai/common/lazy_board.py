@@ -88,6 +88,9 @@ class LazyBoard(IBoard):
             self._update_corners()
             self.hash_value_cache = None
 
+        self._reentrant_counter_do_place_piece = 0
+        self._reentrant_counter_do_make_move = 0
+
     def _update_borders(self):
         self._min_xy = (MAX_BOARD_SIZE - self.boardSize) // 2
         self._max_xy = self._min_xy + self.boardSize - 1
@@ -96,8 +99,8 @@ class LazyBoard(IBoard):
         return [
             (self._min_xy, self._min_xy),
             (self._min_xy, self._max_xy),
-            (self._max_xy, self._min_xy),
-            (self._max_xy, self._max_xy)
+            (self._max_xy, self._max_xy),
+            (self._max_xy, self._min_xy)
         ]
 
     def _update_corners(self):
@@ -108,7 +111,7 @@ class LazyBoard(IBoard):
         for (x, y) in self._corner_cells():
             self.set_p(x, y, self.PIECE_CORNER)
 
-    def printBoard(self):
+    def print_board(self):
         ''' 
         Debugging utlity function to print board
         '''
@@ -124,13 +127,13 @@ class LazyBoard(IBoard):
             print()
         print()
 
-    def isEmpty(self, x, y):
+    def is_empty(self, x, y):
         '''
         check if coordinate (x, y) is empty
         '''
         return self.get(x, y) == self.PIECE_EMPTY
 
-    def isWithinBoard(self, x, y):
+    def is_within_board(self, x, y):
         '''
         returns true if coordinate (x, y) is within the board
         '''
@@ -143,10 +146,18 @@ class LazyBoard(IBoard):
         if self.has_unapplied_actions:
             self.has_unapplied_actions = False
             self._apply_unapplied_actions()
-        # if (self.isWithinBoard(x, y)):
+        # if (self.is_within_board(x, y)):
         return self.get_mapping[self.board[x][y]]
         # else:
         #   return self.PIECE_INVALID
+    
+    def raw_get(self, x, y):
+        """
+        get() without the laziness checking.
+
+        This is for preventing reentrant into _apply_unapplied_actions
+        """
+        return self.get_mapping[self.board[x][y]]
 
     def set_p(self, x, y, value):
         '''
@@ -177,15 +188,15 @@ class LazyBoard(IBoard):
     def _apply_unapplied_actions(self):
         for action in self.unapplied_actions:
             actionType, args = action
-            if actionType == 'makeMove':
+            if actionType == 'make_move':
                 x, y, newX, newY, ourPiece = args
                 self._do_make_move(x, y, newX, newY, ourPiece)
-            elif actionType == 'placePiece':
+            elif actionType == 'place_piece':
                 newX, newY, ourPiece = args
                 self._do_place_piece(newX, newY, ourPiece)
         self.unapplied_actions.clear()
 
-    def getMoveType(self, x, y, direction):
+    def _get_move_type(self, x, y, direction):
         '''
         Check what type of move it is
         and return its type
@@ -193,14 +204,14 @@ class LazyBoard(IBoard):
         newX = x + self.DIRECTION[direction][0]
         newY = y + self.DIRECTION[direction][1]
         # if the cell is not occupied, its a normal move
-        if self.isWithinBoard(newX, newY) and self.isEmpty(newX, newY):
+        if self.is_within_board(newX, newY) and self.is_empty(newX, newY):
             return MoveType.NORMAL
 
         # its a jump move
         newX2 = newX + self.DIRECTION[direction][0]
         newY2 = newY + self.DIRECTION[direction][1]
-        if self.isWithinBoard(newX2, newY2) and \
-                self.isEmpty(newX2, newY2) and \
+        if self.is_within_board(newX2, newY2) and \
+                self.is_empty(newX2, newY2) and \
                 self.get(newX, newY) in self.PLAYER_PIECES:
             return MoveType.JUMP
 
@@ -220,7 +231,7 @@ class LazyBoard(IBoard):
 
         possibleMoves = []
         for direction in range(0, 4):
-            result = self.getMoveType(x, y, direction)
+            result = self._get_move_type(x, y, direction)
 
             # check if move is valid
             if result != MoveType.INVALID:
@@ -244,7 +255,7 @@ class LazyBoard(IBoard):
         #result = []
         # for x in range(self._min_xy, self._max_xy+1):
         #    for y in range(self._min_xy, self._max_xy+1):
-        #        if (self.isEmpty(x, y)):
+        #        if (self.is_empty(x, y)):
         #            result.append((x, y))
         self._apply_unapplied_actions()
         return list(self.all_pieces[self.PIECE_EMPTY])
@@ -305,6 +316,9 @@ class LazyBoard(IBoard):
     def _check_elimination(self, x, y, ourPiece):
         '''
         Check and perform elimination, typically called after a player action.
+
+        WARNING: to prevent reentrant, _check_elimination should only be called
+        in _do_make_move and _do_place_piece
         '''
         opponentPiece = self._get_opponent_colour(ourPiece)
 
@@ -320,10 +334,10 @@ class LazyBoard(IBoard):
             # if adjacent piece is within the board and is the opponent and
             # the piece across is within board and is an ally or a corner
             # then we remove the eliminated piece
-            if self.isWithinBoard(adjPieceX, adjPieceY) and \
-                    self.get(adjPieceX, adjPieceY) == opponentPiece and \
-                    self.isWithinBoard(adjPieceX2, adjPieceY2) and \
-                    self.get(adjPieceX2, adjPieceY2) in \
+            if self.is_within_board(adjPieceX, adjPieceY) and \
+                    self.raw_get(adjPieceX, adjPieceY) == opponentPiece and \
+                    self.is_within_board(adjPieceX2, adjPieceY2) and \
+                    self.raw_get(adjPieceX2, adjPieceY2) in \
                     set([ourPiece, self.PIECE_CORNER]):
                 self.set_p(adjPieceX, adjPieceY, self.PIECE_EMPTY)
 
@@ -331,20 +345,20 @@ class LazyBoard(IBoard):
 
         opponentPieceOrCorner = set([opponentPiece, self.PIECE_CORNER])
         # case 1: left and right surround us
-        if (self.isWithinBoard(x - 1, y) and
-            self.get(x - 1, y) in opponentPieceOrCorner) and \
-            (self.isWithinBoard(x + 1, y) and
-             self.get(x + 1, y) in opponentPieceOrCorner):
+        if (self.is_within_board(x - 1, y) and
+            self.raw_get(x - 1, y) in opponentPieceOrCorner) and \
+            (self.is_within_board(x + 1, y) and
+             self.raw_get(x + 1, y) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
         # case 2: above and below surround us
-        if (self.isWithinBoard(x, y - 1) and
-            self.get(x, y - 1) in opponentPieceOrCorner) and \
-            (self.isWithinBoard(x, y + 1) and
-             self.get(x, y + 1) in opponentPieceOrCorner):
+        if (self.is_within_board(x, y - 1) and
+            self.raw_get(x, y - 1) in opponentPieceOrCorner) and \
+            (self.is_within_board(x, y + 1) and
+             self.raw_get(x, y + 1) in opponentPieceOrCorner):
             self.set_p(x, y, self.PIECE_EMPTY)
 
-    def makeMove(self, x, y, newX, newY, ourPiece):
+    def make_move(self, x, y, newX, newY, ourPiece):
         '''
         Make the piece move (valid move) to new location
         and check for elimination.
@@ -353,18 +367,22 @@ class LazyBoard(IBoard):
         '''
         board = LazyBoard(self)
         board.unapplied_actions.append(
-            ('makeMove', (x, y, newX, newY, ourPiece))
+            ('make_move', (x, y, newX, newY, ourPiece))
         )
         return board
 
     def _do_make_move(self, x, y, newX, newY, ourPiece):
-
+        if (self._reentrant_counter_do_make_move > 0):
+            raise Exception("Reentrant: _do_make_move")
+        self._reentrant_counter_do_make_move+=1
         self.set_p(newX, newY, ourPiece)
         self.set_p(x, y, self.PIECE_EMPTY)
 
         self._check_elimination(newX, newY, ourPiece)
+        self._reentrant_counter_do_make_move-=1
+        
 
-    def placePiece(self, newX, newY, ourPiece):
+    def place_piece(self, newX, newY, ourPiece):
         """
         Places a new piece. And check for elimination.
 
@@ -375,7 +393,7 @@ class LazyBoard(IBoard):
 
         board = LazyBoard(self)
         board.unapplied_actions.append(
-            ('placePiece', (newX, newY, ourPiece))
+            ('place_piece', (newX, newY, ourPiece))
         )
 
         return board
@@ -384,8 +402,12 @@ class LazyBoard(IBoard):
         """
         Realisation of lazy action.
         """
+        if (self._reentrant_counter_do_place_piece > 0):
+            raise Exception("Reentrant: _do_place_piece")
+        self._reentrant_counter_do_place_piece+=1
         self.set_p(newX, newY, colour)
         self._check_elimination(newX, newY, colour)
+        self._reentrant_counter_do_place_piece -= 1
 
     def apply_action(self, action, colour):
         """
@@ -401,10 +423,10 @@ class LazyBoard(IBoard):
             if (isinstance(x, tuple) and isinstance(y, tuple)):
                 (a, b) = x
                 (c, d) = y
-                return self.makeMove(a, b, c, d, colour)
+                return self.make_move(a, b, c, d, colour)
             else:
                 # place piece
-                return self.placePiece(x, y, colour)
+                return self.place_piece(x, y, colour)
 
     def shrink(self):
         """
@@ -416,8 +438,9 @@ class LazyBoard(IBoard):
             return self
 
         board = LazyBoard(self)
-        # clean the surrounding circle
+        board._apply_unapplied_actions()
 
+        # clean the surrounding circle
         for x in range(board._min_xy, board._max_xy+1):
             board.set_p(x, board._min_xy, self.PIECE_INVALID)
             board.set_p(x, board._max_xy, self.PIECE_INVALID)
@@ -439,9 +462,9 @@ class LazyBoard(IBoard):
                 adj2X = adjX + direction[0]
                 adj2Y = adjY + direction[1]
 
-                if (board.isWithinBoard(adjX, adjY) and
+                if (board.is_within_board(adjX, adjY) and
                     board.get(adjX, adjY) in [self.PIECE_BLACK, self.PIECE_WHITE] and
-                    board.isWithinBoard(adj2X, adj2Y) and
+                    board.is_within_board(adj2X, adj2Y) and
                         board.get(adj2X, adj2Y) in [self.PIECE_BLACK, self.PIECE_WHITE]):
                     if (board.get(adjX, adjY) != board.get(adj2X, adj2Y)):
                         board.set_p(adjX, adjY, self.PIECE_EMPTY)
