@@ -5,7 +5,6 @@ from .helpers import p
 Unit tests for common.py
 """
 
-
 def test_board_parsing():
     """Ensures `to_token_string` and `from_token_string` works properly. Basis for other unit tests.
     """
@@ -88,7 +87,7 @@ def test_shrink_board():
     board2 = board1.shrink()
 
     assert(board2.boardSize == 6)
-    assert(board2.isWithinBoard(0, 0) == False)
+    assert(board2.is_within_board(0, 0) == False)
 
     assert (p("########",
               "#X-@--X#",
@@ -101,7 +100,7 @@ def test_shrink_board():
 
     board3 = board2.shrink()
     assert(board3.boardSize == 4)
-    assert(board3.isWithinBoard(1, 1) == False)
+    assert(board3.is_within_board(1, 1) == False)
     assert(board3.get(1, 1) == Board.PIECE_INVALID)
 
     assert (p("########",
@@ -140,8 +139,8 @@ def test_is_won():
                "--------",
                "X------X")
     board = Board.from_token_string(layout)
-    assert board.isWon(Board.PIECE_BLACK) == True
-    assert board.isWon(Board.PIECE_WHITE) == False
+    assert board.is_won(Board.PIECE_BLACK) == True
+    assert board.is_won(Board.PIECE_WHITE) == False
 
     layout = p("X------X",
                "--------",
@@ -152,8 +151,8 @@ def test_is_won():
                "--------",
                "X------X")
     board = Board.from_token_string(layout)
-    assert board.isWon(Board.PIECE_BLACK) == False
-    assert board.isWon(Board.PIECE_WHITE) == False
+    assert board.is_won(Board.PIECE_BLACK) == False
+    assert board.is_won(Board.PIECE_WHITE) == False
 
 
 def test_elimination_edge_cases():
@@ -166,7 +165,8 @@ def test_elimination_edge_cases():
                "--------",
                "X------X")
     board = Board.from_token_string(layout)
-    board = board.makeMove(2, 3, 3, 3, 'O')
+    board = board.make_move(2, 3, 3, 3, 'O')
+
     assert p("X------X",
              "--------",
              "---@----",
@@ -190,8 +190,8 @@ def test_is_won_on_shrinked_board():
                "########",
                "########")
     board = Board.from_token_string(layout)
-    assert(board.isWon(Board.PIECE_BLACK) == False)
-    assert(board.isWon(Board.PIECE_WHITE) == False)
+    assert(board.is_won(Board.PIECE_BLACK) == False)
+    assert(board.is_won(Board.PIECE_WHITE) == False)
 
 
 def test_get_all_pieces():
@@ -261,7 +261,7 @@ def test_place_piece():
                 "--------",
                 "X------X")
     board1 = Board.from_token_string(layout1)
-    boardAfter = board1.placePiece(5, 2, 'O')
+    boardAfter = board1.place_piece(5, 2, 'O')
     layout2 = p("X------X",
                 "--------",
                 "-----O--",
@@ -283,7 +283,7 @@ def test_place_piece_and_eliminate():
                 "--------",
                 "X------X")
     board1 = Board.from_token_string(layout1)
-    boardAfter = board1.placePiece(5, 0, '@')
+    boardAfter = board1.place_piece(5, 0, '@')
     layout2 = p("X----@-X",
                 "--------",
                 "--------",
@@ -306,9 +306,9 @@ def test_hash_value():
                 "X------X")
     board1 = Board.from_token_string(layout1)
     hash1 = board1.getHashValue()
-    hash2 = board1.makeMove(6, 0, 5, 0, 'O').getHashValue()
-    hash3 = board1.makeMove(6, 0, 5, 0, 'O').makeMove(
-        5, 0, 6, 0, 'O').getHashValue()
+    hash2 = board1.make_move(6, 0, 5, 0, 'O').get_hash_value()
+    hash3 = board1.make_move(6, 0, 5, 0, 'O').make_move(
+        5, 0, 6, 0, 'O').get_hash_value()
     assert(hash1 == hash3)
     assert(hash2 != hash3)
 
@@ -327,7 +327,7 @@ def test_move_piece():
                 "--------",
                 "X------X")
     board1 = Board.from_token_string(layout1)
-    boardAfter = board1.makeMove(3, 4, 4, 4, '@')
+    boardAfter = board1.make_move(3, 4, 4, 4, '@')
     layout2 = p("X------X",
                 "--------",
                 "--------",
@@ -349,7 +349,7 @@ def test_move_piece_and_eliminate():
                 "#X----X#",
                 "########")
     board1 = Board.from_token_string(layout1)
-    boardAfter = board1.makeMove(5, 2, 6, 2, 'O')
+    boardAfter = board1.make_move(5, 2, 6, 2, 'O')
     layout2 = p("########",
                 "#XO---X#",
                 "#-----O#",
@@ -371,10 +371,10 @@ def test_multiple_moves():
                 "#X----X#",
                 "########")
     board1 = Board.from_token_string(layout1)
-    boardAfter = board1.makeMove(5, 2, 6, 2, 'O') \
-        .placePiece(4, 5, '@') \
-        .placePiece(3, 5, 'O') \
-        .placePiece(5, 5, 'O')
+    boardAfter = board1.make_move(5, 2, 6, 2, 'O') \
+        .place_piece(4, 5, '@') \
+        .place_piece(3, 5, 'O') \
+        .place_piece(5, 5, 'O')
     layout2 = p("########",
                 "#XO---X#",
                 "#-----O#",
@@ -403,8 +403,8 @@ def test_lazy_board():
                "X------X")
 
     board = Board.from_token_string(layout)
-    board.unapplied_actions.append(('placePiece', (4, 3, '@')))
-    board.unapplied_actions.append(('placePiece', (3, 3, 'O')))
+    board.unapplied_actions.append(('place_piece', (4, 3, '@')))
+    board.unapplied_actions.append(('place_piece', (3, 3, 'O')))
     board.has_unapplied_actions = True
     assert p("X------X",
              "--------",
@@ -414,3 +414,72 @@ def test_lazy_board():
              "--OO@@--",
              "--------",
              "X------X") == board.to_token_string()
+
+
+def test_lazy_board_should_shrink_properly():
+    layout1 = p("X------X",
+                "--------",
+                "--@-@---",
+                "O-O-----",
+                "--OO----",
+                "--O--@--",
+                "---O----",
+                "X------X")
+    board1 = Board.from_token_string(layout1)
+    board1.unapplied_actions.append(('make_move', (0, 3, 1, 3, 'O')))
+    board1.has_unapplied_actions = True
+
+    board2 = board1.shrink()
+    assert p("########",
+             "#X----X#",
+             "#-@-@--#",
+             "#OO----#",
+             "#-OO---#",
+             "#-O--@-#",
+             "#X-O--X#",
+             "########") == board2.to_token_string()
+
+
+def test_board_shrink_should_eliminate_in_anti_clockwise():
+    """
+    Order matters.
+    """
+    layout1 = p("########",
+                "#X----X#",
+                "#--O@--#",
+                "#-OO@@-#",
+                "#-OO@@-#",
+                "#--O@--#",
+                "#X----X#",
+                "########")
+    board1 = Board.from_token_string(layout1)
+
+    board2 = board1.shrink()
+
+    assert p("########",
+             "########",
+             "##X-@X##",
+             "##OO@@##",
+             "##OO@@##",
+             "##X-@X##",
+             "########",
+             "########") == board2.to_token_string()
+
+    layout2 = p("########",
+                "#X----X#",
+                "#-OOOO-#",
+                "#-OOOO-#",
+                "#-@@@@-#",
+                "#-@@@@-#",
+                "#X----X#",
+                "########")
+    board3 = Board.from_token_string(layout2)
+    board4 = board3.shrink()
+    assert p("########",
+             "########",
+             "##XOOX##",
+             "##-OOO##",
+             "##@@@-##",
+             "##X@@X##",
+             "########",
+             "########") == board4.to_token_string()

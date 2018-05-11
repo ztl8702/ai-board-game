@@ -1,4 +1,5 @@
 PLACING_PHASE = 24	# total turns in placing phase
+SHRINK_TURNS = [128, 192]
 TURNS_BEFORE_SHRINK = [128 + PLACING_PHASE, 192 + PLACING_PHASE]
 MAX_BOARD_SIZE = 8  # maximum board size
 

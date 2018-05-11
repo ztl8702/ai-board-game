@@ -1,7 +1,5 @@
 from ..common import Board
-
-
-TURNS_BEFORE_SHRINK = [128, 192]
+from ..common.config import SHRINK_TURNS
 
 class PlayerBase(object):
     """Base class for `Player`. Implements commmon functionalities like 
@@ -32,7 +30,7 @@ class PlayerBase(object):
 
         # now apply the action
         self.board = self.board.apply_action(player_action, self.colour)
-        if (self.current_turn in TURNS_BEFORE_SHRINK):
+        if (self.current_turn in config.SHRINK_TURNS):
             self.board = self.board.shrink()
         
         return player_action
@@ -43,7 +41,7 @@ class PlayerBase(object):
         self._increment_turns()
         self.board = self.board.apply_action(action, 
             self.board._get_opponent_colour(self.colour))
-        if (self.current_turn in TURNS_BEFORE_SHRINK):
+        if (self.current_turn in config.SHRINK_TURNS):
             self.board = self.board.shrink()
 
         # notify the subclass

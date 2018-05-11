@@ -1,5 +1,5 @@
 from .cells_array import CellsArray
-from .MoveType import MoveType
+from .move_type import MoveType
 from .board_status import BoardStatus
 from .i_board import IBoard
 from .config import MAX_BOARD_SIZE
