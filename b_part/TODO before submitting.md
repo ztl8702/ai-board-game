@@ -20,3 +20,12 @@ TODO before submitting
 5. make sure we meet performance constraints
 	- 60 seconds / 120 seconds per player
 	- 100MB memory per player
+
+6. remove uneccessary python files
+	- netreferee.py
+	- wubpp.py
+	- minimax_player_copy.py
+	- ai.agents.minimax_player_copy.py
+	- ai.algos.minimax_player_copy.py
+
+7. include TianLei's online wyb src files

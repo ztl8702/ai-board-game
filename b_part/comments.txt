@@ -18,6 +18,27 @@ Note: Classess to mark:
 		- action(self, action)
 		- update(self, action)
 
+- minimax_player.py
+- mc_player.py
+- mirror_player.py
+- dummy_player.py
+- bakeoff.py
+- test_output/
+- docs/
+- make.bat ???
+
+- perf.py
+
+- ai/
+	- agents/
+		- ...
+	- algos/
+		- ...
+	- common/
+		- lazy_board.py - where our game logic resides, only store action delta's and apply when neccessary to save space
+		- ...
+		- test_board.py - unit test
+
 - search strategy
 - evaluation function
 - creative techniques
