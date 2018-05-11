@@ -66,9 +66,11 @@ class MiniMaxSolver:
         return h1
     
     def get_max_depth(self, current_turn):
+        # after first shrink, before second second shrink
+        if (current_turn > config.TURNS_BEFORE_SHRINK[0] and 
+            current_turn <= config.TURNS_BEFORE_SHRINK[1]):
+            return 6
         # after second shrink
-        if (current_turn > config.PLACING_PHASE):
-            return 5
         elif (current_turn > config.TURNS_BEFORE_SHRINK[1]):
             return 8
 
