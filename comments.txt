@@ -1,10 +1,37 @@
-# Comments for COMP30024 AI Project B 
+# Comments for COMP30024 AI Project B Submission
 
-> By Therrense Lua and Tianlei Zheng
+`Therrense Lua (student number: 782578)`  
+`Tianlei Zheng (student number: 773109)`
 
 
-## Module structures
+Note: Player module to test: minimax_player
+	- minimax_player.py.
 
+Note: Classess to mark:
+	- minimax_player.py
+	- mc_player.py
+	- 
+
+## Explaination of file structure:
+
+```
+|-- ai	-> our main module `ai`, most of the AI code is located here
+	|-- agents	-> This module `ai.agents` contains our actual AI agents.These are basically just wrapper around AI algorithms, but also handle the details like keeping track of states in between turns.
+		|-- minimax.py
+		|-- mc.py
+		|-- playerbase.py -> A shared base class for our different players, handles keeping track of state and communication with `referee.py`
+		...
+	|-- algos	-> This module `ai.algos` contains our implementations of AI algorithms. They are decoupled (mostly) from the game-specific concerns
+		|-- mc
+			...
+		|-- minimax.py
+	|-- commons	-> This module `ai.commons` contains the shared logic and utilities
+		|-- lazy_board.py
+		|-- test_*.py
+		|-- ...
+|-- minimax_player.py 	-> a wrapper file that re-export our Player class 
+|-- dummy_player.py		
+|-- ...
 
 
 - search strategy
@@ -43,6 +70,8 @@ Notes about assessment criteria:
 		- 7 marks
 			- pro-active points
 			- techniques used not taught in lectures
+
+
 
 
 ## What have we done so far?

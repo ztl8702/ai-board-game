@@ -17,7 +17,7 @@
 	- 
 
 ### MAX_DEPTH = 4 by default and MAX_DEPTH = 6 after double shrink seems good (need to check if its under time constraint)
+	- OPTIMUM, meets time constraint
+	- if using MAX_DEPTH = 8, sometimes exceed time constraint
 
 ### only using 1 board coefficient is better
-
-### 
