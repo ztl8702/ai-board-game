@@ -1,11 +1,8 @@
 """
-<<<<<<< HEAD
 Performance tests
-=======
-Utility for code performance tests
 
+Utility for code performance tests
 We use it to find out the bottlenecks in our code
->>>>>>> part-b/master
 """
 
 from datetime import datetime, timedelta
