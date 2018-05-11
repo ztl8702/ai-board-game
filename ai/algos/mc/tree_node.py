@@ -8,7 +8,13 @@ import math
 INFINITY = float('inf')
 
 class TreeNode(object):
-    def __init__(self, board: Board, currentTurn:int, side="@", parent: 'TreeNode'=None):
+    """
+    Representation of a node in the game tree.
+
+    Contains Monte Carlo stats
+    """
+
+    def __init__(self, board: Board, currentTurn:int, side="@"):
         # States
         self.board = board
         self.currentTurn = currentTurn # the turn is finished
@@ -16,18 +22,6 @@ class TreeNode(object):
         # Monte Carlo counters
         self.visited = 0
         self.winning = 0
-        # Tree stuff
-        self.parent = parent
-        self.children = []
-        self.last_action = None
-
-    def add_child(self, node: 'TreeNode'):
-        if (node not in self.children):
-            self.children.append(node)
-            assert node.parent == self
-
-    def has_children(self):
-        return (len(self.children) > 0)
 
     def toggle_player(self):
         self.side = get_opponent_colour(self.side)
@@ -40,27 +34,25 @@ class TreeNode(object):
         if (len(sucessors)==0):
             print(f"no successor, side={self.side} turn={self.currentTurn}")
             self.board.print_board()
-        self.board = random.choice(sucessors)[1]
-        
-    def get_random_child(self):
-        return random.choice(self.children)
-
-    def get_child_with_max_score(self)->'TreeNode':
-        # why choose max visited count rather than ucb?
-        maxValue = -INFINITY
-        maxNode = None
-        for node in self.children:
-            if (node.score() > maxValue):
-                maxValue = node.score()
-                maxNode = node
-        return maxNode
+        if (len(sucessors)>0):
+            self.board = random.choice(sucessors)[1]
 
     def ucb_upperbound(self, totalVisits):
+        """
+        Upper Confidence Bound.
+
+        Used during exploration.
+        """
         if (self.visited == 0):
             return INFINITY
         return (self.winning / self.visited) + 1.41 * math.sqrt(math.log(totalVisits) / self.visited)
 
     def score(self):
+        """
+        The score of this node.
+
+        Used when choosing the final move.
+        """
         if (self.visited == 0):
             return -INFINITY
         return (self.winning / self.visited)

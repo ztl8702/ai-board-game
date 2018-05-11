@@ -18,3 +18,16 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+clean:
+	rm -rf ./**/__pycache__/ && \
+	rm -rf ./submission
+	
+submit:
+	mkdir ./submission && \
+	cp -r ./ai ./submission/ && \
+	cp ./*_player.py ./submission && \
+	cp ./bakeoff.py ./submission && \
+	cp ./perf.py ./submission && \
+	cp ./comments.txt ./submission && \
+	cp ./wyb-online.zip ./submission
