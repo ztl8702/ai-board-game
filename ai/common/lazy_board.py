@@ -98,9 +98,9 @@ class LazyBoard(IBoard):
     def _corner_cells(self):
         return [
             (self._min_xy, self._min_xy),
-            (self._max_xy, self._min_xy),
+            (self._min_xy, self._max_xy),
             (self._max_xy, self._max_xy),
-            (self._min_xy, self._max_xy)
+            (self._max_xy, self._min_xy)
         ]
 
     def _update_corners(self):
