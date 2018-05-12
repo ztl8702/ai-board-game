@@ -5,12 +5,14 @@ made by:
 `Therrense Lua (github: ttvs)`
 `Tianlei Zheng (github: ztl8702)`
 
+> If you would like to play Human vs Human: http://wyb.radiumz.org
+
 
 ## Requirements
-- python version 3
+- python version 3 and above
 
 
-## Referee Use Case
+## Referee Use Case (AI vs AI)
 ```
 $ python ./referee.py <white_module> <black_module>
 eg. $ python ./referee.py minimax_player dummy_player
