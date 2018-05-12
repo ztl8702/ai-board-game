@@ -2,7 +2,7 @@
 
 > Simple Board Game played by AI
 made by:
-`Therrense Lua (github: ttvs`
+`Therrense Lua (github: ttvs)`
 `Tianlei Zheng (github: ztl8702)`
 
 
