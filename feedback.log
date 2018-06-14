@@ -1,0 +1,28 @@
+AI Project Part B
+Performance: 7.0 / 7
+Benchmark results:
+Match	Result
+Playing as White against level 1 opponent (random)	win
+Playing as Black against level 1 opponent (random)	win
+Playing as White against level 2 opponent (greedy)	win
+Playing as Black against level 2 opponent (greedy)	win
+Playing as White against level 3 opponent (search)	win
+Playing as Black against level 3 opponent (search)	win (draw)
+Playing as White against level 4 opponent (deeper)	win (draw)
+Playing as Black against level 4 opponent (deeper)	win (draw)
+
+
+Correctness: 4 / 4
+Notes:
+occasional invalid move (tried to forfeit a move but had available moves)
+
+Creativity: 6.0 / 7
+Based on the following creative features:
+wyb.radiumz.org; minimax; alpha-beta pruning; reduced branching factor (preserve squares); MCTS (with UCT enhancement); byte arrays; lazy board evaluation; performance profiling; unit testing; tournament to compare implementations ('bakeoff');
+
+Code quality: 4 / 4
+Notes:
+clear code; good documentation; excellent structure;
+
+
+Total mark: 21.0 / 22
